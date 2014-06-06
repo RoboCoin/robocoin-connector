@@ -1,0 +1,21 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "async": "^0.9.0",
+    "express": "3.4.8",
+    "jade": "*",
+    "request": "^2.36.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-mocha-cli": "^1.8.0",
+    "sinon": "^1.10.2"
+  }
+}

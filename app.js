@@ -24,13 +24,17 @@ if ('development' == app.get('env')) {
 
 var robocoin = require('./apis/Robocoin')('', '');
 
-var index = require('./routes/index')(robocoin);
+var config = require('../connectorConfig');
+var bitstamp = require('./apis/Bitstamp')(config.bitstamp);
+
+var index = require('./routes/index')(robocoin, bitstamp);
 app.get('/', index.transactions);
 app.get('/account-info', index.accountInfo);
 app.get('/buy-and-sell', index.buyAndSell);
 
-var exchange = require('./routes/exchange');
+var exchange = require('./routes/exchange')(robocoin, bitstamp);
 app.get('/exchange/last-price', exchange.lastPrice);
+app.post('/exchange/buy', exchange.buy);
 
 var robocoin = require('./routes/robocoin')(robocoin);
 app.get('/robocoin/transactions', robocoin.getTransactions);

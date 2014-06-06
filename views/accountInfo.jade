@@ -8,5 +8,38 @@ block nav
     li
         a(href="/buy-and-sell") Buy and Sell
 block content
-    h1 Account Info
-    p Account Balance: #{ accountInfo.xbtBalance }
+    if error
+        .alert.alert-danger #{ error }
+    h1 Robocoin Account Info
+    table.table.table-striped.table-condensed
+        tr
+            td Account Balance
+            td #{ robocoinAccount.xbtBalance } BTC
+        tr
+            td Deposit Address
+            td #{ robocoinAccount.depositAddress }
+                #robocoinAddress
+    h1 Bitstamp Account Info
+    table.table.table-striped.table-condensed
+        tr
+            td USD Available
+            td #{ bitstampAccount.usd_available } USD
+        tr
+            td BTC Available
+            td #{ bitstampAccount.btc_available } BTC
+        tr
+            td Trading Fee
+            td #{ bitstampAccount.fee }%
+        tr
+            td Deposit Address
+            td #{ bitstampAccount.address }
+                #bitstampAddress
+
+block footerJs
+    script(src="/js/qrcode.js")
+    script.
+        $(document).ready(function () {
+
+            new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.depositAddress }');
+            new QRCode(document.getElementById('bitstampAddress'), '#{ bitstampAccount.address }');
+        });

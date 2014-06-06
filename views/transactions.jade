@@ -11,14 +11,14 @@ block nav
 block content
     h1 Robocoin Transactions
     form(role="form" action="#").form-inline.transaction-filter
-        button(type="submit").btn.btn-default By Date
+        button.btn.btn-default By Date
         .form-group
             input(type="datetime-local").form-control
     form(role="form").form-inline.transaction-filter
-        button(type="submit").btn.btn-default Since Transaction
+        button.btn.btn-default Since Transaction
         .form-group
             input(type="text").form-control
-    table.table.table-striped.table-condensed
+    table.table.table-striped.table-condensed.hidden
         tr
             th Transaction ID
             th Action
@@ -28,7 +28,10 @@ block content
 
 block footerJs
     script.
-        $('.transaction-filter button').on('click', function () {
+        $('.transaction-filter button').on('click', function (event) {
+
+            event.preventDefault();
+            $('table').removeClass('hidden').addClass('show');
 
             $.ajax({
                 url: '/robocoin/transactions',

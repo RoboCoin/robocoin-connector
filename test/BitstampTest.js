@@ -19,12 +19,11 @@ describe('Bitstamp', function () {
 
         sinon
             .stub(bitstamp, '_request')
-            .callsArg(1);
+            .callsArgWith(1, null, { statusCode: 200 }, {});
         sinon.stub(bitstamp, '_getNonce').returns(1402016237000);
     });
 
     afterEach(function () {
-
         bitstamp._request.restore();
     });
 
@@ -32,14 +31,37 @@ describe('Bitstamp', function () {
 
         bitstamp.post('/some_url', function (err, res) {
 
-            var body = 'key=234&' +
-                'signature=34155ae63c167c1e8e47feb6fab87b0f38d4c12990e9072ae2b5ad085069820a&' +
-                'nonce=1402016237000'
+            var expectedOptions = {
+                url: 'https://www.bitstamp.net/api/some_url',
+                form: {
+                    key: '234',
+                    signature: '34155AE63C167C1E8E47FEB6FAB87B0F38D4C12990E9072AE2B5AD085069820A',
+                    nonce: 1402016237000
+                },
+                method: 'POST',
+                json: true
+            };
+
+            assert(bitstamp._request.calledWith(expectedOptions));
+
+            done(err);
+        });
+    });
+
+    it('adds optional parameters to the form', function (done) {
+
+        bitstamp.post('/some_url', { optional: true }, function (err, res) {
 
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
-                body: body,
-                method: 'POST'
+                form: {
+                    key: '234',
+                    signature: '34155AE63C167C1E8E47FEB6FAB87B0F38D4C12990E9072AE2B5AD085069820A',
+                    nonce: 1402016237000,
+                    optional: true
+                },
+                method: 'POST',
+                json: true
             };
 
             assert(bitstamp._request.calledWith(expectedOptions));
