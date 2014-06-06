@@ -1,0 +1,27 @@
+doctype html
+html(lang="en")
+  head
+      meta(charset="utf-8")
+      meta(http-equiv="X-UA-Compatible" content="IE=edge")
+      meta(name="viewport" content="width=device-width, initial-scale=1")
+      title Robocoin Bitstamp Connector
+      link(rel="stylesheet" href="/css/bootstrap.min.css")
+      link(rel="stylesheet" href="/css/main.css")
+  body
+      div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+          .container
+              .navbar-header
+                  button(type="button" data-toggle="collapse" data-target=".navbar-collapse").navbar-toggle
+                      span.sr-only Toggle navigation
+                      span.icon-bar
+                      span.icon-bar
+                      span.icon-bar
+                  a(href="#").navbar-brand Robocoin Bitstamp Connector
+              .collapse.navbar-collapse
+                  ul.nav.navbar-nav
+                      block nav
+      .container
+          block content
+      script(src="/js/jquery-2.1.1.min.js")
+      script(src="/js/bootstrap.min.js")
+      block footerJs

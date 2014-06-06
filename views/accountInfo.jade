@@ -1,0 +1,12 @@
+extends layout
+
+block nav
+    li
+        a(href="/") Transactions
+    li.active
+        a(href="#") Account info
+    li
+        a(href="/buy-and-sell") Buy and Sell
+block content
+    h1 Account Info
+    p Account Balance: #{ accountInfo.xbtBalance }

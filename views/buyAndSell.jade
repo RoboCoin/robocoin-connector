@@ -1,0 +1,33 @@
+extends layout
+
+block nav
+    li
+        a(href="/") Transactions
+    li
+        a(href="/account-info") Account info
+    li.active
+        a(href="#") Buy and Sell
+
+block content
+    h1 Buy and Sell
+    div(style="float:left;width:100%;")
+        p(style="float:left;") Last Bitstamp price: $
+        span#lastPrice ----
+    form(role="form")
+        legend Replenish your Robocoin account
+        .form-group
+            label(for="btcAmount") BTC amount
+            input(type="text").form-control#btcAmount
+        .form-group
+            label(for="btcPrice") BTC price
+            input(type="number").form-control#btcPrice
+        button(type="submit").btn.btn-default Buy
+
+block footerJs
+    script(src="/js/buy-and-sell.js")
+    script.
+        $(document).ready(function () {
+
+            var updater = new PriceUpdater('lastPrice');
+            updater.start();
+        });

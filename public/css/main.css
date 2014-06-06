@@ -1,0 +1,15 @@
+body {
+    padding-top: 70px;
+}
+tr.send {
+    color: red;
+}
+tr.receive {
+    color: green;
+}
+.transaction-filter button {
+    width: 10em;
+}
+.transaction-filter input {
+    width: 20em !important;
+}
