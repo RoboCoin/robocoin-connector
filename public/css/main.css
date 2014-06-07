@@ -13,3 +13,13 @@ tr.receive {
 .transaction-filter input {
     width: 20em !important;
 }
+.navbar-inverse {
+    background-color: #3c7592;
+    border-color: #284d61;
+}
+.navbar-inverse .navbar-nav > .active > a {
+    background-color: #284d61;
+}
+.navbar-inverse .navbar-nav > li > a,.navbar-inverse .navbar-brand  {
+    color: #b6e6ff;
+}

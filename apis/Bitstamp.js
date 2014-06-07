@@ -47,7 +47,7 @@ Bitstamp.prototype.post = function (url, options, callback) {
 
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
-        if (body.error) return callback('Bitstamp response error: ' + body.error['__all__']);
+        if (body.error) return callback('Bitstamp response error: ' + body.error__all__);
 
         return callback(null, body);
     });

@@ -18,7 +18,8 @@ module.exports = function (grunt) {
                 globals: {
                     require: true,
                     module: true,
-                    exports: true
+                    exports: true,
+                    setTimeout: true
                 },
                 globalstrict: true
             }
@@ -29,5 +30,5 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask('default', ['mochacli']);
+    grunt.registerTask('default', ['mochacli', 'jshint']);
 };
