@@ -18,47 +18,97 @@ block content
         button.btn.btn-default Since Transaction
         .form-group
             input(type="text").form-control
-    table.table.table-striped.table-condensed.hidden
+    table.table.table-striped.table-condensed.table-bordered.hidden#robocoinTransactions
         tr
             th Transaction ID
             th Action
             th Fiat
             th XBT
             th Time
+    h1 Bitstamp Transactions
+    table.table.table-striped.table-condensed.table-bordered#bitstampTransactions
+        tr
+            th Transaction ID
+            th Order ID
+            th Type
+            th Fiat
+            th XBT
+            th Transaction Fee
+            th Time
 
 block footerJs
     script.
-        $('.transaction-filter button').on('click', function (event) {
+        $(document).ready(function () {
 
-            event.preventDefault();
-            $('table').removeClass('hidden').addClass('show');
+            $.get(
+                '/exchange/latest-transactions',
+                function (data) {
 
-            $.ajax({
-                url: '/robocoin/transactions',
-                dataType: 'json',
-                success: function (data) {
-
-                    var transaction;
-                    var rows = [];
-                    var $row;
+                    var rows = '';
+                    var row;
+                    var TYPES = ['deposit', 'withdrawal', 'market trade'];
+                    var rowClass;
+                    var btcAsFloat;
 
                     for (var i = 0; i < data.length; i++) {
 
-                        transaction = data[i];
+                        row = data[i];
+                        btcAsFloat = parseFloat(row.btc);
 
-                        $row = $('<tr></tr>')
-                            .addClass(transaction.action)
-                            .addClass('transactionRow')
-                            .append('<td>' + transaction.id + '</td>')
-                            .append('<td>' + transaction.action + '</td>')
-                            .append('<td>' + transaction.fiat + '</td>')
-                            .append('<td>' + transaction.xbt + '</td>')
-                            .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
-                        rows.push($row);
+                        if (btcAsFloat < 0) {
+                            rowClass = 'send';
+                        } else if (btcAsFloat > 0) {
+                            rowClass = 'receive';
+                        }
+
+                        rows += '<tr class="' + rowClass + '">';
+                        rows += '<td>' + row.id + '</td>';
+                        rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
+                        rows += '<td>' + TYPES[row.type] + '</td>';
+                        rows += '<td>' + (row.usd ?  row.usd : '') + '</td>';
+                        rows += '<td>' + row.btc + '</td>';
+                        rows += '<td>' + row.fee + '</td>';
+                        rows += '<td>' + (new Date(row.datetime).toUTCString()) + '</td>';
+                        rows += '</tr>';
                     }
 
-                    $('table .transactionRow').remove();
-                    $('table').append(rows);
-                }
+                    $('#bitstampTransactions').append(rows);
+                },
+                'json'
+            );
+
+            $('.transaction-filter button').on('click', function (event) {
+
+                event.preventDefault();
+                $('#robocoinTransactions').removeClass('hidden');
+
+                $.ajax({
+                    url: '/robocoin/transactions',
+                    dataType: 'json',
+                    success: function (data) {
+
+                        var transaction;
+                        var rows = [];
+                        var $row;
+
+                        for (var i = 0; i < data.length; i++) {
+
+                            transaction = data[i];
+
+                            $row = $('<tr></tr>')
+                                .addClass(transaction.action)
+                                .addClass('transactionRow')
+                                .append('<td>' + transaction.id + '</td>')
+                                .append('<td>' + transaction.action + '</td>')
+                                .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
+                                .append('<td>' + transaction.xbt + '</td>')
+                                .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
+                            rows.push($row);
+                        }
+
+                        $('#robocoinTransactions .transactionRow').remove();
+                        $('#robocoinTransactions').append(rows);
+                    }
+                });
             });
         });

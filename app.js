@@ -35,6 +35,7 @@ app.get('/buy-and-sell', index.buyAndSell);
 var exchange = require('./routes/exchange')(robocoin, bitstamp);
 app.get('/exchange/last-price', exchange.lastPrice);
 app.post('/exchange/buy', exchange.buy);
+app.get('/exchange/latest-transactions', exchange.latestTransactions);
 
 var robocoin = require('./routes/robocoin')(robocoin);
 app.get('/robocoin/transactions', robocoin.getTransactions);

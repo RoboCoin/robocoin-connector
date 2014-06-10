@@ -81,15 +81,15 @@ Bitstamp.prototype.buyLimit = function (amount, price, callback) {
                 function (doWhileCallback) {
                     setTimeout(function () {
 
-                        self.post('/open_orders/', function (err, res) {
+                        self.userTransactions(function (err, res) {
 
                             if (err) return doWhileCallback(err);
 
                             for (var i = 0; i < res.length; i++) {
 
-                                if (res[i].id == order.id) {
+                                if (res[i].order_id == order.id) {
                                     success = true;
-                                    return doWhileCallback();
+                                    return doWhileCallback(null, res[i]);
                                 }
                             }
 
@@ -100,7 +100,7 @@ Bitstamp.prototype.buyLimit = function (amount, price, callback) {
                 },
                 function () {
 
-                    return success;
+                    return !success;
 
                 },
                 waterfallCallback
@@ -110,13 +110,16 @@ Bitstamp.prototype.buyLimit = function (amount, price, callback) {
 
         if (err) return callback(err);
 
-        return callback();
+        return callback(null, res);
     });
 };
 
 Bitstamp.prototype.withdraw = function (amount, address, callback) {
-
     this.post('/bitcoin_withdrawal/', { amount: amount, address: address }, callback);
+};
+
+Bitstamp.prototype.userTransactions = function (callback) {
+    this.post('/user_transactions/', callback);
 };
 
 module.exports = function (options) {

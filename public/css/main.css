@@ -7,6 +7,9 @@ tr.send {
 tr.receive {
     color: green;
 }
+tr.forward {
+    color: gray;
+}
 .transaction-filter button {
     width: 10em;
 }
@@ -17,9 +20,12 @@ tr.receive {
     background-color: #3c7592;
     border-color: #284d61;
 }
-.navbar-inverse .navbar-nav > .active > a {
+.navbar-inverse .navbar-nav > .active > a,.navbar-inverse .navbar-nav > .active > a:hover {
     background-color: #284d61;
 }
 .navbar-inverse .navbar-nav > li > a,.navbar-inverse .navbar-brand  {
     color: #b6e6ff;
+}
+.navbar-inverse .navbar-toggle:hover {
+    background-color: #284d61;
 }

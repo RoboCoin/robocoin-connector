@@ -40,7 +40,18 @@ exports.buy = function (req, res) {
 
         if (err) return res.send(err);
 
+        // TODO 
         return res.send('Bought ' + amount + ' for ' + price);
+    });
+};
+
+exports.latestTransactions = function (req, res) {
+
+    bitstamp.userTransactions(function (err, userTransactions) {
+
+        if (err) return res.send(err);
+
+        return res.send(userTransactions);
     });
 };
 
