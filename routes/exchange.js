@@ -40,7 +40,7 @@ exports.buy = function (req, res) {
 
         if (err) return res.send(err);
 
-        // TODO 
+        // TODO
         return res.send('Bought ' + amount + ' for ' + price);
     });
 };

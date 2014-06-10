@@ -28,56 +28,6 @@ Autoconnector.prototype._getTransactionMapper = function () {
     return this._transactionMapper;
 };
 
-Autoconnector.prototype.isCandidateTransaction = function (robocoinTx, bitstampTx) {
-
-    if (Math.abs(robocoinTx.xbt) != Math.abs(bitstampTx.btc)) {
-        return false;
-    }
-
-    var oneHour = (1000 * 60 * 60);
-    var bitstampTransactionTime = (new Date(bitstampTx.datetime)).getTime();
-
-    if (bitstampTransactionTime < (robocoinTx.time - oneHour)) {
-        return false;
-    }
-
-    if (bitstampTransactionTime > (robocoinTx.time + oneHour)) {
-        return false;
-    }
-
-    return true;
-};
-
-Autoconnector.prototype.getIndexOfBestCandidate = function (robocoinTxs, bitstampTxs) {
-
-    var bestCandidateIndex;
-    var nearestDistance;
-    var date;
-    var thisDistance;
-
-    for (var i = 0; i < bitstampTxs.length; i++) {
-
-        date = new Date(bitstampTxs[i].datetime);
-
-        if (i === 0) {
-
-            bestCandidateIndex = 0;
-            nearestDistance = Math.abs(robocoinTxs.time - (date.getTime()));
-
-        } else {
-
-            thisDistance = Math.abs(robocoinTxs.time - (date.getTime()));
-
-            if (thisDistance < nearestDistance) {
-                bestCandidateIndex = i;
-                nearestDistance = thisDistance;
-            }
-        }
-    }
-
-    return bestCandidateIndex;
-};
-
 Autoconnector.prototype.run = function (callback) {
 
     var self = this;
