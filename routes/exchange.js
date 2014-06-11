@@ -2,9 +2,8 @@
 
 var request = require('request');
 var config = require('../../connectorConfig');
-var exports = {};
-var bitstamp;
-var robocoin;
+var bitstamp = require('../apis/Bitstamp').getInstance();
+var robocoin = require('../apis/Robocoin').getInstance();
 var async = require('async');
 
 exports.lastPrice = function (req, res) {
@@ -66,11 +65,4 @@ exports.latestTransactions = function (req, res) {
 
         return res.send(userTransactions);
     });
-};
-
-module.exports = function (globalRobocoin, globalBitstamp) {
-
-    bitstamp = globalBitstamp;
-    robocoin = globalRobocoin;
-    return exports;
 };

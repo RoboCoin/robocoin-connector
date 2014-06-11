@@ -40,4 +40,9 @@ describe('TransactionMapper', function () {
             done(err);
         });
     });
+
+    it('finds the last Robocoin transaction time', function (done) {
+
+        transactionMapper.findLastTransactionTime(done);
+    });
 });

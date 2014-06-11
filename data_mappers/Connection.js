@@ -11,8 +11,6 @@ var _connect = function () {
     _connection.connect(function (err) {
 
         if (err) return console.log('DB connection err: ' + err);
-
-        return console.log('DB connected');
     });
 
     _connection.on('error', function (err) {

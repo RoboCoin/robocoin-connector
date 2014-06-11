@@ -22,9 +22,10 @@ describe('Autoconnector', function () {
 
         beforeEach(function () {
 
-            autoconnector._robocoin = new Robocoin('', '');
+            autoconnector._robocoin = Robocoin.getInstance();
             autoconnector._transactionMapper = new TransactionMapper();
-            autoconnector._bitstamp = new Bitstamp({});
+            Bitstamp.clearInstance();
+            autoconnector._bitstamp = Bitstamp.getInstance();
         });
 
         it('fetches robocoin activity and saves it', function (done) {
@@ -32,17 +33,17 @@ describe('Autoconnector', function () {
             var robocoinTransaction = {
                 transactionId: '123',
                 action: 'send',
-                fiat: '650.00000',
+                fiat: '650.00',
                 xbt: '1.00000000',
                 time: 1401527500000
             };
 
+            sinon.stub(autoconnector._transactionMapper, 'findLastTransactionTime')
+                .callsArgWith(0, null, 1401527500000);
             sinon.stub(autoconnector._robocoin, 'getTransactions')
-                .callsArgWith(0, null, [robocoinTransaction]);
-
+                .callsArgWith(1, null, [robocoinTransaction]);
             sinon.stub(autoconnector._transactionMapper, 'save')
                 .callsArg(1);
-
             sinon.stub(autoconnector, '_processUnprocessedTransactions')
                 .callsArg(0);
 
@@ -50,9 +51,7 @@ describe('Autoconnector', function () {
 
                 assert(autoconnector._transactionMapper.save.calledWith(robocoinTransaction));
                 assert(autoconnector._processUnprocessedTransactions.called);
-
-                autoconnector._robocoin.getTransactions.restore();
-                autoconnector._transactionMapper.save.restore();
+                assert(autoconnector._transactionMapper.findLastTransactionTime.called);
 
                 return done(err);
             });
@@ -111,9 +110,32 @@ describe('Autoconnector', function () {
             autoconnector._replenishAccountBtc(unprocessedTx, function (err) {
 
                 assert(autoconnector._bitstamp.getLastPrice.called);
-                assert(autoconnector._bitstamp.buyLimit.calledWith(0.01, '715.00000'));
+                assert(autoconnector._bitstamp.buyLimit.calledWith(0.01, '715.00'));
                 assert(autoconnector._robocoin.getAccountInfo.called);
                 assert(autoconnector._bitstamp.withdraw.calledWith(0.01, 'address'));
+                assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
+
+                done(err);
+            });
+        });
+
+        it('sells to the exchange on forwarded and confirmed', function (done) {
+
+            sinon.stub(autoconnector._bitstamp, 'getLastPrice')
+                .callsArgWith(0, null, { price: 650.00 });
+            sinon.stub(autoconnector._bitstamp, 'sellLimit')
+                .callsArgWith(2, null, {});
+            sinon.stub(autoconnector._transactionMapper, 'saveExchangeTransaction')
+                .callsArg(1);
+
+            var unprocessedTx = {
+                robocoin_xbt: 0.01000000
+            };
+
+            autoconnector._sellBtcForFiat(unprocessedTx, function (err) {
+
+                assert(autoconnector._bitstamp.getLastPrice.called);
+                assert(autoconnector._bitstamp.sellLimit.calledWith(0.01, '585.00'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
 
                 done(err);

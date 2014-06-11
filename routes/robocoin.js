@@ -1,20 +1,15 @@
 'use strict';
 
-var exports = {};
-var robocoin;
+var robocoin = require('../apis/Robocoin').getInstance();
 
 exports.getTransactions = function (req, res) {
 
-    robocoin.getTransactions(function (err, transactions) {
+    var sinceDate = new Date(req.body.sinceDate);
+
+    robocoin.getTransactions(sinceDate.getTime(), function (err, transactions) {
 
         if (err) return res.json(500, {});
 
         return res.json(transactions);
     });
-};
-
-module.exports = function (globalRobocoin) {
-
-    robocoin = globalRobocoin;
-    return exports;
 };

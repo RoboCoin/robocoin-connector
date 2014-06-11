@@ -36,7 +36,7 @@ Autoconnector.prototype._getTransactionMapper = function () {
 Autoconnector.prototype._getBitstamp = function () {
 
     if (this._bitstamp === null) {
-        this._bitstamp = new Bitstamp({});
+        this._bitstamp = Bitstamp.getInstance();
     }
 
     return this._bitstamp;
@@ -58,7 +58,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
             var price =
                 lastPrice.multiply(
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
-                    .setScale(5, bigdecimal.RoundingMode.DOWN());
+                    .setScale(2, bigdecimal.RoundingMode.DOWN());
 
             self._getBitstamp().buyLimit(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
         },
@@ -77,14 +77,8 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
         },
         function (withdraw, asyncCallback) {
 
-            unprocessedTx.bitstamp_tx_id = buyOrder.id;
-            unprocessedTx.bitstamp_tx_type = buyOrder.type;
-            unprocessedTx.bitstamp_fiat = buyOrder.usd;
-            unprocessedTx.bitstamp_xbt = buyOrder.btc;
-            unprocessedTx.bitstamp_order_id = buyOrder.order_id;
-            unprocessedTx.bitstamp_tx_fee = buyOrder.fee;
             unprocessedTx.bitstamp_withdrawal_id = withdraw.id;
-            unprocessedTx.bitstamp_tx_time = buyOrder.datetime;
+            unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, buyOrder);
 
             self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
         }
@@ -94,8 +88,45 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
     });
 };
 
+Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedTx, exchangeOrder) {
+
+    unprocessedTx.bitstamp_tx_id = exchangeOrder.id;
+    unprocessedTx.bitstamp_tx_type = exchangeOrder.type;
+    unprocessedTx.bitstamp_fiat = exchangeOrder.usd;
+    unprocessedTx.bitstamp_xbt = exchangeOrder.btc;
+    unprocessedTx.bitstamp_order_id = exchangeOrder.order_id;
+    unprocessedTx.bitstamp_tx_fee = exchangeOrder.fee;
+    unprocessedTx.bitstamp_tx_time = exchangeOrder.datetime;
+
+    return unprocessedTx;
+};
+
 Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, callback) {
 
+    var self = this;
+
+    async.waterfall([
+        function (asyncCallback) {
+            console.log('getting last price');
+            self._getBitstamp().getLastPrice(asyncCallback);
+        },
+        function (lastPrice, asyncCallback) {
+
+            lastPrice = new bigdecimal.BigDecimal(lastPrice.price);
+            var price
+                = lastPrice.multiply(
+                    new bigdecimal.BigDecimal(1 - MARKET_PAD))
+                    .setScale(2, bigdecimal.RoundingMode.DOWN());
+            console.log('selling at limit');
+            self._getBitstamp().sellLimit(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+        },
+        function (sellOrder, asyncCallback) {
+            console.log('saving exchange tx');
+            unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
+
+            self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
+        }
+    ], callback);
 };
 
 Autoconnector.prototype._processUnprocessedTransactions = function (callback) {
@@ -103,24 +134,35 @@ Autoconnector.prototype._processUnprocessedTransactions = function (callback) {
     var self = this;
 
     this._getTransactionMapper().findUnprocessed(function (err, unprocessedTxs) {
-
-        if (unprocessedTxs.length === 0) return callback();
+        console.log('there are ' + unprocessedTxs.length + ' unprocessed txs');
+        if (unprocessedTxs.length === 0) {
+            self._isProcessing = false;
+            return callback();
+        }
 
         async.eachSeries(unprocessedTxs, function (unprocessedTx, asyncCallback) {
 
             switch (unprocessedTx.robocoin_tx_type) {
                 case 'send':
+                    console.log('replenishing send for ' + unprocessedTx.robocoin_xbt + ' worth $' + unprocessedTx.robocoin_fiat);
                     self._replenishAccountBtc(unprocessedTx, asyncCallback);
                     break;
                 case 'forward':
+                    console.log('selling ' + unprocessedTx.robocoin_xbt);
                     self._sellBtcForFiat(unprocessedTx, asyncCallback);
                     break;
                 default:
                     callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
             }
-        }, callback);
+        }, function (err) {
+
+            self._isProcessing = false;
+            return callback(err);
+        });
     });
 };
+
+Autoconnector.prototype._isProcessing = false;
 
 /**
  *
@@ -130,21 +172,42 @@ Autoconnector.prototype.run = function (callback) {
 
     var self = this;
 
-    this._getRobocoin().getTransactions(function (err, transactions) {
+    if (this._isProcessing) {
+        console.log('Already processing, skipping this round...');
+        return callback();
+    }
 
-        if (err) return callback(err);
+    this._isProcessing = true;
 
-        async.eachSeries(transactions, function (transaction, asyncCallback) {
+    async.waterfall([
+        function (waterfallCallback) {
 
-            self._getTransactionMapper().save(transaction, asyncCallback);
+            self._transactionMapper.findLastTransactionTime(waterfallCallback);
+        },
+        function (lastTime, waterfallCallback) {
 
-        }, function (err) {
+            self._getRobocoin().getTransactions(lastTime, function (err, transactions) {
+                console.log('got ' + transactions.length + ' transactions');
+                if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
-            if (err) return callback(err);
+                if (transactions.length === 0) {
+                    self._isProcessing = false;
+                    return waterfallCallback();
+                }
 
-            self._processUnprocessedTransactions(callback);
-        });
-    });
+                async.eachSeries(transactions, function (transaction, asyncCallback) {
+                    console.log(transaction);
+                    self._getTransactionMapper().save(transaction, asyncCallback);
+
+                }, function (err) {
+
+                    if (err) return waterfallCallback(err);
+
+                    self._processUnprocessedTransactions(waterfallCallback);
+                });
+            });
+        }
+    ], callback);
 };
 
 module.exports = Autoconnector;

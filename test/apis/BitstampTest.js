@@ -10,21 +10,13 @@ describe('Bitstamp', function () {
 
     beforeEach(function () {
 
-        bitstamp = new Bitstamp({
-            clientId: '123',
-            apiKey: '234',
-            secret: '345',
-            baseUrl: 'https://www.bitstamp.net/api'
-        });
+        Bitstamp.clearInstance();
+        bitstamp = Bitstamp.getInstance();
 
         sinon
             .stub(bitstamp, '_request')
             .callsArgWith(1, null, { statusCode: 200 }, {});
         sinon.stub(bitstamp, '_getNonce').returns(1402016237000);
-    });
-
-    afterEach(function () {
-        bitstamp._request.restore();
     });
 
     it('supplies authentication parameters with each request', function (done) {
@@ -34,8 +26,8 @@ describe('Bitstamp', function () {
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
                 form: {
-                    key: '234',
-                    signature: '34155AE63C167C1E8E47FEB6FAB87B0F38D4C12990E9072AE2B5AD085069820A',
+                    key: 'cwoEIvpFp55moesPp6KEXBnm53u6HYLC',
+                    signature: 'C2D398F384F7E77C22F87269F49E4D0C8418B89AE79BABD1E01E59EE5176584C',
                     nonce: 1402016237000
                 },
                 method: 'POST',
@@ -55,8 +47,8 @@ describe('Bitstamp', function () {
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
                 form: {
-                    key: '234',
-                    signature: '34155AE63C167C1E8E47FEB6FAB87B0F38D4C12990E9072AE2B5AD085069820A',
+                    key: 'cwoEIvpFp55moesPp6KEXBnm53u6HYLC',
+                    signature: 'C2D398F384F7E77C22F87269F49E4D0C8418B89AE79BABD1E01E59EE5176584C',
                     nonce: 1402016237000,
                     optional: true
                 },

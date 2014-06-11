@@ -23,24 +23,21 @@ if ('development' == app.get('env')) {
     app.locals.pretty = true;
 }
 
-var robocoin = require('./apis/Robocoin')('', '');
-
 var config = require('../connectorConfig');
-var bitstamp = require('./apis/Bitstamp')(config.bitstamp);
 
-var index = require('./routes/index')(robocoin, bitstamp);
+var index = require('./routes/index');
 app.get('/', index.transactions);
 app.get('/account-info', index.accountInfo);
 app.get('/buy-and-sell', index.buyAndSell);
 
-var exchange = require('./routes/exchange')(robocoin, bitstamp);
+var exchange = require('./routes/exchange');
 app.get('/exchange/last-price', exchange.lastPrice);
 app.post('/exchange/buy', exchange.buy);
 app.post('/exchange/sell', exchange.sell);
 app.get('/exchange/latest-transactions', exchange.latestTransactions);
 
-var robocoin = require('./routes/robocoin')(robocoin);
-app.get('/robocoin/transactions', robocoin.getTransactions);
+var robocoin = require('./routes/robocoin');
+app.post('/robocoin/transactions', robocoin.getTransactions);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 
@@ -51,8 +48,8 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     var autoconnectorRunErrorHandler = function (err) {
         if (err) return console.log('Autoconnector run error: ' + err);
     };
-    setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
-    autoconnector.run(autoconnectorRunErrorHandler);
+    //setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
+    //autoconnector.run(autoconnectorRunErrorHandler);
     console.log('Autoconnector running');
 });
 

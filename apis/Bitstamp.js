@@ -4,6 +4,7 @@ var request = require('request');
 var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
+var config = require('../../connectorConfig');
 
 var Bitstamp = function (options) {
 
@@ -65,7 +66,7 @@ Bitstamp.prototype.getDepositAddress = function (callback) {
 };
 
 Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
-
+    console.log('trading at limit: ' + action + ', ' + amount + ', ' + price);
     var self = this;
     var tradeOrder;
 
@@ -73,6 +74,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
         function (waterfallCallback) {
 
             // do the trade
+            console.log('doing the trade');
             self.post('/' + action + '/', { amount: amount, price: price }, waterfallCallback);
         },
         function (order, waterfallCallback) {
@@ -81,6 +83,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
             async.doWhilst(
                 function (doWhileCallback) {
                     setTimeout(function () {
+                        console.log('getting user transactions');
                         self.userTransactions(function (err, res) {
 
                             if (err) return doWhileCallback(err);
@@ -145,12 +148,25 @@ Bitstamp.prototype.getLastPrice = function (callback) {
 
     this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
 
-        if (err) return callback(err);
+        if (err) return callback('Get last price error: ' + err);
 
         return callback(null, { price: body.last });
     });
 };
 
-module.exports = function (options) {
-    return new Bitstamp(options);
+var bitstamp = null;
+
+module.exports = {
+
+    getInstance: function () {
+
+        if (bitstamp === null) {
+            bitstamp = new Bitstamp(config.bitstamp);
+        }
+
+        return bitstamp;
+    },
+    clearInstance: function () {
+        bitstamp = null;
+    }
 };

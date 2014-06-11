@@ -1,8 +1,7 @@
 'use strict';
 
-var exports = {};
-var robocoin;
-var bitstamp;
+var robocoin = require('../apis/Robocoin').getInstance();
+var bitstamp = require('../apis/Bitstamp').getInstance();
 var async = require('async');
 
 exports.transactions = function (req, res) {
@@ -43,11 +42,4 @@ exports.accountInfo = function (req, res) {
 
 exports.buyAndSell = function (req, res) {
     res.render('buyAndSell');
-};
-
-module.exports = function (globalRobocoin, globalBitstamp) {
-
-    robocoin = globalRobocoin;
-    bitstamp = globalBitstamp;
-    return exports;
 };

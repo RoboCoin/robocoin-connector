@@ -7,7 +7,7 @@ CREATE TABLE `transactions` (
     `bitstamp_tx_id` INT UNSIGNED DEFAULT NULL,
     `robocoin_tx_type` VARCHAR(45) NOT NULL,
     `bitstamp_tx_type` VARCHAR(45) DEFAULT NULL,
-    `robocoin_fiat` DECIMAL(20,5) DEFAULT NULL,
+    `robocoin_fiat` DECIMAL(20,2) DEFAULT NULL,
     `bitstamp_fiat` DECIMAL(20,5) DEFAULT NULL,
     `robocoin_xbt` DECIMAL(20,8) NOT NULL,
     `bitstamp_xbt` DECIMAL(20,8) DEFAULT NULL,

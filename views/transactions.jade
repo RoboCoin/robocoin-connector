@@ -11,13 +11,9 @@ block nav
 block content
     h1 Robocoin Transactions
     form(role="form" action="#").form-inline.transaction-filter
-        button.btn.btn-default By Date
+        button.btn.btn-default Since Date
         .form-group
-            input(type="datetime-local").form-control
-    form(role="form").form-inline.transaction-filter
-        button.btn.btn-default Since Transaction
-        .form-group
-            input(type="text").form-control
+            input(type="date").form-control#sinceDate
     table.table.table-striped.table-condensed.table-bordered.hidden#robocoinTransactions
         tr
             th Transaction ID
@@ -86,6 +82,10 @@ block footerJs
                 $.ajax({
                     url: '/robocoin/transactions',
                     dataType: 'json',
+                    data: {
+                     sinceDate: $('#sinceDate').val()
+                    },
+                    type: 'POST',
                     success: function (data) {
 
                         var transaction;

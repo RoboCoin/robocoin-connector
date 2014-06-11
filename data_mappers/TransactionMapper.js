@@ -67,4 +67,17 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     );
 };
 
+TransactionMapper.prototype.findLastTransactionTime = function (callback) {
+
+    this._getConnection().query(
+        'SELECT UNIX_TIMESTAMP(MAX(`robocoin_tx_time`)) `last_time` FROM `transactions`',
+        function (err, rows) {
+
+            if (err) return callback('Error getting last transaction time: ' + err);
+
+            return callback(err, rows[0].last_time);
+        }
+    );
+};
+
 module.exports = TransactionMapper;
