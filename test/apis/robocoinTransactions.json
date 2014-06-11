@@ -5,7 +5,7 @@
         "fiat": "6.00",
         "xbt": "-0.00930000",
         "time": 1402125627000,
-        confirmations: 10
+        "confirmations": null
     },
     {
         "id": "89adf453a1df98ad4f123a1df",
@@ -13,7 +13,7 @@
         "fiat": "5.20",
         "xbt": "0.00800000",
         "time": 1402121184000,
-        confirmations: 10
+        "confirmations": null
     },
     {
         "id": "98a4d1f31ad98f41a23d1f6ad",
@@ -21,7 +21,7 @@
         "fiat": "5.20",
         "xbt": "-0.00800000",
         "time": 1402120904000,
-        confirmations: 9
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -29,7 +29,7 @@
         "fiat": "5.20",
         "xbt": "-0.00800000",
         "time": 1402120820000,
-        confirmations: 8
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -37,7 +37,7 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401642025001,
-        confirmations: 7
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -45,7 +45,7 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401616826000,
-        confirmations: 5
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -53,7 +53,7 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401585386000,
-        confirmations: 4
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -61,7 +61,7 @@
         "fiat": "5.20",
         "xbt": "-0.01190000",
         "time": 1401526228000,
-        confirmations: 2
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -69,7 +69,7 @@
         "fiat": "5.20",
         "xbt": "-0.01190000",
         "time": 1401527500000,
-        confirmations: 1
+        "confirmations": null
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -77,7 +77,7 @@
         "fiat": "5.20",
         "xbt": "0.01104711",
         "time": 1401527500000,
-        confirmations: 0
+        "confirmations": null
     },
     {
         "id": "1a56d4fad321fa98d4fa3d21fa5",
@@ -85,6 +85,6 @@
         "fiat": null,
         "xbt": "1.08421000",
         "time": 1401529500000,
-        confirmations: 0
+        "confirmations": 5
     }
 ]

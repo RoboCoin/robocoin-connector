@@ -9,11 +9,11 @@ var async = require('async');
 
 exports.lastPrice = function (req, res) {
 
-    request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
+    bitstamp.getLastPrice(function (err, lastPrice) {
 
         if (err) return res.json(500, { price: err });
 
-        res.json({ price: body.last });
+        res.json({ price: lastPrice.price });
     });
 };
 
@@ -22,12 +22,11 @@ exports.buy = function (req, res) {
     var amount = req.body.btcAmount;
     var price = req.body.btcPrice;
 
-    async.series([
-        function (asyncCallback) {
-
+    async.series({
+        buy: function (asyncCallback) {
             bitstamp.buyLimit(amount, price, asyncCallback);
         },
-        function (asyncCallback) {
+        withdraw: function (asyncCallback) {
 
             robocoin.getAccountInfo(function (err, roboResponse) {
 
@@ -36,12 +35,26 @@ exports.buy = function (req, res) {
                 bitstamp.withdraw(amount, roboResponse.depositAddress, asyncCallback);
             });
         }
-    ], function (err, asyncResponse) {
+    }, function (err, asyncResponse) {
 
         if (err) return res.send(err);
 
-        // TODO
-        return res.send('Bought ' + amount + ' for ' + price);
+        return res.send('Bought ' + asyncResponse.buy.btc + ' for $' + Math.abs(asyncResponse.buy.usd) +
+            ' at $' + asyncResponse.buy.btc_usd + ' with a fee of $' + asyncResponse.buy.fee);
+    });
+};
+
+exports.sell = function (req, res) {
+
+    var amount = req.body.btcAmount;
+    var price = req.body.btcPrice;
+
+    bitstamp.sellLimit(amount, price, function (err, sellOrder) {
+
+        if (err) return res.send(err);
+
+        return res.send('Sold ' + Math.abs(sellOrder.btc) + ' for $' + Math.abs(sellOrder.usd) +
+            ' at $' + sellOrder.btc_usd + ' with a fee of $' + sellOrder.fee);
     });
 };
 

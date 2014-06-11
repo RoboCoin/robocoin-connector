@@ -24,6 +24,7 @@ block content
             th Action
             th Fiat
             th XBT
+            th Confirmations
             th Time
     h1 Bitstamp Transactions
     table.table.table-striped.table-condensed.table-bordered#bitstampTransactions
@@ -102,6 +103,7 @@ block footerJs
                                 .append('<td>' + transaction.action + '</td>')
                                 .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
                                 .append('<td>' + transaction.xbt + '</td>')
+                                .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
                                 .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
                             rows.push($row);
                         }

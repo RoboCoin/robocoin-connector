@@ -47,7 +47,10 @@ Bitstamp.prototype.post = function (url, options, callback) {
 
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
-        if (body.error) return callback('Bitstamp response error: ' + body.error__all__);
+        if (body.error) {
+            console.log(body.error);
+            return callback('Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error));
+        }
 
         return callback(null, body);
     });
@@ -61,26 +64,23 @@ Bitstamp.prototype.getDepositAddress = function (callback) {
     this.post('/bitcoin_deposit_address/', callback);
 };
 
-Bitstamp.prototype.buyLimit = function (amount, price, callback) {
+Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
     var self = this;
+    var tradeOrder;
 
     async.waterfall([
         function (waterfallCallback) {
 
-            // do the buy
-            self.post('/buy/', { amount: amount, price: price }, waterfallCallback);
+            // do the trade
+            self.post('/' + action + '/', { amount: amount, price: price }, waterfallCallback);
         },
         function (order, waterfallCallback) {
 
             // wait for the order to execute
-
-            var success = false;
-
             async.doWhilst(
                 function (doWhileCallback) {
                     setTimeout(function () {
-
                         self.userTransactions(function (err, res) {
 
                             if (err) return doWhileCallback(err);
@@ -88,8 +88,8 @@ Bitstamp.prototype.buyLimit = function (amount, price, callback) {
                             for (var i = 0; i < res.length; i++) {
 
                                 if (res[i].order_id == order.id) {
-                                    success = true;
-                                    return doWhileCallback(null, res[i]);
+                                    tradeOrder = res[i];
+                                    return doWhileCallback(null);
                                 }
                             }
 
@@ -100,26 +100,55 @@ Bitstamp.prototype.buyLimit = function (amount, price, callback) {
                 },
                 function () {
 
-                    return !success;
-
+                    return (typeof tradeOrder === 'undefined');
                 },
                 waterfallCallback
             );
         }
-    ], function (err, res) {
+    ], function (err) {
 
         if (err) return callback(err);
 
-        return callback(null, res);
+        return callback(null, tradeOrder);
     });
 };
 
+/**
+ *
+ * @param amount
+ * @param price Unpadded price to pay for the BTC
+ * @param callback callback(err, order) - Order has datetime, id, type, usd, btc, fee, order_id
+ */
+Bitstamp.prototype.buyLimit = function (amount, price, callback) {
+    this._doTrade('buy', amount, price, callback);
+};
+
+Bitstamp.prototype.sellLimit = function (amount, price, callback) {
+    this._doTrade('sell', amount, price, callback);
+};
+
+/**
+ *
+ * @param amount
+ * @param address
+ * @param callback callbac(err, res) res contains id
+ */
 Bitstamp.prototype.withdraw = function (amount, address, callback) {
     this.post('/bitcoin_withdrawal/', { amount: amount, address: address }, callback);
 };
 
 Bitstamp.prototype.userTransactions = function (callback) {
     this.post('/user_transactions/', callback);
+};
+
+Bitstamp.prototype.getLastPrice = function (callback) {
+
+    this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
+
+        if (err) return callback(err);
+
+        return callback(null, { price: body.last });
+    });
 };
 
 module.exports = function (options) {

@@ -10,21 +10,33 @@ block nav
 
 block content
     .col-md-12
-        h1 Buy and Sell
-        div(style="float:left;width:100%;")
-            p(style="float:left;") Last Bitstamp price: $
-            span#lastPrice ----
+        .row
+            h1 Buy and Sell
+            div(style="float:left;width:100%;")
+                p(style="float:left;") Last Bitstamp price: $
+                span#lastPrice ----
     .col-md-12
-        fieldset
-            form(role="form")
+        .row
+            fieldset
                 legend Replenish your Robocoin account
                 .form-group
-                    label(for="btcAmount") BTC amount
-                    input(type="text").form-control#btcAmount
+                    label(for="btcBuyAmount") BTC amount
+                    input(type="text").form-control#btcBuyAmount
                 .form-group
-                    label(for="btcPrice") BTC price
-                    input(type="number").form-control#btcPrice
+                    label(for="btcBuyPrice") BTC price
+                    input(type="text").form-control#btcBuyPrice
                 button.btn.btn-default#buyButton Buy
+    .col-md-12
+        .row
+            fieldset
+                legend Sell BTC on Bitstamp
+                .form-group
+                    label(for="btcSellAmount") BTC amount
+                    input(type="text").form-control#btcSellAmount
+                .form-group
+                    label(for="btcSellPrice") BTC price
+                    input(type="text").form-control#btcSellPrice
+                button.btn.btn-default#sellButton Sell
 
 block footerJs
     script(src="/js/buy-and-sell.js")
@@ -34,10 +46,10 @@ block footerJs
             var updater = new PriceUpdater('lastPrice');
             updater.start();
 
-            $('#buyButton').on('click', function (event) {
+            var _onTradeButtonClicked = function (action, event) {
 
                 event.preventDefault();
-                var $button = $(this);
+                var $button = $(event.target);
                 // disable the fieldset
                 var $fieldset = $button.parent().parent();
                 $fieldset.attr('disabled', true);
@@ -46,10 +58,10 @@ block footerJs
 
                 $.ajax({
                     type: 'POST',
-                    url: '/exchange/buy',
+                    url: '/exchange/' + action.toLowerCase(),
                     data: {
-                        btcAmount: $('#btcAmount').val(),
-                        btcPrice: $('#btcPrice').val()
+                        btcAmount: $('#btc' + action + 'Amount').val(),
+                        btcPrice: $('#btc' + action + 'Price').val()
                     },
                     success: function(data) {
 
@@ -60,5 +72,13 @@ block footerJs
                         $body.css('cursor', 'default');
                     }
                 });
+            };
+
+            $('#buyButton').on('click', function (event) {
+                _onTradeButtonClicked('Buy', event);
+            });
+
+            $('#sellButton').on('click', function (event) {
+                _onTradeButtonClicked('Sell', event);
             });
         });

@@ -3,6 +3,7 @@ var http = require('http');
 var path = require('path');
 
 var app = express();
+var AUTOCONNECTOR_INTERVAL = 60000;
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -35,11 +36,28 @@ app.get('/buy-and-sell', index.buyAndSell);
 var exchange = require('./routes/exchange')(robocoin, bitstamp);
 app.get('/exchange/last-price', exchange.lastPrice);
 app.post('/exchange/buy', exchange.buy);
+app.post('/exchange/sell', exchange.sell);
 app.get('/exchange/latest-transactions', exchange.latestTransactions);
 
 var robocoin = require('./routes/robocoin')(robocoin);
 app.get('/robocoin/transactions', robocoin.getTransactions);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+var server = http.createServer(app).listen(app.get('port'), function(){
+
+    console.log('Express server listening on port ' + app.get('port'));
+
+    var Autoconnector = require('./apis/Autoconnector');
+    var autoconnector = new Autoconnector();
+    var autoconnectorRunErrorHandler = function (err) {
+        if (err) return console.log('Autoconnector run error: ' + err);
+    };
+    setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
+    autoconnector.run(autoconnectorRunErrorHandler);
+    console.log('Autoconnector running');
+});
+
+server.on('close', function () {
+
+    console.log('Server closing...');
+    require('./data_mappers/Connection').end();
 });

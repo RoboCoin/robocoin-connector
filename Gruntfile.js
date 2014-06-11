@@ -19,7 +19,8 @@ module.exports = function (grunt) {
                     require: true,
                     module: true,
                     exports: true,
-                    setTimeout: true
+                    setTimeout: true,
+                    console: true
                 },
                 globalstrict: true
             }
