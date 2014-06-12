@@ -7,6 +7,8 @@ block nav
         a(href="/account-info") Account info
     li
         a(href="/buy-and-sell") Buy and Sell
+    li
+        a(href="/reports") Reports
 
 block content
     h1 Robocoin Transactions
@@ -20,6 +22,17 @@ block content
             th Action
             th Fiat
             th XBT
+            th Robocoin Fee
+            th Confirmations
+            th Time
+    h1 Unprocessed Transactions
+    table.table.table-striped.table-condensed.table-bordered#unprocessedTransactions
+        tr
+            th Transaction ID
+            th Action
+            th Fiat
+            th XBT
+            th Robocoin Fee
             th Confirmations
             th Time
     h1 Bitstamp Transactions
@@ -74,6 +87,42 @@ block footerJs
                 'json'
             );
 
+            var writeRobocoinTable = function (data, tableId) {
+
+                var transaction;
+                var rows = [];
+                var $row;
+
+                for (var i = 0; i < data.length; i++) {
+
+                    transaction = data[i];
+
+                    $row = $('<tr></tr>')
+                        .addClass(transaction.action)
+                        .addClass('transactionRow')
+                        .append('<td>' + transaction.id + '</td>')
+                        .append('<td>' + transaction.action + '</td>')
+                        .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
+                        .append('<td>' + transaction.xbt + '</td>')
+                        .append('<td>' + (transaction.fee ? transaction.fee : '') + '</td>')
+                        .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
+                        .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
+                    rows.push($row);
+                }
+
+                var $table = $('#' + tableId);
+                $table.find('.transactionRow').remove();
+                $table.append(rows);
+            };
+
+            $.ajax({
+                url: '/robocoin/unprocessed-transactions',
+                dataType: 'json',
+                success: function (data) {
+                    writeRobocoinTable(data, 'unprocessedTransactions');
+                }
+            });
+
             $('.transaction-filter button').on('click', function (event) {
 
                 event.preventDefault();
@@ -87,29 +136,7 @@ block footerJs
                     },
                     type: 'POST',
                     success: function (data) {
-
-                        var transaction;
-                        var rows = [];
-                        var $row;
-
-                        for (var i = 0; i < data.length; i++) {
-
-                            transaction = data[i];
-
-                            $row = $('<tr></tr>')
-                                .addClass(transaction.action)
-                                .addClass('transactionRow')
-                                .append('<td>' + transaction.id + '</td>')
-                                .append('<td>' + transaction.action + '</td>')
-                                .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
-                                .append('<td>' + transaction.xbt + '</td>')
-                                .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
-                                .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
-                            rows.push($row);
-                        }
-
-                        $('#robocoinTransactions .transactionRow').remove();
-                        $('#robocoinTransactions').append(rows);
+                        writeRobocoinTable(data, 'robocoinTransactions');
                     }
                 });
             });

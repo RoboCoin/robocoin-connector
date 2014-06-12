@@ -49,8 +49,9 @@ Bitstamp.prototype.post = function (url, options, callback) {
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
         if (body.error) {
-            console.log(body.error);
-            return callback('Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error));
+            return callback(
+                'Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error)
+            );
         }
 
         return callback(null, body);
@@ -66,7 +67,7 @@ Bitstamp.prototype.getDepositAddress = function (callback) {
 };
 
 Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
-    console.log('trading at limit: ' + action + ', ' + amount + ', ' + price);
+
     var self = this;
     var tradeOrder;
 
@@ -74,7 +75,6 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
         function (waterfallCallback) {
 
             // do the trade
-            console.log('doing the trade');
             self.post('/' + action + '/', { amount: amount, price: price }, waterfallCallback);
         },
         function (order, waterfallCallback) {
@@ -83,7 +83,6 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
             async.doWhilst(
                 function (doWhileCallback) {
                     setTimeout(function () {
-                        console.log('getting user transactions');
                         self.userTransactions(function (err, res) {
 
                             if (err) return doWhileCallback(err);

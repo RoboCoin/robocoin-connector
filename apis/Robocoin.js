@@ -31,14 +31,16 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
     var rate;
     var action;
     var confirmations;
+    var fee;
 
     for (var i = 0; i < numberOfTransactions; i++) {
 
-        xbt = new bigdecimal.BigDecimal(this._getRandomNumber(8, 10) / 1000);
-        rate = new bigdecimal.BigDecimal(this._getRandomNumber(630, 680));
+        xbt = new bigdecimal.BigDecimal(this._getRandomNumber(9, 10) / 1000);
+        rate = new bigdecimal.BigDecimal(this._getRandomNumber(615, 640));
         fiat = xbt.multiply(rate);
         action = actions[this._getRandomNumber(0, 2)];
         confirmations = null;
+        fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
 
         if (action === 'forward') {
             confirmations = this._getRandomNumber(0, 12);
@@ -52,7 +54,8 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             fiat: fiat.setScale(2, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             xbt: xbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             time: time,
-            confirmations: confirmations
+            confirmations: confirmations,
+            fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString()
         });
     }
 

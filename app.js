@@ -38,6 +38,11 @@ app.get('/exchange/latest-transactions', exchange.latestTransactions);
 
 var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', robocoin.getTransactions);
+app.get('/robocoin/unprocessed-transactions', robocoin.getUnprocessedTransactions);
+
+var reports = require('./routes/reports');
+app.get('/reports', reports.index);
+app.get('/reports/transactions', reports.transactions);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 
@@ -48,8 +53,8 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     var autoconnectorRunErrorHandler = function (err) {
         if (err) return console.log('Autoconnector run error: ' + err);
     };
-    //setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
-    //autoconnector.run(autoconnectorRunErrorHandler);
+    setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
+    autoconnector.run(autoconnectorRunErrorHandler);
     console.log('Autoconnector running');
 });
 
