@@ -7,8 +7,6 @@ block nav
         a(href="/account-info") Account info
     li
         a(href="/buy-and-sell") Buy and Sell
-    li
-        a(href="/reports") Reports
 
 block content
     h1 Robocoin Transactions
@@ -23,6 +21,7 @@ block content
             th Fiat
             th XBT
             th Robocoin Fee
+            th Robocoin Miner's Fee
             th Confirmations
             th Time
     h1 Unprocessed Transactions
@@ -33,6 +32,7 @@ block content
             th Fiat
             th XBT
             th Robocoin Fee
+            th Robocoin Miner's Fee
             th Confirmations
             th Time
     h1 Bitstamp Transactions
@@ -105,6 +105,7 @@ block footerJs
                         .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
                         .append('<td>' + transaction.xbt + '</td>')
                         .append('<td>' + (transaction.fee ? transaction.fee : '') + '</td>')
+                        .append('<td>' + (transaction.minersFee ? transaction.minersFee : '') + '</td>')
                         .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
                         .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
                     rows.push($row);

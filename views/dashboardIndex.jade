@@ -1,0 +1,85 @@
+extends layout
+
+block nav
+    li
+        a(href="/transactions") Transactions
+    li
+        a(href="/account-info") Account info
+    li
+        a(href="/buy-and-sell") Buy and Sell
+
+block content
+    h1 Reports
+    form(role="form")
+        .form-group
+            label(for="startingDate") Starting Date
+            input(type="date").form-control#startingDate
+        .form-group
+            label(for="endingDate") Ending Date
+            input(type="date").form-control#endingDate
+        button.btn.btn-default#fetchReports Fetch Reports
+    div(style="width: 900px; height: 500px")#revenueChart
+    div(style="width: 900px; height: 500px")#buyFeeChart
+    div(style="width: 900px; height: 500px")#sellFeeChart
+
+block footerJs
+    script(src="https://www.google.com/jsapi")
+    script.
+        google.load("visualization", "1", { packages: ["corechart"] });
+        google.setOnLoadCallback(drawCharts);
+        function drawCharts () {
+
+            var revenueTable = new google.visualization.DataTable();
+            revenueTable.addColumn('string', 'Date');
+            revenueTable.addColumn('number', 'Sell Revenue');
+            revenueTable.addColumn('number', 'Buy Revenue');
+
+            var buyFeeTable = new google.visualization.DataTable();
+            buyFeeTable.addColumn('string', 'Date');
+            buyFeeTable.addColumn('number', 'Exchange Fee');
+            buyFeeTable.addColumn('number', 'Robocoin Fee');
+            buyFeeTable.addColumn('number', 'Miner\'s Fee');
+
+            var sellFeeTable = new google.visualization.DataTable();
+            sellFeeTable.addColumn('string', 'Date');
+            sellFeeTable.addColumn('number', 'Exchange Fee');
+            sellFeeTable.addColumn('number', 'Robocoin Fee');
+            sellFeeTable.addColumn('number', 'Miner\'s Fee');
+
+            var row;
+            var jsonData = $.ajax({
+                url: '/dashboard/summary',
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+
+                    for (var i = 0; i < data.length; i++) {
+                        row = data[i];
+                        revenueTable.addRow([row[0], row[1], row[5]]);
+                        buyFeeTable.addRow([row[0], row[6], row[7], row[8]]);
+                        sellFeeTable.addRow([row[0], row[2], row[3], row[4]]);
+                    }
+                }
+            });
+
+            var revenueTableOptions = {
+                "title": "Revenue",
+                "curveType": "function"
+            };
+            var revenueChart = new google.visualization.LineChart(document.getElementById('revenueChart'));
+            revenueChart.draw(revenueTable, revenueTableOptions);
+
+            var buyFeeTableOptions = {
+                "title": "Buy Fees",
+                "isStacked": true
+            };
+            var buyFeeChart = new google.visualization.ColumnChart(document.getElementById('buyFeeChart'));
+            buyFeeChart.draw(buyFeeTable, buyFeeTableOptions);
+
+            var sellFeeTableOptions = {
+                "title": "Sell Fees",
+                "isStacked": true
+            };
+            var sellFeeChart = new google.visualization.ColumnChart(document.getElementById('sellFeeChart'));
+            sellFeeChart.draw(sellFeeTable, sellFeeTableOptions);
+        };

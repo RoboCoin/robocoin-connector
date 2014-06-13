@@ -13,10 +13,12 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
     this._getConnection().query(
         'INSERT INTO `transactions` ' +
-        '(`robocoin_tx_id`, `robocoin_tx_type`, `robocoin_fiat`, `robocoin_xbt`, `confirmations`, `robocoin_tx_time`) ' +
-        'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000))) ' +
+        '(`robocoin_tx_id`, `robocoin_tx_type`, `robocoin_fiat`, `robocoin_xbt`, `confirmations`, ' +
+            '`robocoin_tx_time`, `robocoin_miners_fee`) ' +
+        'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000)), ?) ' +
         'ON DUPLICATE KEY UPDATE `confirmations` = `confirmations`',
-        [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time],
+        [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time,
+            robocoinTx.minersFee],
         callback
     );
 };
@@ -77,6 +79,59 @@ TransactionMapper.prototype.findLastTransactionTime = function (callback) {
             if (err) return callback('Error getting last transaction time: ' + err);
 
             return callback(err, rows[0].last_time);
+        }
+    );
+};
+
+TransactionMapper.prototype.buildProfitReport = function (callback) {
+
+    this._getConnection().query(
+        'SELECT ' +
+            'DATE_FORMAT(`robocoin_tx_time`, \'%Y-%m\') `date`, ' +
+            '`robocoin_tx_type` `type`, ' +
+            'SUM(ABS(`robocoin_fiat`)) `robocoinFiat`, ' +
+            'SUM(ABS(`bitstamp_fiat`)) `bitstampFiat`, ' +
+            'SUM(`robocoin_miners_fee`) `robocoinMinersFee`, ' +
+            'SUM(`bitstamp_miners_fee`) `bitstampMinersFee`, ' +
+            'SUM(`robocoin_tx_fee`) `robocoinTxFee`, ' +
+            'SUM(`bitstamp_tx_fee`) `bitstampTxFee` ' +
+        'FROM `transactions` ' +
+        'WHERE `bitstamp_tx_time` IS NOT NULL ' +
+        'GROUP BY `date`, `robocoin_tx_type`',
+        function (err, rows) {
+
+            if (err) return callback('Error getting profit report: ' + err);
+
+            var outputRows = {};
+            var outputRow;
+            var row;
+            for (var i = 0; i < rows.length; i++) {
+
+                row = rows[i];
+                if (!outputRows[row.date]) {
+                    outputRows[row.date] = [row.date];
+                }
+
+                // if it's a sell...
+                if (row.type == 'forward') {
+
+                    outputRows[row.date][1] = row.robocoinFiat;
+                    outputRows[row.date][2] = row.bitstampTxFee;
+                    outputRows[row.date][3] = row.robocoinTxFee;
+                    outputRows[row.date][4] = row.robocoinMinersFee;
+
+                } else if (row.type == 'send') { // or if it's a buy...
+
+                    outputRows[row.date][5] = row.robocoinFiat;
+                    outputRows[row.date][6] = row.bitstampTxFee;
+                    outputRows[row.date][7] = row.robocoinTxFee;
+                    outputRows[row.date][8] = row.bitstampMinersFee;
+                }
+            }
+
+            outputRows = Object.keys(outputRows).map(function (key) { return outputRows[key] });
+
+            return callback(null, outputRows);
         }
     );
 };

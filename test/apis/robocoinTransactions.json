@@ -51,7 +51,8 @@
         "xbt": "-0.00485000",
         "time": 1401616826000,
         "confirmations": null,
-        "fee": "0.0000485"
+        "robocoinFee": "0.0000485",
+        "minersFee": "0.0001"
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -60,7 +61,8 @@
         "xbt": "-0.00485000",
         "time": 1401585386000,
         "confirmations": null,
-        "fee": "0.0000485"
+        "robocoinFee": "0.0000485",
+        "minersFee": "0.0001"
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -69,7 +71,8 @@
         "xbt": "-0.01190000",
         "time": 1401526228000,
         "confirmations": null,
-        "fee": "0.000119"
+        "robocoinFee": "0.000119",
+        "minersFee": "0.0001"
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -78,7 +81,8 @@
         "xbt": "-0.01190000",
         "time": 1401527500000,
         "confirmations": null,
-        "fee": "0.000119"
+        "robocoinFee": "0.000119",
+        "minersFee": "0.0001"
     },
     {
         "id": "adfa89d4f5a6d1f9a8d4fa56df",
@@ -87,7 +91,8 @@
         "xbt": "0.01104711",
         "time": 1401527500000,
         "confirmations": null,
-        "fee": "0.00011047"
+        "robocoinFee": "0.00011047",
+        "minersFee": "0.0001"
     },
     {
         "id": "1a56d4fad321fa98d4fa3d21fa5",
@@ -96,6 +101,7 @@
         "xbt": "1.08421000",
         "time": 1401529500000,
         "confirmations": 5,
-        "fee": "0.0108421"
+        "robocoinFee": "0.0108421",
+        "minersFee": "0.0001"
     }
 ]

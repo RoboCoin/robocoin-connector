@@ -26,7 +26,7 @@ if ('development' == app.get('env')) {
 var config = require('../connectorConfig');
 
 var index = require('./routes/index');
-app.get('/', index.transactions);
+app.get('/transactions', index.transactions);
 app.get('/account-info', index.accountInfo);
 app.get('/buy-and-sell', index.buyAndSell);
 
@@ -40,9 +40,9 @@ var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', robocoin.getTransactions);
 app.get('/robocoin/unprocessed-transactions', robocoin.getUnprocessedTransactions);
 
-var reports = require('./routes/reports');
-app.get('/reports', reports.index);
-app.get('/reports/transactions', reports.transactions);
+var dashboard = require('./routes/dashboard');
+app.get('/', dashboard.index);
+app.get('/dashboard/summary', dashboard.summary);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 
@@ -56,10 +56,4 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
     autoconnector.run(autoconnectorRunErrorHandler);
     console.log('Autoconnector running');
-});
-
-server.on('close', function () {
-
-    console.log('Server closing...');
-    require('./data_mappers/Connection').end();
 });

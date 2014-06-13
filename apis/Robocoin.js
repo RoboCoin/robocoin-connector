@@ -5,6 +5,22 @@ var bigdecimal = require('bigdecimal');
 
 var Robocoin = function (options) {
 
+    this._mode = 'production';
+
+    if (config.robocoin.testMode && config.robocoin.testMode == 'random') {
+        this._mode = 'random';
+    } else if (config.robocoin.testMode && config.robocoin.testMode == 'static') {
+        this._mode = 'static';
+    }
+};
+
+/**
+ * Used for loading the database.
+ *
+ * @param mode
+ */
+Robocoin.prototype.setMode = function (mode) {
+    this._mode = mode;
 };
 
 Robocoin.prototype.getAccountInfo = function (callback) {
@@ -23,7 +39,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
     var numberOfTransactions = this._getRandomNumber(0, 3);
     var transactions = [];
-    var actions = ['send', 'receive', 'forward'];
+    var actions = ['send', 'forward'];
     var now = (new Date()).getTime();
     var fiat;
     var xbt;
@@ -32,20 +48,32 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
     var action;
     var confirmations;
     var fee;
+    var markup = new bigdecimal.BigDecimal(1.05);
+    var minersFee;
 
     for (var i = 0; i < numberOfTransactions; i++) {
 
-        xbt = new bigdecimal.BigDecimal(this._getRandomNumber(9, 10) / 1000);
-        rate = new bigdecimal.BigDecimal(this._getRandomNumber(615, 640));
-        fiat = xbt.multiply(rate);
-        action = actions[this._getRandomNumber(0, 2)];
-        confirmations = null;
-        fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
+        action = actions[this._getRandomNumber(0, 1)];
+        // how much USD they put in or get out
+        fiat = new bigdecimal.BigDecimal(this._getRandomNumber(5, 7));
+        // BTC price, between $615 and $625
+        rate = new bigdecimal.BigDecimal(this._getRandomNumber(615, 625));
 
-        if (action === 'forward') {
+        confirmations = null;
+
+        if (action == 'send') {
+
+            xbt = fiat.divide(rate.multiply(markup), bigdecimal.MathContext.DECIMAL128());
+            minersFee = 0.00005;
+
+        } else if (action === 'forward') {
+
             confirmations = this._getRandomNumber(0, 12);
+            xbt = fiat.divide(rate, bigdecimal.MathContext.DECIMAL128()).multiply(markup);
+            minersFee = 0.0001;
         }
 
+        fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
         time = now - this._getRandomNumber(1, 60000);
 
         transactions.push({
@@ -55,7 +83,8 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             xbt: xbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             time: time,
             confirmations: confirmations,
-            fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString()
+            fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
+            minersFee: minersFee
         });
     }
 
@@ -66,9 +95,9 @@ Robocoin.prototype.getTransactions = function (since, callback) {
 
     var transactions;
 
-    if (config.robocoin.testMode && config.robocoin.testMode == 'random') {
+    if (this._mode == 'random') {
         transactions = this._getRandomlyGeneratedTransactions();
-    } else if (config.robocoin.testMode && config.robocoin.testMode == 'static') {
+    } else if (this._mode == 'static') {
         transactions = require('../test/apis/robocoinTransactions');
     }
 
@@ -81,6 +110,7 @@ module.exports = {
     getInstance: function () {
 
         if (robocoin === null) {
+            // TODO check for test mode and return either tester or real API
             robocoin = new Robocoin(config.robocoin);
         }
 
