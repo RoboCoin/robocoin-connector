@@ -35,6 +35,8 @@ block content
             th Robocoin Miner's Fee
             th Confirmations
             th Time
+            th Manual transaction
+    button#processButton Process
     h1 Bitstamp Transactions
     table.table.table-striped.table-condensed.table-bordered#bitstampTransactions
         tr
@@ -87,7 +89,7 @@ block footerJs
                 'json'
             );
 
-            var writeRobocoinTable = function (data, tableId) {
+            var writeRobocoinTable = function (data, tableId, includeCheckbox) {
 
                 var transaction;
                 var rows = [];
@@ -108,6 +110,10 @@ block footerJs
                         .append('<td>' + (transaction.minersFee ? transaction.minersFee : '') + '</td>')
                         .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
                         .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
+
+                        if (includeCheckbox) {
+                            $row.append('<td><input type="checkbox" data-transaction-id="' + transaction.id + '"></td>');
+                        }
                     rows.push($row);
                 }
 
@@ -120,7 +126,7 @@ block footerJs
                 url: '/robocoin/unprocessed-transactions',
                 dataType: 'json',
                 success: function (data) {
-                    writeRobocoinTable(data, 'unprocessedTransactions');
+                    writeRobocoinTable(data, 'unprocessedTransactions', true);
                 }
             });
 
@@ -138,6 +144,29 @@ block footerJs
                     type: 'POST',
                     success: function (data) {
                         writeRobocoinTable(data, 'robocoinTransactions');
+                    }
+                });
+            });
+
+            $('#processButton').on('click', function () {
+
+                var $button = $(this);
+                var ordersToProcess = [];
+                var checkedBoxes = $('#unprocessedTransactions input:checked');
+                var checkedBox;
+                for (var i = 0; i < checkedBoxes.length; i++) {
+
+                    ordersToProcess.push(checkedBoxes.eq(i).data('transaction-id'));
+                }
+
+                $.ajax({
+                    url: '/batch-process',
+                    data: {
+                        orders: ordersToProcess.join(',')
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        $button.after('<div class="alert alert-success">' + data + '</td>');
                     }
                 });
             });

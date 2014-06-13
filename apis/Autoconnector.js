@@ -219,4 +219,137 @@ Autoconnector.prototype.run = function (callback) {
     ], callback);
 };
 
+Autoconnector.prototype._lastPrice = null;
+
+Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depositAddress, callback) {
+
+    var self = this;
+    var lastPrice = new bigdecimal.BigDecimal(this._lastPrice);
+    var price = lastPrice
+        .multiply(new bigdecimal.BigDecimal(1 + MARKET_PAD))
+        .setScale(2, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
+
+    async.waterfall([
+        function (waterfallCallback) {
+
+            self._getBitstamp().buyLimit(aggregateBuy, price, function (err, order) {
+
+                if (err) return waterfallCallback('Exchange buy error: ' + err);
+
+                return waterfallCallback(null, order);
+            });
+        },
+        function (order, waterfallCallback) {
+
+            self._getBitstamp().withdraw(order.btc, depositAddress, function (err, withdrawal) {
+
+                if (err) return waterfallCallback('Exchange withdraw error: ' + err);
+
+                return waterfallCallback(null, withdrawal, order);
+            });
+        },
+        function (withdrawal, order, waterfallCallback) {
+
+            async.eachSeries(aggregatedBuys, function (tx, seriesCallback) {
+
+                tx.withdraw_id = withdrawal.withdraw_id;
+                self._saveTransaction(tx, order, seriesCallback);
+
+            }, function (err) {
+
+                if (err) return waterfallCallback('Error saving transactions: ' + err);
+
+                return waterfallCallback();
+            });
+        }
+    ], function (err) {
+
+        if (err) return callback('Batch buy error: ' + err);
+
+        return callback();
+    });
+};
+
+Autoconnector.prototype._batchSell = function (aggregateSell, aggregatedSells, callback) {
+
+};
+
+Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
+
+    tx = this._mergeExchangeWithUnprocessedTx(tx, exchangeTx);
+
+    // TODO
+    // (bring in aggregateBuy as a parameter)
+    // tx.bitstamp_fiat = (tx.robocoin_xbt / aggregateBuy) * exchangeTx.usd
+
+    this._getTransactionMapper().saveExchangeTransaction(tx, function (err) {
+
+        if (err) return callback('Error saving transaction: ' + err);
+
+        return callback();
+    });
+};
+
+Autoconnector.prototype.getMinimumOrder = function () {
+    return 5.00;
+};
+
+Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, callback) {
+
+    var self = this;
+
+    this._getBitstamp().getLastPrice(function (err, lastPrice) {
+
+        if (err) return callback('Error getting last price from exchange: ' + err);
+
+        self._lastPrice = lastPrice;
+        var aggregateBuy = 0;
+        var aggregatedBuys = [];
+        var aggregateSell = 0;
+        var aggregatedSells = [];
+
+        async.eachSeries(unprocessedTransactions, function (tx, asyncCallback) {
+
+            if (tx.robocoin_tx_type == 'send') {
+
+                aggregateBuy += tx.robocoin_xbt;
+                aggregatedBuys.push(tx);
+
+            } else if (tx.robocoin_tx_type == 'forward') {
+
+                aggregateSell += tx.robocoin_xbt;
+                aggregatedSells.push(tx);
+            }
+
+            if ((aggregateBuy * self._lastPrice) >= self.getMinimumOrder()) {
+
+                self._batchBuy(aggregateBuy, aggregatedBuys, depositAddress, function (err) {
+
+                    if (err) return asyncCallback('Batch buy error: ' + err);
+
+                    aggregateBuy = 0;
+                    aggregatedBuys = [];
+                });
+
+            } else if ((aggregateSell * self._lastPrice) >= self.getMinimumOrder()) {
+
+                self._batchSell(aggregateSell, aggregatedSells, function (err) {
+
+                    if (err) return asyncCallback('Batch sell error: ' + err);
+
+                    aggregateSell = 0;
+                    aggregatedSells = [];
+                });
+            }
+
+            return asyncCallback();
+
+        }, function (err) {
+
+            return callback(err);
+        });
+    });
+};
+
 module.exports = Autoconnector;

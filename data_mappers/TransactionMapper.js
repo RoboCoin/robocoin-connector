@@ -136,4 +136,20 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
     );
 };
 
+TransactionMapper.prototype.findAllByIds = function (ids, callback) {
+
+    this._getConnection().query(
+        'SELECT * FROM `transactions` WHERE `robocoin_tx_id` IN (?)',
+        [ids],
+        function (err, rows) {
+
+            if (err) return callback('Error finding all transactions by IDs: ' + err);
+
+            return callback(null, rows);
+        }
+    );
+
+    // TODO handle when some orders aren't found, e.g. input count doesn't match output count
+};
+
 module.exports = TransactionMapper;

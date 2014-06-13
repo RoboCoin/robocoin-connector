@@ -44,6 +44,9 @@ var dashboard = require('./routes/dashboard');
 app.get('/', dashboard.index);
 app.get('/dashboard/summary', dashboard.summary);
 
+var batchProcess = require('./routes/batch-process');
+app.post('/batch-process', batchProcess.index);
+
 var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));
