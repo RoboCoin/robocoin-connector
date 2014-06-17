@@ -2,7 +2,7 @@
 
 var request = require('request');
 var config = require('../../connectorConfig');
-var bitstamp = require('../apis/Bitstamp').getInstance();
+var bitstamp = require('../apis/Exchange').get(config.exchangeClass);
 var robocoin = require('../apis/Robocoin').getInstance();
 var async = require('async');
 

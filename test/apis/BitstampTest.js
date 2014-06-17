@@ -1,6 +1,6 @@
 'use strict';
 
-var Bitstamp = require('../../apis/Bitstamp');
+var Bitstamp = require('../../apis/exchanges/Bitstamp');
 var sinon = require('sinon');
 var assert = require('assert');
 

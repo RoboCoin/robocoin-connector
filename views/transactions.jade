@@ -99,7 +99,7 @@ block footerJs
 
                     transaction = data[i];
 
-                    $row = $('<tr></tr>')
+                    $row = $('<tr data-tx-id="' + transaction.id + '"></tr>')
                         .addClass(transaction.action)
                         .addClass('transactionRow')
                         .append('<td>' + transaction.id + '</td>')
@@ -166,7 +166,12 @@ block footerJs
                     },
                     type: 'POST',
                     success: function (data) {
-                        $button.after('<div class="alert alert-success">' + data + '</td>');
+
+                        $button.after('<div class="alert alert-success">' + data.message + '</td>');
+                        var $unprocessedTransactionsTable = $('#unprocessedTransactions');
+                        for (var i = 0; i < data.transactions.length; i++) {
+                            $unprocessedTransactionsTable.find('tr[data-tx-id="' + data.transactions[i] + '"]').remove();
+                        }
                     }
                 });
             });

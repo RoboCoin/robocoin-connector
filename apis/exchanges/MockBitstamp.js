@@ -5,6 +5,7 @@ var MockBitstamp = function () {
 };
 
 MockBitstamp.prototype.getBalance = function (callback) {
+    console.log('MockBitstamp::getBalance');
     callback(null, {
         usd_balance: 0,
         btc_balance: 0,
@@ -17,7 +18,8 @@ MockBitstamp.prototype.getBalance = function (callback) {
 };
 
 MockBitstamp.prototype.getDepositAddress = function (callback) {
-    callback(null, { address: 'bac123' });
+    console.log('MockBitstamp::getDepositAddress : bac123');
+    callback(null, 'bac123');
 };
 
 /**
@@ -27,24 +29,36 @@ MockBitstamp.prototype.getDepositAddress = function (callback) {
  * @param callback callback(err, order) - Order has datetime, id, type, usd, btc, fee, order_id
  */
 MockBitstamp.prototype.buyLimit = function (amount, price, callback) {
+    console.log('MockBitstamp::buyLimit amount: ' + amount + ' price: ' + price);
+
+    if (amount < this.getMinimumOrder()) {
+        return callback('Amount is below minimum of ' + this.getMinimumOrder());
+    }
+
     callback(null, {
-        datetime: '',
+        datetime: '2014-06-16 14:41:14',
         id: 0,
         type: 2,
-        usd: amount,
-        btc: 0,
+        usd: (price * amount),
+        btc: amount,
         fee: 0,
         order_id: 0
     });
 };
 
 MockBitstamp.prototype.sellLimit = function (amount, price, callback) {
+    console.log('MockBitstamp::sellLimit amount: ' + amount + ' price: ' + price);
+
+    if (amount < this.getMinimumOrder()) {
+        return callback('Amount is below minimum of ' + this.getMinimumOrder());
+    }
+
     callback(null, {
-        datetime: '',
+        datetime: '2014-06-16 14:41:14',
         id: 0,
         type: 2,
-        usd: amount,
-        btc: 0,
+        usd: (price * amount),
+        btc: amount,
         fee: 0,
         order_id: 0
     });
@@ -57,33 +71,32 @@ MockBitstamp.prototype.sellLimit = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 MockBitstamp.prototype.withdraw = function (amount, address, callback) {
+    console.log('MockBitstamp::withdraw amount: ' + amount + ' address: ' + address);
     callback(null, {
         id: 0
     });
 };
 
 MockBitstamp.prototype.userTransactions = function (callback) {
-    callback(null, {
-        datetime: '',
+    console.log('MockBitstamp::userTransactions');
+    callback(null, [{
+        datetime: '2014-06-16 14:41:14',
         id: 0,
         type: 0,
         usd: 0,
         btc: 0,
         fee: 0,
         order_id: 0
-    });
+    }]);
+};
+
+MockBitstamp.prototype.getMinimumOrder = function () {
+    return 0.00769231;
 };
 
 MockBitstamp.prototype.getLastPrice = function (callback) {
-    callback(null, {
-        last: 0,
-        high: 0,
-        low: 0,
-        vwap: 0,
-        volume: 0,
-        bid: 0,
-        ask: 0
-    });
+    console.log('MockBitstamp::getLastPrice');
+    callback(null, { price: 650.00 });
 };
 
 var mockBitstamp = null;

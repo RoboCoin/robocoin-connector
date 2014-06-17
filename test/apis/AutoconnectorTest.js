@@ -244,9 +244,47 @@ describe('Autoconnector', function () {
             });
         });
 
+        it('does batch sells', function (done) {
+
+            var exchangeReturnedOrder = {
+                datetime: '',
+                id: 0,
+                type: 0,
+                usd: 5.20,
+                btc:0.008,
+                fee: 0,
+                order_id: 0
+            };
+
+            sinon.stub(autoconnector._bitstamp, 'sellLimit')
+                .callsArgWith(2, null, exchangeReturnedOrder);
+            sinon.stub(autoconnector, '_saveTransaction')
+                .callsArg(2);
+
+            autoconnector._lastPrice = 650.00;
+            var sells = [];
+            var t1 = {
+                robocoin_tx_type: 'forward',
+                robocoin_xbt: 0.004
+            };
+            sells.push(t1);
+            var t2 = {
+                robocoin_tx_type: 'forward',
+                robocoin_xbt: 0.004
+            };
+            sells.push(t2);
+
+            autoconnector._batchSell(0.008, sells, function (err) {
+
+                assert(autoconnector._bitstamp.sellLimit.calledWith(0.008, '585.00'));
+                assert(autoconnector._saveTransaction.called);
+
+                done(err);
+            });
+        });
+
         it('saves batch processed transactions', function (done) {
 
-            // TODO save multiple
             var unprocessedTransaction = {
                 robocoin_tx_id: 123,
                 robocoin_tx_type: 'send',
@@ -260,8 +298,8 @@ describe('Autoconnector', function () {
                 id: 234,
                 datetime: '2014-06-13 12:34:45',
                 type: 0,
-                usd: 5.00,
-                btc: 0.008,
+                usd: 10.00,
+                btc: 0.016,
                 withdraw_id: 345,
                 fee: 0.03,
                 order_id: 456
@@ -275,14 +313,14 @@ describe('Autoconnector', function () {
                 var mergedTransaction = {
                     robocoin_tx_id: 123,
                     robocoin_tx_type: 'send',
-                    robocoin_fiat: 5.20,
+                    robocoin_fiat: 5.2,
                     robocoin_xbt: 0.008,
                     robocoin_tx_fee: 0.0008,
                     robocoin_miners_fee: 0.00005,
                     robocoin_tx_time: 1402697232,
                     bitstamp_tx_id: 234,
                     bitstamp_tx_type: 0,
-                    bitstamp_fiat: 5.00,
+                    bitstamp_fiat: '5.00',
                     bitstamp_xbt: 0.008,
                     bitstamp_order_id: 456,
                     bitstamp_tx_fee: 0.03,

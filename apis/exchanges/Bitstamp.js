@@ -4,7 +4,7 @@ var request = require('request');
 var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
-var config = require('../../connectorConfig');
+var config = require('../../../connectorConfig');
 
 var Bitstamp = function (options) {
 
@@ -12,6 +12,7 @@ var Bitstamp = function (options) {
     this._apiKey = options.apiKey;
     this._secret = options.secret;
     this._baseUrl = options.baseUrl;
+    this._timeGotLastPrice = null;
 };
 
 Bitstamp.prototype._request = request;
@@ -145,12 +146,36 @@ Bitstamp.prototype.userTransactions = function (callback) {
 
 Bitstamp.prototype.getLastPrice = function (callback) {
 
-    this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
+    var FIVE_MINUTES = 300000;
 
-        if (err) return callback('Get last price error: ' + err);
+    if (this._timeGotLastPrice === null || this._timeGotLastPrice.getTime() < ((new Date()).getTime() - FIVE_MINUTES)) {
 
-        return callback(null, { price: body.last });
-    });
+        this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
+
+            if (err) return callback('Get last price error: ' + err);
+
+            this._lastPrice = body.last;
+            this._timeGotLastPrice = new Date();
+
+            return callback(null, { price: body.last });
+        });
+
+    } else {
+
+        return callback(null, { price: this._lastPrice });
+    }
+};
+
+Bitstamp.prototype.getMinimumOrder = function () {
+
+    var minimumOrderInFiat = new bigdecimal.BigDecimal(5.00);
+    var lastPrice = new bigdecimal.BigDecimal(this.getLastPrice());
+    var minimumOrderInXbt = minimumOrderInFiat
+        .divide(lastPrice, bigdecimal.MathContext.DECIMAL128())
+        .setScale(8, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
+
+    return parseFloat(minimumOrderInXbt);
 };
 
 var bitstamp = null;

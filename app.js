@@ -3,7 +3,6 @@ var http = require('http');
 var path = require('path');
 
 var app = express();
-var AUTOCONNECTOR_INTERVAL = 60000;
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -51,12 +50,5 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));
 
-    var Autoconnector = require('./apis/Autoconnector');
-    var autoconnector = new Autoconnector();
-    var autoconnectorRunErrorHandler = function (err) {
-        if (err) return console.log('Autoconnector run error: ' + err);
-    };
-    setInterval(function () { autoconnector.run(autoconnectorRunErrorHandler); }, AUTOCONNECTOR_INTERVAL);
-    autoconnector.run(autoconnectorRunErrorHandler);
-    console.log('Autoconnector running');
+    require('./periodicJobs');
 });

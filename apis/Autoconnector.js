@@ -3,8 +3,9 @@
 var Robocoin = require('./Robocoin');
 var TransactionMapper = require('../data_mappers/TransactionMapper');
 var async = require('async');
-var Bitstamp = require('./Bitstamp');
+var config = require('../../connectorConfig');
 var bigdecimal = require('bigdecimal');
+var Exchange = require('./Exchange');
 
 var MARKET_PAD = 0.10;
 
@@ -12,7 +13,7 @@ var Autoconnector = function () {
 
     this._robocoin = null;
     this._transactionMapper = null;
-    this._bitstamp = null;
+    this._exchange = null;
 };
 
 Autoconnector.prototype._getRobocoin = function () {
@@ -33,13 +34,13 @@ Autoconnector.prototype._getTransactionMapper = function () {
     return this._transactionMapper;
 };
 
-Autoconnector.prototype._getBitstamp = function () {
+Autoconnector.prototype._getExchange = function () {
 
-    if (this._bitstamp === null) {
-        this._bitstamp = Bitstamp.getInstance();
+    if (this._exchange === null) {
+        this._exchange = Exchange.get(config.exchangeClass);
     }
 
-    return this._bitstamp;
+    return this._exchange;
 };
 
 Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback) {
@@ -50,7 +51,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
     async.waterfall([
         function (asyncCallback) {
 
-            self._getBitstamp().getLastPrice(asyncCallback);
+            self._getExchange().getLastPrice(asyncCallback);
         },
         function (lastPrice, asyncCallback) {
 
@@ -60,7 +61,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
 
-            self._getBitstamp().buyLimit(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
+            self._getExchange().buyLimit(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
         },
         function (fetchedBuyOrder, asyncCallback) {
 
@@ -69,7 +70,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
         },
         function (accountInfo, asyncCallback) {
 
-            self._getBitstamp().withdraw(
+            self._getExchange().withdraw(
                 Math.abs(unprocessedTx.robocoin_xbt),
                 accountInfo.depositAddress,
                 asyncCallback
@@ -112,7 +113,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, callback) {
     async.waterfall([
         function (asyncCallback) {
 
-            self._getBitstamp().getLastPrice(asyncCallback);
+            self._getExchange().getLastPrice(asyncCallback);
         },
         function (lastPrice, asyncCallback) {
 
@@ -122,7 +123,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, callback) {
                     new bigdecimal.BigDecimal(1 - MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
 
-            self._getBitstamp().sellLimit(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+            self._getExchange().sellLimit(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
         },
         function (sellOrder, asyncCallback) {
 
@@ -233,7 +234,8 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
     async.waterfall([
         function (waterfallCallback) {
 
-            self._getBitstamp().buyLimit(aggregateBuy, price, function (err, order) {
+            console.log('doing buy: ' + aggregateBuy + 'xbt for $' + price);
+            self._getExchange().buyLimit(aggregateBuy, price, function (err, order) {
 
                 if (err) return waterfallCallback('Exchange buy error: ' + err);
 
@@ -242,7 +244,8 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
         },
         function (order, waterfallCallback) {
 
-            self._getBitstamp().withdraw(order.btc, depositAddress, function (err, withdrawal) {
+            console.log('withdrawing ' + order.btc + 'xbt to ' + depositAddress);
+            self._getExchange().withdraw(order.btc, depositAddress, function (err, withdrawal) {
 
                 if (err) return waterfallCallback('Exchange withdraw error: ' + err);
 
@@ -253,7 +256,9 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
 
             async.eachSeries(aggregatedBuys, function (tx, seriesCallback) {
 
+                console.log('saving buy: ');
                 tx.withdraw_id = withdrawal.withdraw_id;
+                console.log(' ' + tx.robocoin_tx_id);
                 self._saveTransaction(tx, order, seriesCallback);
 
             }, function (err) {
@@ -273,15 +278,65 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
 
 Autoconnector.prototype._batchSell = function (aggregateSell, aggregatedSells, callback) {
 
+    var self = this;
+    var lastPrice = new bigdecimal.BigDecimal(this._lastPrice);
+    var price = lastPrice
+        .multiply(new bigdecimal.BigDecimal(1 - MARKET_PAD))
+        .setScale(2, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
+
+    async.waterfall([
+        function (waterfallCallback) {
+
+            console.log('limit sell ' + aggregateSell + ' for ' + price);
+            self._getExchange().sellLimit(aggregateSell, price, function (err, order) {
+
+                console.log('okay, sell is done');
+                console.log('err: ' + err);
+                if (err) return waterfallCallback('Exchange sell error: ' + err);
+                console.log('about to call waterfall callback successfully');
+                return waterfallCallback(null, order);
+            });
+        },
+        function (order, waterfallCallback) {
+
+            console.log('about to save the txes');
+            async.eachSeries(aggregatedSells, function (tx, seriesCallback) {
+
+                console.log('saving tx...');
+                self._saveTransaction(tx, order, seriesCallback);
+
+            }, function (err) {
+
+                if (err) return waterfallCallback('Error saving transactions: ' + err);
+
+                return waterfallCallback();
+            });
+        }
+    ], function (err) {
+
+        if (err) return callback('Batch sell error: ' + err);
+
+        return callback();
+    });
 };
 
 Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
 
     tx = this._mergeExchangeWithUnprocessedTx(tx, exchangeTx);
+    // this transaction isn't for the whole purchase, just the amount tied to the Robocoin transaction
+    tx.bitstamp_xbt = tx.robocoin_xbt;
 
-    // TODO
-    // (bring in aggregateBuy as a parameter)
-    // tx.bitstamp_fiat = (tx.robocoin_xbt / aggregateBuy) * exchangeTx.usd
+    var robocoinTxXbt = new bigdecimal.BigDecimal(tx.robocoin_xbt);
+    var exchangeBtc = new bigdecimal.BigDecimal(exchangeTx.btc);
+    var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.usd);
+
+    var txFiat = robocoinTxXbt
+        .divide(exchangeBtc, bigdecimal.MathContext.DECIMAL128())
+        .multiply(exchangeFiat)
+        .setScale(2, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
+    tx.bitstamp_fiat = txFiat;
 
     this._getTransactionMapper().saveExchangeTransaction(tx, function (err) {
 
@@ -291,26 +346,37 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
     });
 };
 
-Autoconnector.prototype.getMinimumOrder = function () {
-    return 5.00;
-};
-
 Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, callback) {
 
-    var self = this;
+    if (unprocessedTransactions.length == 0) {
+        return callback();
+    }
 
-    this._getBitstamp().getLastPrice(function (err, lastPrice) {
+    if (this._isProcessing) {
+        console.log('Already processing, skipping batch processing...');
+        return callback();
+    }
+
+    this._isProcessing = true;
+
+    var self = this;
+    var exchange = this._getExchange();
+    var exchangeMinimumOrder = exchange.getMinimumOrder();
+
+    exchange.getLastPrice(function (err, lastPrice) {
 
         if (err) return callback('Error getting last price from exchange: ' + err);
 
-        self._lastPrice = lastPrice;
+        self._lastPrice = lastPrice.price;
         var aggregateBuy = 0;
         var aggregatedBuys = [];
         var aggregateSell = 0;
         var aggregatedSells = [];
+        var processedTransactions = [];
 
         async.eachSeries(unprocessedTransactions, function (tx, asyncCallback) {
 
+            console.log('processing tx: ' + tx.robocoin_tx_id + ' for ' + tx.robocoin_xbt);
             if (tx.robocoin_tx_type == 'send') {
 
                 aggregateBuy += tx.robocoin_xbt;
@@ -322,32 +388,51 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
                 aggregatedSells.push(tx);
             }
 
-            if ((aggregateBuy * self._lastPrice) >= self.getMinimumOrder()) {
+            console.log('minimum order: ' + exchangeMinimumOrder);
+            console.log('aggregateBuy: ' + aggregateBuy);
+            console.log('aggregateSell: ' + aggregateSell);
+            if (aggregateBuy >= exchangeMinimumOrder) {
 
+                console.log('we\'re above minimum buy');
                 self._batchBuy(aggregateBuy, aggregatedBuys, depositAddress, function (err) {
 
                     if (err) return asyncCallback('Batch buy error: ' + err);
 
+                    for (var i = 0; i < aggregatedBuys.length; i++) {
+                        console.log('processed: ' + aggregatedBuys[i].robocoin_tx_id);
+                        processedTransactions.push(aggregatedBuys[i].robocoin_tx_id);
+                    }
                     aggregateBuy = 0;
                     aggregatedBuys = [];
+                    return asyncCallback();
                 });
 
-            } else if ((aggregateSell * self._lastPrice) >= self.getMinimumOrder()) {
+            } else if (aggregateSell >= exchangeMinimumOrder) {
 
+                console.log('we\'re above minimum sell');
                 self._batchSell(aggregateSell, aggregatedSells, function (err) {
 
                     if (err) return asyncCallback('Batch sell error: ' + err);
 
+                    for (var i = 0; i < aggregatedSells.length; i++) {
+                        console.log('processed: ' + aggregatedSells[i].robocoin_tx_id);
+                        processedTransactions.push(aggregatedSells[i].robocoin_tx_id);
+                    }
                     aggregateSell = 0;
                     aggregatedSells = [];
+                    return asyncCallback();
                 });
-            }
 
-            return asyncCallback();
+            } else {
+
+                return asyncCallback();
+            }
 
         }, function (err) {
 
-            return callback(err);
+            self._isProcessing = false;
+
+            return callback(err, processedTransactions);
         });
     });
 };

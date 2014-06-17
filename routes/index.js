@@ -1,7 +1,8 @@
 'use strict';
 
 var robocoin = require('../apis/Robocoin').getInstance();
-var bitstamp = require('../apis/Bitstamp').getInstance();
+var config = require('../../connectorConfig');
+var bitstamp = require('../apis/Exchange').get(config.exchangeClass);
 var async = require('async');
 
 exports.transactions = function (req, res) {

@@ -63,10 +63,12 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     this._getConnection().query(
         'SELECT * ' +
         'FROM `transactions` ' +
-        'WHERE (`robocoin_tx_type` = \'send\' AND `bitstamp_withdrawal_id` IS NULL) ' +
+        'WHERE (`robocoin_tx_type` = \'send\' AND `bitstamp_tx_time` IS NULL) ' +
             'OR (`robocoin_tx_type` = \'forward\' AND `confirmations` >= 6 AND `bitstamp_order_id` IS NULL)' +
         'ORDER BY `robocoin_tx_time`',
-        callback
+        function (err, rows) {
+            return callback(err, rows);
+        }
     );
 };
 

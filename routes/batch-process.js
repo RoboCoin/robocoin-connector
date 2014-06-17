@@ -29,10 +29,17 @@ exports.index = function (req, res) {
 
             autoconnector.batchProcess(transactions, depositAddress, asyncCallback);
         }
-    ], function (err) {
+    ], function (err, transactionsProcessed) {
 
-        if (err) return res.send('Error processing transactions: ' + err);
+        console.log('returning');
+        if (err) return res.send({
+            message: 'Error processing transactions: ' + err,
+            transactions: []
+        });
 
-        return res.send('Processed orders: ' + ordersToProcess);
+        return res.send({
+            message: 'Processed transactions: ' + transactionsProcessed.join(', '),
+            transactions: transactionsProcessed
+        });
     });
 };

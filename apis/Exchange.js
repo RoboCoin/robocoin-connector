@@ -2,6 +2,6 @@
 
 module.exports = {
     get: function (className) {
-        return require('./' + className).getInstance();
+        return require('./exchanges/' + className).getInstance();
     }
 };
