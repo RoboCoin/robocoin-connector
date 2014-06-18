@@ -61,8 +61,8 @@ Robocoin.prototype.setMode = function (mode) {
 Robocoin.prototype.getAccountInfo = function (callback) {
 
     callback(null, {
-        xbtBalance: 5.89451,
-        depositAddress: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
+        xbt_balance: 5.89451,
+        deposit_address: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
     });
 };
 
@@ -119,7 +119,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             time: time,
             confirmations: confirmations,
             fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
-            minersFee: minersFee
+            miners_fee: minersFee
         });
     }
 

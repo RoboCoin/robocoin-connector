@@ -23,7 +23,7 @@ exports.batchProcess = function (callback) {
 
                 if (err) return waterfallCallback(err);
 
-                return waterfallCallback(null, unprocessedTransactions, info.depositAddress);
+                return waterfallCallback(null, unprocessedTransactions, info.deposit_address);
             });
         },
         function (unprocessedTransactions, depositAddress, waterfallCallback) {

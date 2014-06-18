@@ -107,7 +107,7 @@ block footerJs
                         .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
                         .append('<td>' + transaction.xbt + '</td>')
                         .append('<td>' + (transaction.fee ? transaction.fee : '') + '</td>')
-                        .append('<td>' + (transaction.minersFee ? transaction.minersFee : '') + '</td>')
+                        .append('<td>' + (transaction.miners_fee ? transaction.miners_fee : '') + '</td>')
                         .append('<td>' + (transaction.confirmations ? transaction.confirmations : '') + '</td>')
                         .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
 

@@ -97,7 +97,7 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector._exchange, 'buyLimit')
                 .callsArgWith(2, null, { id: 123 });
             sinon.stub(autoconnector._robocoin, 'getAccountInfo')
-                .callsArgWith(0, null, { depositAddress: 'address' });
+                .callsArgWith(0, null, { deposit_address: 'address' });
             sinon.stub(autoconnector._exchange, 'withdraw')
                 .callsArgWith(2, null);
             sinon.stub(autoconnector._transactionMapper, 'saveExchangeTransaction')

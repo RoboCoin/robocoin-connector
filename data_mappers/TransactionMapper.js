@@ -18,7 +18,7 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
         'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000)), ?) ' +
         'ON DUPLICATE KEY UPDATE `confirmations` = `confirmations`',
         [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time,
-            robocoinTx.minersFee],
+            robocoinTx.miners_fee],
         callback
     );
 };

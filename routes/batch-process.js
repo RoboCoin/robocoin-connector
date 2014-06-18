@@ -22,7 +22,7 @@ exports.index = function (req, res) {
 
                 if (err) return asyncCallback(err);
 
-                return asyncCallback(null, transactions, info.depositAddress);
+                return asyncCallback(null, transactions, info.deposit_address);
             });
         },
         function (transactions, depositAddress, asyncCallback) {

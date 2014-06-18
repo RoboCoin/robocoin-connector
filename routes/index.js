@@ -26,7 +26,7 @@ exports.accountInfo = function (req, res) {
 
         if (err) {
             return res.render('accountInfo', {
-                robocoinAccount: { xbtBalance: '--' },
+                robocoinAccount: { xbt_balance: '--' },
                 exchangeAccount: {},
                 error: err
             });

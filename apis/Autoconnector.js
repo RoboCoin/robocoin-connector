@@ -72,7 +72,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
 
             self._getExchange().withdraw(
                 Math.abs(unprocessedTx.robocoin_xbt),
-                accountInfo.depositAddress,
+                accountInfo.deposit_address,
                 asyncCallback
             );
         },

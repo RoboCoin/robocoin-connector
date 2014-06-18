@@ -15,10 +15,10 @@ block content
     table.table.table-striped.table-condensed
         tr
             td Account Balance
-            td #{ robocoinAccount.xbtBalance } BTC
+            td #{ robocoinAccount.xbt_balance } BTC
         tr
             td Deposit Address
-            td #{ robocoinAccount.depositAddress }
+            td #{ robocoinAccount.deposit_address }
                 #robocoinAddress
     h1 Exchange Account Info
     table.table.table-striped.table-condensed
@@ -41,6 +41,6 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.depositAddress }');
+            new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.deposit_address }');
             new QRCode(document.getElementById('exchangeAddress'), '#{ exchangeAccount.address }');
         });
