@@ -9,21 +9,6 @@ block nav
         a(href="/buy-and-sell") Buy and Sell
 
 block content
-    h1 Robocoin Transactions
-    form(role="form" action="#").form-inline.transaction-filter
-        button.btn.btn-default Since Date
-        .form-group
-            input(type="date").form-control#sinceDate
-    table.table.table-striped.table-condensed.table-bordered.hidden#robocoinTransactions
-        tr
-            th Transaction ID
-            th Action
-            th Fiat
-            th XBT
-            th Robocoin Fee
-            th Robocoin Miner's Fee
-            th Confirmations
-            th Time
     h1 Unprocessed Transactions
     table.table.table-striped.table-condensed.table-bordered#unprocessedTransactions
         tr
