@@ -24,8 +24,6 @@ if ('development' == app.get('env')) {
     app.locals.pretty = true;
 }
 
-var config = require('../connectorConfig');
-
 var index = require('./routes/index');
 app.get('/transactions', index.transactions);
 app.get('/account-info', index.accountInfo);

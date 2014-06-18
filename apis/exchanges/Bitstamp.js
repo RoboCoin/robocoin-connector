@@ -22,7 +22,7 @@ Bitstamp.prototype._getNonce = function () {
     return (new Date()).getTime() * 1000;
 };
 
-Bitstamp.prototype.post = function (url, options, callback) {
+Bitstamp.prototype._post = function (url, options, callback) {
 
     // make options an optional parameter
     if (typeof options === 'function') {
@@ -62,7 +62,7 @@ Bitstamp.prototype.post = function (url, options, callback) {
 };
 
 Bitstamp.prototype.getBalance = function (callback) {
-    this.post('/balance/', function (err, res) {
+    this._post('/balance/', function (err, res) {
 
         if (err) return callback('Bitstamp get balance err: ' + err);
 
@@ -75,7 +75,7 @@ Bitstamp.prototype.getBalance = function (callback) {
 };
 
 Bitstamp.prototype.getDepositAddress = function (callback) {
-    this.post('/bitcoin_deposit_address/', function (err, res) {
+    this._post('/bitcoin_deposit_address/', function (err, res) {
 
         if (err) return callback('Bitstamp get address error: ' + err);
 
@@ -92,7 +92,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
         function (waterfallCallback) {
 
             // do the trade
-            self.post('/' + action + '/', { amount: amount, price: price }, waterfallCallback);
+            self._post('/' + action + '/', { amount: amount, price: price }, waterfallCallback);
         },
         function (order, waterfallCallback) {
 
@@ -145,14 +145,14 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 /**
  *
  * @param amount
- * @param price Unpadded price to pay for the BTC
- * @param callback callback(err, order) - Order has datetime, id, type, fiat, btc, fee, order_id
+ * @param price Price to pay for the BTC
+ * @param callback callback(err, order)
  */
-Bitstamp.prototype.buyLimit = function (amount, price, callback) {
+Bitstamp.prototype.buy = function (amount, price, callback) {
     this._doTrade('buy', amount, price, callback);
 };
 
-Bitstamp.prototype.sellLimit = function (amount, price, callback) {
+Bitstamp.prototype.sell = function (amount, price, callback) {
     this._doTrade('sell', amount, price, callback);
 };
 
@@ -163,14 +163,14 @@ Bitstamp.prototype.sellLimit = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 Bitstamp.prototype.withdraw = function (amount, address, callback) {
-    this.post('/bitcoin_withdrawal/', { amount: amount, address: address }, function (err) {
+    this._post('/bitcoin_withdrawal/', { amount: amount, address: address }, function (err) {
 
         return callback(err);
     });
 };
 
 Bitstamp.prototype.userTransactions = function (callback) {
-    this.post('/user_transactions/', callback);
+    this._post('/user_transactions/', callback);
 };
 
 Bitstamp.prototype.getLastPrice = function (callback) {

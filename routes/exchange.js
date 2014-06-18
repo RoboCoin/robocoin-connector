@@ -23,7 +23,7 @@ exports.buy = function (req, res) {
 
     async.series({
         buy: function (asyncCallback) {
-            exchange.buyLimit(amount, price, asyncCallback);
+            exchange.buy(amount, price, asyncCallback);
         },
         withdraw: function (asyncCallback) {
 
@@ -48,7 +48,7 @@ exports.sell = function (req, res) {
     var amount = req.body.btcAmount;
     var price = req.body.btcPrice;
 
-    exchange.sellLimit(amount, price, function (err, sellOrder) {
+    exchange.sell(amount, price, function (err, sellOrder) {
 
         if (err) return res.send(err);
 

@@ -61,7 +61,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
 
-            self._getExchange().buyLimit(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
+            self._getExchange().buy(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
         },
         function (fetchedBuyOrder, asyncCallback) {
 
@@ -122,7 +122,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, callback) {
                     new bigdecimal.BigDecimal(1 - MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
 
-            self._getExchange().sellLimit(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+            self._getExchange().sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
         },
         function (sellOrder, asyncCallback) {
 
@@ -241,7 +241,7 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
         function (waterfallCallback) {
 
             console.log('doing buy: ' + aggregateBuy + 'xbt for $' + price);
-            self._getExchange().buyLimit(aggregateBuy, price, function (err, order) {
+            self._getExchange().buy(aggregateBuy, price, function (err, order) {
 
                 if (err) return waterfallCallback('Exchange buy error: ' + err);
 
@@ -292,7 +292,7 @@ Autoconnector.prototype._batchSell = function (aggregateSell, aggregatedSells, c
         function (waterfallCallback) {
 
             console.log('limit sell ' + aggregateSell + ' for ' + price);
-            self._getExchange().sellLimit(aggregateSell, price, function (err, order) {
+            self._getExchange().sell(aggregateSell, price, function (err, order) {
 
                 if (err) return waterfallCallback('Exchange sell error: ' + err);
 

@@ -21,7 +21,7 @@ describe('Bitstamp', function () {
 
     it('supplies authentication parameters with each request', function (done) {
 
-        bitstamp.post('/some_url', function (err, res) {
+        bitstamp._post('/some_url', function (err, res) {
 
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
@@ -42,7 +42,7 @@ describe('Bitstamp', function () {
 
     it('adds optional parameters to the form', function (done) {
 
-        bitstamp.post('/some_url', { optional: true }, function (err, res) {
+        bitstamp._post('/some_url', { optional: true }, function (err, res) {
 
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',

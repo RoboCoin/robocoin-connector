@@ -24,8 +24,8 @@ MockBitstamp.prototype.getDepositAddress = function (callback) {
  * @param price Unpadded price to pay for the BTC
  * @param callback callback(err, order) - Order has datetime, id, type, usd, btc, fee, order_id
  */
-MockBitstamp.prototype.buyLimit = function (amount, price, callback) {
-    console.log('MockBitstamp::buyLimit amount: ' + amount + ' price: ' + price);
+MockBitstamp.prototype.buy = function (amount, price, callback) {
+    console.log('MockBitstamp::buy amount: ' + amount + ' price: ' + price);
 
     this.getMinimumOrder(function (err, minimumOrder) {
         if (amount < minimumOrder.minimumOrder) {
@@ -44,8 +44,8 @@ MockBitstamp.prototype.buyLimit = function (amount, price, callback) {
     });
 };
 
-MockBitstamp.prototype.sellLimit = function (amount, price, callback) {
-    console.log('MockBitstamp::sellLimit amount: ' + amount + ' price: ' + price);
+MockBitstamp.prototype.sell = function (amount, price, callback) {
+    console.log('MockBitstamp::sell amount: ' + amount + ' price: ' + price);
 
     this.getMinimumOrder(function (err, minimumOrder) {
         if (amount < minimumOrder.minimumOrder) {
