@@ -6,13 +6,9 @@ var MockBitstamp = function () {
 
 MockBitstamp.prototype.getBalance = function (callback) {
     console.log('MockBitstamp::getBalance');
-    callback(null, {
-        usd_balance: 0,
-        btc_balance: 0,
-        usd_reserved: 0,
-        btc_reserved: 0,
-        usd_available: 0,
+    return callback(null, {
         btc_available: 0,
+        fiat_available: 0,
         fee: 0
     });
 };
@@ -31,36 +27,40 @@ MockBitstamp.prototype.getDepositAddress = function (callback) {
 MockBitstamp.prototype.buyLimit = function (amount, price, callback) {
     console.log('MockBitstamp::buyLimit amount: ' + amount + ' price: ' + price);
 
-    if (amount < this.getMinimumOrder()) {
-        return callback('Amount is below minimum of ' + this.getMinimumOrder());
-    }
+    this.getMinimumOrder(function (err, minimumOrder) {
+        if (amount < minimumOrder.minimumOrder) {
+            return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
+        }
 
-    callback(null, {
-        datetime: '2014-06-16 14:41:14',
-        id: 0,
-        type: 2,
-        usd: (price * amount),
-        btc: amount,
-        fee: 0,
-        order_id: 0
+        callback(null, {
+            datetime: '2014-06-16 14:41:14',
+            id: 0,
+            type: 2,
+            fiat: (price * amount),
+            btc: amount,
+            fee: 0,
+            order_id: 0
+        });
     });
 };
 
 MockBitstamp.prototype.sellLimit = function (amount, price, callback) {
     console.log('MockBitstamp::sellLimit amount: ' + amount + ' price: ' + price);
 
-    if (amount < this.getMinimumOrder()) {
-        return callback('Amount is below minimum of ' + this.getMinimumOrder());
-    }
+    this.getMinimumOrder(function (err, minimumOrder) {
+        if (amount < minimumOrder.minimumOrder) {
+            return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
+        }
 
-    callback(null, {
-        datetime: '2014-06-16 14:41:14',
-        id: 0,
-        type: 2,
-        usd: (price * amount),
-        btc: amount,
-        fee: 0,
-        order_id: 0
+        callback(null, {
+            datetime: '2014-06-16 14:41:14',
+            id: 0,
+            type: 2,
+            fiat: (price * amount),
+            btc: amount,
+            fee: 0,
+            order_id: 0
+        });
     });
 };
 
@@ -90,8 +90,8 @@ MockBitstamp.prototype.userTransactions = function (callback) {
     }]);
 };
 
-MockBitstamp.prototype.getMinimumOrder = function () {
-    return 0.00769231;
+MockBitstamp.prototype.getMinimumOrder = function (callback) {
+    return callback(null, { minimumOrder: 0.00769231 });
 };
 
 MockBitstamp.prototype.getLastPrice = function (callback) {

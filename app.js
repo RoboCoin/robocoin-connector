@@ -4,6 +4,8 @@ var path = require('path');
 
 var app = express();
 
+var AUTOCONNECTOR_INTERVAL = 60000;
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
@@ -50,5 +52,20 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));
 
-    require('./periodicJobs');
+    var jobs = require('./periodicJobs');
+    setInterval(function () {
+
+        var randomNumber = (Math.random() * 3);
+
+        // most of the time, run the autoconnector
+        if (randomNumber > 1) {
+            jobs.runAutoconnector();
+        } else {
+            // but sometimes, do the batch rollup
+            jobs.batchProcess();
+        }
+
+    }, AUTOCONNECTOR_INTERVAL);
+    jobs.runAutoconnector();
+    console.log('Autoconnector running');
 });

@@ -5,6 +5,7 @@ var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
 var config = require('../../../connectorConfig');
+var bigdecimal = require('bigdecimal');
 
 var Bitstamp = function (options) {
 
@@ -50,6 +51,7 @@ Bitstamp.prototype.post = function (url, options, callback) {
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
         if (body.error) {
+            console.log(body.error);
             return callback(
                 'Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error)
             );
@@ -60,11 +62,25 @@ Bitstamp.prototype.post = function (url, options, callback) {
 };
 
 Bitstamp.prototype.getBalance = function (callback) {
-    this.post('/balance/', callback);
+    this.post('/balance/', function (err, res) {
+
+        if (err) return callback('Bitstamp get balance err: ' + err);
+
+        return callback(null, {
+            btc_available: res.btc_available,
+            fiat_available: res.usd_available,
+            fee: res.fee
+        });
+    });
 };
 
 Bitstamp.prototype.getDepositAddress = function (callback) {
-    this.post('/bitcoin_deposit_address/', callback);
+    this.post('/bitcoin_deposit_address/', function (err, res) {
+
+        if (err) return callback('Bitstamp get address error: ' + err);
+
+        return callback(null, res);
+    });
 };
 
 Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
@@ -112,7 +128,17 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
         if (err) return callback(err);
 
-        return callback(null, tradeOrder);
+        var returnOrder = {
+            datetime: tradeOrder.datetime,
+            id: tradeOrder.id,
+            type: tradeOrder.type,
+            fiat: tradeOrder.usd,//
+            btc: tradeOrder.btc,//
+            fee: tradeOrder.fee,//
+            order_id: tradeOrder.order_id
+        };
+
+        return callback(null, returnOrder);
     });
 };
 
@@ -120,7 +146,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
  *
  * @param amount
  * @param price Unpadded price to pay for the BTC
- * @param callback callback(err, order) - Order has datetime, id, type, usd, btc, fee, order_id
+ * @param callback callback(err, order) - Order has datetime, id, type, fiat, btc, fee, order_id
  */
 Bitstamp.prototype.buyLimit = function (amount, price, callback) {
     this._doTrade('buy', amount, price, callback);
@@ -137,7 +163,10 @@ Bitstamp.prototype.sellLimit = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 Bitstamp.prototype.withdraw = function (amount, address, callback) {
-    this.post('/bitcoin_withdrawal/', { amount: amount, address: address }, callback);
+    this.post('/bitcoin_withdrawal/', { amount: amount, address: address }, function (err) {
+
+        return callback(err);
+    });
 };
 
 Bitstamp.prototype.userTransactions = function (callback) {
@@ -148,6 +177,7 @@ Bitstamp.prototype.getLastPrice = function (callback) {
 
     var FIVE_MINUTES = 300000;
 
+    // cache the price for five minutes
     if (this._timeGotLastPrice === null || this._timeGotLastPrice.getTime() < ((new Date()).getTime() - FIVE_MINUTES)) {
 
         this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
@@ -166,16 +196,21 @@ Bitstamp.prototype.getLastPrice = function (callback) {
     }
 };
 
-Bitstamp.prototype.getMinimumOrder = function () {
+Bitstamp.prototype.getMinimumOrder = function (callback) {
 
-    var minimumOrderInFiat = new bigdecimal.BigDecimal(5.00);
-    var lastPrice = new bigdecimal.BigDecimal(this.getLastPrice());
-    var minimumOrderInXbt = minimumOrderInFiat
-        .divide(lastPrice, bigdecimal.MathContext.DECIMAL128())
-        .setScale(8, bigdecimal.RoundingMode.DOWN())
-        .toPlainString();
+    this.getLastPrice(function (err, lastPrice) {
 
-    return parseFloat(minimumOrderInXbt);
+        if (err) return callback('Error getting last price: ' + err);
+
+        var minimumOrderInFiat = new bigdecimal.BigDecimal(5.00);
+        lastPrice = new bigdecimal.BigDecimal(lastPrice.price);
+        var minimumOrderInXbt = minimumOrderInFiat
+            .divide(lastPrice, bigdecimal.MathContext.DECIMAL128())
+            .setScale(8, bigdecimal.RoundingMode.DOWN())
+            .toPlainString();
+
+        return callback(null, { minimumOrder: parseFloat(minimumOrderInXbt) });
+    });
 };
 
 var bitstamp = null;

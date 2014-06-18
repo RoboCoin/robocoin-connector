@@ -8,13 +8,11 @@ var robocoin = require('./apis/Robocoin').getInstance();
 var autoconnector = new Autoconnector();
 var transactionMapper = new TransactionMapper();
 
-var AUTOCONNECTOR_INTERVAL = 60000;
-
 var autoconnectorRunErrorHandler = function (err) {
     if (err) return console.log('Autoconnector run error: ' + err);
 };
 
-var batchProcess = function () {
+exports.batchProcess = function (callback) {
 
     async.waterfall([
         function (waterfallCallback) {
@@ -35,22 +33,17 @@ var batchProcess = function () {
 
         if (err) return console.log('Error in batch processing: ' + err);
 
+        if (callback) return callback();
+
         return console.log('Done batch processing');
     });
 };
 
-setInterval(function () {
+exports.runAutoconnector = function (errorHandler) {
 
-    var randomNumber = (Math.random() * 10);
-
-    // nine in ten times, run the autoconnector
-    if (randomNumber > 1) {
-        autoconnector.run(autoconnectorRunErrorHandler);
-    } else {
-        // but one in ten, do the batch rollup
-        batchProcess();
+    if (!errorHandler) {
+        errorHandler = autoconnectorRunErrorHandler;
     }
 
-}, AUTOCONNECTOR_INTERVAL);
-autoconnector.run(autoconnectorRunErrorHandler);
-console.log('Autoconnector running');
+    autoconnector.run(errorHandler);
+};

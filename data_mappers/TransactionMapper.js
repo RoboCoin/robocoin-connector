@@ -27,28 +27,27 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
 
     var txTypes = ['deposit', 'withdrawal', 'market trade'];
     if (exchangeTx.bitstsamp_tx_type !== null) {
-        exchangeTx.bitstamp_tx_type = txTypes[exchangeTx.bitstamp_tx_type];
+        exchangeTx.exchange_tx_type = txTypes[exchangeTx.exchange_tx_type];
     }
 
-    if (exchangeTx.bitstamp_tx_time !== null) {
-        exchangeTx.bitstamp_tx_time = (new Date(exchangeTx.bitstamp_tx_time)).getTime();
+    if (exchangeTx.exchange_tx_time !== null) {
+        exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).getTime();
     }
 
     this._getConnection().query(
         'UPDATE `transactions` ' +
         'SET ' +
-            '`bitstamp_tx_id` = ?, ' +
-            '`bitstamp_tx_type` = ?, ' +
-            '`bitstamp_fiat` = ?, ' +
-            '`bitstamp_xbt` = ?, ' +
-            '`bitstamp_order_id` = ?, ' +
-            '`bitstamp_tx_fee` = ?, ' +
-            '`bitstamp_withdrawal_id` = ?, ' +
-            '`bitstamp_tx_time` = FROM_UNIXTIME(ROUND(?/1000)) ' +
+            '`exchange_tx_id` = ?, ' +
+            '`exchange_tx_type` = ?, ' +
+            '`exchange_fiat` = ?, ' +
+            '`exchange_xbt` = ?, ' +
+            '`exchange_order_id` = ?, ' +
+            '`exchange_tx_fee` = ?, ' +
+            '`exchange_tx_time` = FROM_UNIXTIME(ROUND(?/1000)) ' +
         'WHERE `robocoin_tx_id` = ?',
-        [exchangeTx.bitstamp_tx_id, exchangeTx.bitstamp_tx_type, exchangeTx.bitstamp_fiat, exchangeTx.bitstamp_xbt,
-            exchangeTx.bitstamp_order_id, exchangeTx.bitstamp_tx_fee, exchangeTx.bitstamp_withdrawal_id,
-            exchangeTx.bitstamp_tx_time, exchangeTx.robocoin_tx_id],
+        [exchangeTx.exchange_tx_id, exchangeTx.exchange_tx_type, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt,
+            exchangeTx.exchange_order_id, exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time,
+            exchangeTx.robocoin_tx_id],
         function (err) {
 
             if (err) return callback('Error saving exchange transaction: ' + err);
@@ -63,8 +62,8 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     this._getConnection().query(
         'SELECT * ' +
         'FROM `transactions` ' +
-        'WHERE (`robocoin_tx_type` = \'send\' AND `bitstamp_tx_time` IS NULL) ' +
-            'OR (`robocoin_tx_type` = \'forward\' AND `confirmations` >= 6 AND `bitstamp_order_id` IS NULL)' +
+        'WHERE (`robocoin_tx_type` = \'send\' AND `exchange_tx_time` IS NULL) ' +
+            'OR (`robocoin_tx_type` = \'forward\' AND `confirmations` >= 6 AND `exchange_order_id` IS NULL)' +
         'ORDER BY `robocoin_tx_time`',
         function (err, rows) {
             return callback(err, rows);
@@ -92,13 +91,13 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
             'DATE_FORMAT(`robocoin_tx_time`, \'%Y-%m\') `date`, ' +
             '`robocoin_tx_type` `type`, ' +
             'SUM(ABS(`robocoin_fiat`)) `robocoinFiat`, ' +
-            'SUM(ABS(`bitstamp_fiat`)) `bitstampFiat`, ' +
-            'SUM(`robocoin_miners_fee`) `robocoinMinersFee`, ' +
-            'SUM(`bitstamp_miners_fee`) `bitstampMinersFee`, ' +
-            'SUM(`robocoin_tx_fee`) `robocoinTxFee`, ' +
-            'SUM(`bitstamp_tx_fee`) `bitstampTxFee` ' +
+            'SUM(ABS(`exchange_fiat`)) `exchangeFiat`, ' +
+            'IFNULL(SUM(`robocoin_miners_fee`), 0) `robocoinMinersFee`, ' +
+            'IFNULL(SUM(`exchange_miners_fee`), 0) `exchangeMinersFee`, ' +
+            'IFNULL(SUM(`robocoin_tx_fee`), 0) `robocoinTxFee`, ' +
+            'SUM(`exchange_tx_fee`) `exchangeTxFee` ' +
         'FROM `transactions` ' +
-        'WHERE `bitstamp_tx_time` IS NOT NULL ' +
+        'WHERE `exchange_tx_time` IS NOT NULL ' +
         'GROUP BY `date`, `robocoin_tx_type`',
         function (err, rows) {
 
@@ -118,21 +117,21 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
                 if (row.type == 'forward') {
 
                     outputRows[row.date][1] = row.robocoinFiat;
-                    outputRows[row.date][2] = row.bitstampTxFee;
+                    outputRows[row.date][2] = row.exchangeTxFee;
                     outputRows[row.date][3] = row.robocoinTxFee;
                     outputRows[row.date][4] = row.robocoinMinersFee;
 
                 } else if (row.type == 'send') { // or if it's a buy...
 
                     outputRows[row.date][5] = row.robocoinFiat;
-                    outputRows[row.date][6] = row.bitstampTxFee;
+                    outputRows[row.date][6] = row.exchangeTxFee;
                     outputRows[row.date][7] = row.robocoinTxFee;
-                    outputRows[row.date][8] = row.bitstampMinersFee;
+                    outputRows[row.date][8] = row.exchangeMinersFee;
                 }
             }
 
             outputRows = Object.keys(outputRows).map(function (key) { return outputRows[key] });
-
+console.log(outputRows);
             return callback(null, outputRows);
         }
     );

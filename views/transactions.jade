@@ -37,8 +37,8 @@ block content
             th Time
             th Manual transaction
     button#processButton Process
-    h1 Bitstamp Transactions
-    table.table.table-striped.table-condensed.table-bordered#bitstampTransactions
+    h1 Exchange Transactions
+    table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
         tr
             th Transaction ID
             th Order ID
@@ -77,14 +77,14 @@ block footerJs
                         rows += '<td>' + row.id + '</td>';
                         rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
                         rows += '<td>' + TYPES[row.type] + '</td>';
-                        rows += '<td>' + (row.usd ?  row.usd : '') + '</td>';
+                        rows += '<td>' + (row.fiat ?  row.fiat : '') + '</td>';
                         rows += '<td>' + row.btc + '</td>';
                         rows += '<td>' + row.fee + '</td>';
                         rows += '<td>' + (new Date(row.datetime).toUTCString()) + '</td>';
                         rows += '</tr>';
                     }
 
-                    $('#bitstampTransactions').append(rows);
+                    $('#exchangeTransactions').append(rows);
                 },
                 'json'
             );

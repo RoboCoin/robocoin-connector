@@ -31,7 +31,10 @@ exports.index = function (req, res) {
         }
     ], function (err, transactionsProcessed) {
 
-        console.log('returning');
+        if (typeof transactionsProcessed === 'undefined') {
+            transactionsProcessed = [];
+        }
+
         if (err) return res.send({
             message: 'Error processing transactions: ' + err,
             transactions: []

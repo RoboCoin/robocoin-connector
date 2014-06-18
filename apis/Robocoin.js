@@ -2,16 +2,51 @@
 
 var config = require('../../connectorConfig');
 var bigdecimal = require('bigdecimal');
+var request = require('request');
+var crypto = require('crypto');
 
 var Robocoin = function (options) {
 
     this._mode = 'production';
+    this._baseUrl = options.baseUrl;
+    this._apiKey = options.key;
+    this._apiSecret = options.secret;
 
     if (config.robocoin.testMode && config.robocoin.testMode == 'random') {
         this._mode = 'random';
     } else if (config.robocoin.testMode && config.robocoin.testMode == 'static') {
         this._mode = 'static';
     }
+};
+
+Robocoin.prototype._request = request;
+
+Robocoin.prototype._getNonce = function () {
+    return (new Date()).getTime();
+};
+
+Robocoin.prototype._post = function (endpoint, options, callback) {
+
+    options.nonce = this._getNonce();
+
+    var hmac = crypto.createHmac('sha256', this._apiSecret);
+    hmac.update(JSON.stringify(options));
+
+    var requestOptions = {
+        url: this._baseUrl + endpoint,
+        form: options,
+        method: 'POST',
+        json: true,
+        headers: {
+            'X-API-key': this._apiKey,
+            'X-API-signature': hmac.digest('hex')
+        }
+    };
+
+    this._request(requestOptions, function (error, response, body) {
+
+        return callback(error, body);
+    });
 };
 
 /**
@@ -54,7 +89,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
     for (var i = 0; i < numberOfTransactions; i++) {
 
         action = actions[this._getRandomNumber(0, 1)];
-        // how much USD they put in or get out
+        // how much fiat they put in or get out
         fiat = new bigdecimal.BigDecimal(this._getRandomNumber(4, 7));
         // BTC price, between $615 and $625
         rate = new bigdecimal.BigDecimal(this._getRandomNumber(615, 625));

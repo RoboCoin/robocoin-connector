@@ -26,14 +26,14 @@ describe('TransactionMapper', function () {
     it('saves exchange transaction info', function (done) {
 
         var exchangeTx = {};
-        exchangeTx.bitstamp_tx_id = bitstampTxId;
-        exchangeTx.bitstamp_tx_type = 0;
-        exchangeTx.bitstamp_fiat = 5.00;
-        exchangeTx.bitstamp_xbt = 0.001;
-        exchangeTx.bitstamp_order_id = 123456;
-        exchangeTx.bitstamp_tx_fee = 0.3;
-        exchangeTx.bitstamp_withdrawal_id = 98764;
-        exchangeTx.bitstamp_tx_time = '2014-06-11 23:59:59';
+        exchangeTx.exchange_tx_id = bitstampTxId;
+        exchangeTx.exchange_tx_type = 0;
+        exchangeTx.exchange_fiat = 5.00;
+        exchangeTx.exchange_xbt = 0.001;
+        exchangeTx.exchange_order_id = 123456;
+        exchangeTx.exchange_tx_fee = 0.3;
+        exchangeTx.exchange_withdrawal_id = 98764;
+        exchangeTx.exchange_tx_time = '2014-06-11 23:59:59';
 
         transactionMapper.saveExchangeTransaction(exchangeTx, function (err) {
 

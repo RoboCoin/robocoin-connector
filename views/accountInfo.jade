@@ -20,21 +20,21 @@ block content
             td Deposit Address
             td #{ robocoinAccount.depositAddress }
                 #robocoinAddress
-    h1 Bitstamp Account Info
+    h1 Exchange Account Info
     table.table.table-striped.table-condensed
         tr
-            td USD Available
-            td #{ bitstampAccount.usd_available } USD
+            td Fiat Available
+            td #{ exchangeAccount.fiat_available }
         tr
             td BTC Available
-            td #{ bitstampAccount.btc_available } BTC
+            td #{ exchangeAccount.btc_available } BTC
         tr
             td Trading Fee
-            td #{ bitstampAccount.fee }%
+            td #{ exchangeAccount.fee }%
         tr
             td Deposit Address
-            td #{ bitstampAccount.address }
-                #bitstampAddress
+            td #{ exchangeAccount.address }
+                #exchangeAddress
 
 block footerJs
     script(src="/js/qrcode.js")
@@ -42,5 +42,5 @@ block footerJs
         $(document).ready(function () {
 
             new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.depositAddress }');
-            new QRCode(document.getElementById('bitstampAddress'), '#{ bitstampAccount.address }');
+            new QRCode(document.getElementById('exchangeAddress'), '#{ exchangeAccount.address }');
         });

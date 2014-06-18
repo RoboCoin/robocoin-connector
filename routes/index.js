@@ -2,7 +2,7 @@
 
 var robocoin = require('../apis/Robocoin').getInstance();
 var config = require('../../connectorConfig');
-var bitstamp = require('../apis/Exchange').get(config.exchangeClass);
+var exchange = require('../apis/Exchange').get(config.exchangeClass);
 var async = require('async');
 
 exports.transactions = function (req, res) {
@@ -16,27 +16,27 @@ exports.accountInfo = function (req, res) {
         robocoinAccountInfo: function (asyncCallback) {
             robocoin.getAccountInfo(asyncCallback);
         },
-        bitstampAccountInfo: function (asyncCallback) {
-            bitstamp.getBalance(asyncCallback);
+        exchangeAccountInfo: function (asyncCallback) {
+            exchange.getBalance(asyncCallback);
         },
-        bitstampAddress: function (asyncCallback) {
-            bitstamp.getDepositAddress(asyncCallback);
+        exchangeAddress: function (asyncCallback) {
+            exchange.getDepositAddress(asyncCallback);
         }
     }, function (err, asyncRes) {
 
         if (err) {
             return res.render('accountInfo', {
                 robocoinAccount: { xbtBalance: '--' },
-                bitstampAccount: {},
+                exchangeAccount: {},
                 error: err
             });
         }
 
-        asyncRes.bitstampAccountInfo.address = asyncRes.bitstampAddress;
+        asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress;
 
         return res.render('accountInfo', {
             robocoinAccount: asyncRes.robocoinAccountInfo,
-            bitstampAccount: asyncRes.bitstampAccountInfo
+            exchangeAccount: asyncRes.exchangeAccountInfo
         });
     });
 };
