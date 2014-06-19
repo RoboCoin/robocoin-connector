@@ -39,13 +39,16 @@ connectorConfig.json and it should look something like this:
         "exchangeClass": "Bitstamp"
     }
 
+You can either specify API keys directly in this file, then restart the connector application, or you can specify API
+keys through the Configuration menu item.
+
 ### Test mode
 
-To run the connector with randomly-generated test data, add a property called "testMode" with a value of "random" to
-the "robocoin" section of the config, in the same object as baseUrl, key and secret.
+To run the connector with randomly-generated Robocoin test data, from the Configuration page, specify your API keys and
+check the "Test Mode" box.
 
 To run the connector with a mock version of the Bitstamp API, which simply echoes calls instead of sending HTTP
-requests, change the "exchangeClass" parameter to a value of "MockBitstamp".
+requests, from the Configuration page, check the "Test Mode" box.
 
 ## Installation
 

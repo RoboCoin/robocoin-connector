@@ -2,7 +2,7 @@
 
 var _connection = null;
 var mysql = require('mysql');
-var config = require('../../connectorConfig');
+var config = require('../lib/Config');
 
 var _connect = function () {
 

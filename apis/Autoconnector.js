@@ -3,7 +3,7 @@
 var Robocoin = require('./Robocoin');
 var TransactionMapper = require('../data_mappers/TransactionMapper');
 var async = require('async');
-var config = require('../../connectorConfig');
+var config = require('../lib/Config');
 var bigdecimal = require('bigdecimal');
 var Exchange = require('./Exchange');
 

@@ -131,7 +131,7 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
             }
 
             outputRows = Object.keys(outputRows).map(function (key) { return outputRows[key] });
-console.log(outputRows);
+
             return callback(null, outputRows);
         }
     );

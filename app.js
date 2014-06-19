@@ -46,6 +46,11 @@ app.get('/dashboard/summary', dashboard.summary);
 var batchProcess = require('./routes/batch-process');
 app.post('/batch-process', batchProcess.index);
 
+var configuration = require('./routes/configuration');
+app.get('/configuration', configuration.index);
+app.post('/configuration/save-exchange', configuration.saveExchange);
+app.post('/configuration/save-robocoin', configuration.saveRobocoin);
+
 var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));

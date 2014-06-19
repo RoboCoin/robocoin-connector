@@ -26,8 +26,8 @@ describe('Robocoin', function () {
                 method: 'POST',
                 json: true,
                 headers: {
-                    'X-API-key': 'Qdell85I0JglZuGPz5md',
-                    'X-API-signature': '8407b69b3936f9c7944cd4d66b11f0e52d63810c9a1d080cd2113e72676f6ded'
+                    'X-API-key': 'KmHKNmEXpWC4fzRnscic',
+                    'X-API-signature': 'd1e02e8415032b9d95bf499827d9ad40fc7a3291870835e25cf2a09a78a4558b'
                 }
             };
 

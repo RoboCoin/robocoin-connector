@@ -1,7 +1,7 @@
 'use strict';
 
 var request = require('request');
-var config = require('../../connectorConfig');
+var config = require('../lib/Config');
 var exchange = require('../apis/Exchange').get(config.exchangeClass);
 var robocoin = require('../apis/Robocoin').getInstance();
 var async = require('async');

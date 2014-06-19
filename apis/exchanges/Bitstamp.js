@@ -4,15 +4,13 @@ var request = require('request');
 var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
-var config = require('../../../connectorConfig');
+var config = require('../../lib/Config');
 var bigdecimal = require('bigdecimal');
 
-var Bitstamp = function (options) {
+var Bitstamp = function (config) {
 
-    this._clientId = options.clientId;
-    this._apiKey = options.apiKey;
-    this._secret = options.secret;
-    this._baseUrl = options.baseUrl;
+    // use a reference to the config, so updates propagate here and won't require a server restart
+    this._config = config;
     this._timeGotLastPrice = null;
 };
 
@@ -31,15 +29,15 @@ Bitstamp.prototype._post = function (url, options, callback) {
     }
 
     var nonce = this._getNonce();
-    var hmac = crypto.createHmac('sha256', this._secret);
-    hmac.update(nonce + this._clientId + this._apiKey);
+    var hmac = crypto.createHmac('sha256', this._config.secret);
+    hmac.update(nonce + this._config.clientId + this._config.apiKey);
 
-    options.key = this._apiKey;
+    options.key = this._config.apiKey;
     options.signature = hmac.digest('hex').toUpperCase();
     options.nonce = nonce;
 
     var requestOptions = {};
-    requestOptions.url = this._baseUrl + url;
+    requestOptions.url = this._config.baseUrl + url;
     requestOptions.form = options;
     requestOptions.method = 'POST';
     requestOptions.json = true;

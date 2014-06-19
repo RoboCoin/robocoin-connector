@@ -1,0 +1,100 @@
+extends layout
+
+block nav
+    li
+        a(href="/transactions") Transactions
+    li
+        a(href="/account-info") Account info
+    li
+        a(href="/buy-and-sell") Buy and Sell
+    li.active
+        a(href="/configuration") Configuration
+
+block content
+    .alert.alert-warning Your connection is not secure. Don't submit these forms over a public network.
+    h1 Exchange
+    p You are using #{ currentExchange }
+    form(role="form")
+        .form-group
+            label(for="bitstampClientId") Client ID
+            input(type="text" autocomplete="off").form-control#bitstampClientId
+        .form-group
+            label(for="bitstampApiKey") API Key
+            input(type="text" autocomplete="off").form-control#bitstampApiKey
+        .form-group
+            label(for="bitstampApiSecret") API Secret
+            input(type="text" autocomplete="off").form-control#bitstampApiSecret
+        .checkbox
+            label
+                input(type="checkbox" checked=bitstampTestMode==true)#bitstampTestMode
+                | Test Mode
+        button.btn.btn-default#exchangeSave Save
+
+    h1 Robocoin
+    form(role="form")
+        .form-group
+            label(for="robocoinApiKey") API Key
+            input(type="text" autocomplete="off").form-control#robocoinApiKey
+        .form-group
+            label(for="robocoinApiSecret") API Secret
+            input(type="text" autocomplete="off").form-control#robocoinApiSecret
+        .checkbox
+            label
+                input(type="checkbox" checked=robocoinTestMode==true)#robocoinTestMode
+                | Test Mode
+        button.btn.btn-default#robocoinSave Save
+
+block footerJs
+    script.
+        $(document).ready(function () {
+
+            function appendAlert(text, $element) {
+
+                var $alert = $('<div></div>')
+                    .addClass('alert alert-dismissable alert-success')
+                    .append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
+                    .append(text);
+                $element.after($alert);
+            };
+
+            $('#exchangeSave').on('click', function () {
+
+                event.preventDefault();
+                var $button = $(this);
+
+                $.ajax({
+                    url: '/configuration/save-exchange',
+                    type: 'POST',
+                    data: {
+                        clientId: $('#bitstampClientId').val(),
+                        apiKey: $('#bitstampApiKey').val(),
+                        apiSecret: $('#bitstampApiSecret').val(),
+                        testMode: $('#bitstampTestMode').is(':checked')
+                    },
+                    success: function (data) {
+                        $button.parent().find('.alert').remove();
+                        appendAlert(data, $button);
+                    }
+                });
+            });
+
+            $('#robocoinSave').on('click', function () {
+
+                event.preventDefault();
+                var $button = $(this);
+
+                $.ajax({
+                    url: '/configuration/save-robocoin',
+                    type: 'POST',
+                    data: {
+                        apiKey: $('#robocoinApiKey').val(),
+                        apiSecret: $('#robocoinApiSecret').val(),
+                        testMode: $('#robocoinTestMode').is(':checked')
+                    },
+                    success: function (data) {
+                        $button.parent().find('.alert').remove();
+                        appendAlert(data, $button);
+                    }
+                });
+            });
+        });

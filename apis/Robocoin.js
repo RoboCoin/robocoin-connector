@@ -1,21 +1,18 @@
 'use strict';
 
-var config = require('../../connectorConfig');
+var config = require('../lib/Config');
 var bigdecimal = require('bigdecimal');
 var request = require('request');
 var crypto = require('crypto');
 
-var Robocoin = function (options) {
+var Robocoin = function (config) {
 
     this._mode = 'production';
-    this._baseUrl = options.baseUrl;
-    this._apiKey = options.key;
-    this._apiSecret = options.secret;
+    // use a reference to the config, so updates propagate here and won't require a server restart
+    this._config = config;
 
-    if (config.robocoin.testMode && config.robocoin.testMode == 'random') {
+    if (config.testMode) {
         this._mode = 'random';
-    } else if (config.robocoin.testMode && config.robocoin.testMode == 'static') {
-        this._mode = 'static';
     }
 };
 
@@ -29,16 +26,16 @@ Robocoin.prototype._post = function (endpoint, options, callback) {
 
     options.nonce = this._getNonce();
 
-    var hmac = crypto.createHmac('sha256', this._apiSecret);
+    var hmac = crypto.createHmac('sha256', this._config.secret);
     hmac.update(JSON.stringify(options));
 
     var requestOptions = {
-        url: this._baseUrl + endpoint,
+        url: this._config.baseUrl + endpoint,
         form: options,
         method: 'POST',
         json: true,
         headers: {
-            'X-API-key': this._apiKey,
+            'X-API-key': this._config.key,
             'X-API-signature': hmac.digest('hex')
         }
     };
