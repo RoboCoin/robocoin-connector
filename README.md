@@ -1,6 +1,9 @@
 # robocoin-connector
 
 This connector is an example of the code you'll need to write to connect the Robocoin public API to an exchange's API.
+Robocoin will not run this code on its platform. We suggest operators use a platform such as Heroku to run this code.
+As the development of the connector progresses, leading up to release, we'll make owning this code as simple as
+possible for operators.
 
 ## How it works
 
@@ -48,7 +51,7 @@ To run the connector with randomly-generated Robocoin test data, from the Config
 check the "Test Mode" box.
 
 To run the connector with a mock version of the Bitstamp API, which simply echoes calls instead of sending HTTP
-requests, from the Configuration page, check the "Test Mode" box.
+requests, from the Configuration page, specify your API keys and check the "Test Mode" box.
 
 ## Installation
 

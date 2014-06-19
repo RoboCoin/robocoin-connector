@@ -72,9 +72,7 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
  */
 MockBitstamp.prototype.withdraw = function (amount, address, callback) {
     console.log('MockBitstamp::withdraw amount: ' + amount + ' address: ' + address);
-    callback(null, {
-        id: 0
-    });
+    callback(null);
 };
 
 MockBitstamp.prototype.userTransactions = function (callback) {
