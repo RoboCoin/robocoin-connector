@@ -70,28 +70,25 @@ block footerJs
             });
 
             var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
-            var dailyCashChart = new google.visualization.AreaChart(document.getElementById('dailyCash'));
+            var dailyCashChart = new google.visualization.LineChart(document.getElementById('dailyCash'));
             dailyCashChart.draw(dailyCashData, {
                 title: 'Daily Cash In/Out',
-                isStacked: true,
                 vAxis: { title: 'Fiat' },
                 hAxis: { title: 'Day' }
             });
 
             var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
-            var hourlyCashChart = new google.visualization.AreaChart(document.getElementById('hourlyCash'));
+            var hourlyCashChart = new google.visualization.LineChart(document.getElementById('hourlyCash'));
             hourlyCashChart.draw(hourlyCashData, {
                 title: 'Hourly Cash In/Out',
-                isStacked: true,
                 vAxis: { title: 'Fiat' },
                 hAxis: { title: 'Hour' }
             });
 
             var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
-            var monthlyCashChart = new google.visualization.AreaChart(document.getElementById('monthlyCash'));
+            var monthlyCashChart = new google.visualization.LineChart(document.getElementById('monthlyCash'));
             monthlyCashChart.draw(monthlyCashData, {
                 title: 'Monthly Cash In/Out',
-                isStacked: true,
                 vAxis: { title: 'Fiat' },
                 hAxis: { title: 'Month' }
             });
