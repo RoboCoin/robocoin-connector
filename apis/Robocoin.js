@@ -69,7 +69,7 @@ Robocoin.prototype._getRandomNumber = function (min, max) {
 
 Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
-    var numberOfTransactions = this._getRandomNumber(0, 3);
+    var numberOfTransactions = this._getRandomNumber(0, 5);
     var transactions = [];
     var actions = ['send', 'forward'];
     var now = (new Date()).getTime();
@@ -87,9 +87,9 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         action = actions[this._getRandomNumber(0, 1)];
         // how much fiat they put in or get out
-        fiat = new bigdecimal.BigDecimal(this._getRandomNumber(4, 7));
+        fiat = new bigdecimal.BigDecimal(this._getRandomNumber(5, 20));
         // BTC price, between $615 and $625
-        rate = new bigdecimal.BigDecimal(this._getRandomNumber(615, 625));
+        rate = new bigdecimal.BigDecimal(this._getRandomNumber(619, 621));
 
         confirmations = null;
 
@@ -102,7 +102,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
             confirmations = this._getRandomNumber(0, 12);
             xbt = fiat.divide(rate, bigdecimal.MathContext.DECIMAL128()).multiply(markup);
-            minersFee = 0.0001;
+            minersFee = 0.00001;
         }
 
         fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));

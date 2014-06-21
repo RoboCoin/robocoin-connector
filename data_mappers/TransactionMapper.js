@@ -14,11 +14,11 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
     this._getConnection().query(
         'INSERT INTO `transactions` ' +
         '(`robocoin_tx_id`, `robocoin_tx_type`, `robocoin_fiat`, `robocoin_xbt`, `confirmations`, ' +
-            '`robocoin_tx_time`, `robocoin_miners_fee`) ' +
-        'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000)), ?) ' +
+            '`robocoin_tx_time`, `robocoin_miners_fee`, `robocoin_tx_fee`) ' +
+        'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000)), ?, ?) ' +
         'ON DUPLICATE KEY UPDATE `confirmations` = `confirmations`',
         [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time,
-            robocoinTx.miners_fee],
+            robocoinTx.miners_fee, robocoinTx.fee],
         callback
     );
 };
@@ -88,14 +88,14 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
 
     this._getConnection().query(
         'SELECT ' +
-            'DATE_FORMAT(`robocoin_tx_time`, \'%Y-%m\') `date`, ' +
+            'DATE_FORMAT(`robocoin_tx_time`, \'%Y-%m-%d\') `date`, ' +
             '`robocoin_tx_type` `type`, ' +
-            'SUM(ABS(`robocoin_fiat`)) `robocoinFiat`, ' +
-            'SUM(ABS(`exchange_fiat`)) `exchangeFiat`, ' +
-            'IFNULL(SUM(`robocoin_miners_fee`), 0) `robocoinMinersFee`, ' +
-            'IFNULL(SUM(`exchange_miners_fee`), 0) `exchangeMinersFee`, ' +
-            'IFNULL(SUM(`robocoin_tx_fee`), 0) `robocoinTxFee`, ' +
-            'SUM(`exchange_tx_fee`) `exchangeTxFee` ' +
+            'IFNULL(SUM(`robocoin_fiat`), 0) `robocoinFiat`, ' +
+            'IFNULL(SUM(`exchange_fiat`), 0) `exchangeFiat`, ' +
+            'IFNULL(SUM(`robocoin_miners_fee` * (`robocoin_fiat` / `robocoin_xbt`)), 0) `robocoinMinersFee`, ' +
+            'IFNULL(SUM(`exchange_miners_fee` * (ABS(`exchange_fiat`) / ABS(`exchange_xbt`))), 0) `exchangeMinersFee`, ' +
+            'IFNULL(SUM(`robocoin_tx_fee` * (`robocoin_fiat` / `robocoin_xbt`)), 0) `robocoinTxFee`, ' +
+            'IFNULL(SUM(`exchange_tx_fee`), 0) `exchangeTxFee` ' +
         'FROM `transactions` ' +
         'WHERE `exchange_tx_time` IS NOT NULL ' +
         'GROUP BY `date`, `robocoin_tx_type`',
@@ -103,36 +103,97 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
 
             if (err) return callback('Error getting profit report: ' + err);
 
-            var outputRows = {};
             var outputRow;
+            var buys = {};
+            var sells = {};
             var row;
             for (var i = 0; i < rows.length; i++) {
 
                 row = rows[i];
-                if (!outputRows[row.date]) {
-                    outputRows[row.date] = [row.date];
-                }
 
                 // if it's a sell...
                 if (row.type == 'forward') {
 
-                    outputRows[row.date][1] = row.robocoinFiat;
-                    outputRows[row.date][2] = row.exchangeTxFee;
-                    outputRows[row.date][3] = row.robocoinTxFee;
-                    outputRows[row.date][4] = row.robocoinMinersFee;
+                    sells[row.date] = [row.date, row.exchangeFiat - row.robocoinFiat, row.robocoinTxFee,
+                        row.exchangeTxFee, row.robocoinMinersFee];
 
                 } else if (row.type == 'send') { // or if it's a buy...
 
-                    outputRows[row.date][5] = row.robocoinFiat;
-                    outputRows[row.date][6] = row.exchangeTxFee;
-                    outputRows[row.date][7] = row.robocoinTxFee;
-                    outputRows[row.date][8] = row.exchangeMinersFee;
+                    buys[row.date] = [row.date, row.robocoinFiat - row.exchangeFiat, row.robocoinTxFee,
+                        row.exchangeTxFee, row.exchangeMinersFee];
                 }
             }
 
-            outputRows = Object.keys(outputRows).map(function (key) { return outputRows[key] });
+            buys = Object.keys(buys).map(function (key) { return buys[key] });
+            sells = Object.keys(sells).map(function (key) { return sells[key] });
 
-            return callback(null, outputRows);
+            return callback(null, { buys: buys, sells: sells });
+        }
+    );
+};
+
+TransactionMapper.prototype.buildCashFlowReport = function (callback) {
+
+    this._getConnection().query(
+        'SELECT ' +
+            'SUM(`robocoin_fiat`) `fiat`, ' +
+            'IF(`robocoin_tx_type` = \'send\', \'cash in\', ' +
+                'IF(`robocoin_tx_type` = \'forward\', \'cash out\', `robocoin_tx_type`)) `tx_type`, ' +
+            'DATE_FORMAT(`robocoin_tx_time`, \'%m\') `month`, ' +
+            'DATE_FORMAT(`robocoin_tx_time`, \'%w\') `day`, ' +
+            'DATE_FORMAT(`robocoin_tx_time`, \'%H\') `hour` ' +
+        'FROM `transactions` ' +
+        'WHERE `robocoin_tx_time` >= DATE_SUB(NOW(), INTERVAL 1 YEAR) ' +
+        'GROUP BY `tx_type`, `month`, `day`, `hour` ' +
+        'ORDER BY `robocoin_tx_time`',
+        function (err, rows) {
+
+            if (err) return callback('Error getting cash flow report: ' + err);
+
+            var hourly = {};
+            var daily = {};
+            var monthly = {};
+            var row;
+
+            for (var i = 0; i < rows.length; i++) {
+
+                row = rows[i];
+
+                if (!hourly[row.hour]) {
+                    hourly[row.hour] = [row.hour, 0, 0];
+                }
+
+                if (!daily[row.day]) {
+                    daily[row.day] = [row.day, 0, 0];
+                }
+
+                if (!monthly[row.month]) {
+                    monthly[row.month] = [row.month, 0, 0];
+                }
+
+                if (row.tx_type == 'cash in') {
+
+                    hourly[row.hour][1] += row.fiat;
+                    daily[row.day][1] += row.fiat;
+                    monthly[row.month][1] += row.fiat;
+
+                } else if (row.tx_type == 'cash out') {
+
+                    hourly[row.hour][2] += row.fiat;
+                    daily[row.day][2] += row.fiat;
+                    monthly[row.month][2] += row.fiat;
+                }
+            }
+
+            hourly = Object.keys(hourly).map(function (key) { return hourly[key] });
+            daily = Object.keys(daily).map(function (key) { return daily[key] });
+            monthly = Object.keys(monthly).map(function (key) { return monthly[key] });
+
+            return callback(null, {
+                hourly: hourly,
+                daily: daily,
+                monthly: monthly
+            });
         }
     );
 };

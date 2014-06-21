@@ -11,9 +11,11 @@ block nav
         a(href="/configuration") Configuration
 
 block content
-    div(style="width: 900px; height: 500px")#revenueChart
-    div(style="width: 900px; height: 500px")#buyFeeChart
-    div(style="width: 900px; height: 500px")#sellFeeChart
+    div(style="width: 900px; height: 500px")#buyProfit
+    div(style="width: 900px; height: 500px")#sellProfit
+    div(style="width: 900px, height: 500px")#hourlyCash
+    div(style="width: 900px, height: 500px")#dailyCash
+    div(style="width: 900px, height: 500px")#monthlyCash
 
 block footerJs
     script(src="https://www.google.com/jsapi")
@@ -22,57 +24,75 @@ block footerJs
         google.setOnLoadCallback(drawCharts);
         function drawCharts () {
 
-            var revenueTable = new google.visualization.DataTable();
-            revenueTable.addColumn('string', 'Date');
-            revenueTable.addColumn('number', 'Sell Revenue');
-            revenueTable.addColumn('number', 'Buy Revenue');
-
-            var buyFeeTable = new google.visualization.DataTable();
-            buyFeeTable.addColumn('string', 'Date');
-            buyFeeTable.addColumn('number', 'Exchange Fee');
-            buyFeeTable.addColumn('number', 'Robocoin Fee');
-            buyFeeTable.addColumn('number', 'Miner\'s Fee');
-
-            var sellFeeTable = new google.visualization.DataTable();
-            sellFeeTable.addColumn('string', 'Date');
-            sellFeeTable.addColumn('number', 'Exchange Fee');
-            sellFeeTable.addColumn('number', 'Robocoin Fee');
-            sellFeeTable.addColumn('number', 'Miner\'s Fee');
-
             var row;
+            var hourlyCash;
+            var dailyCash;
+            var monthlyCash;
+            var buyProfit;
+            var sellProfit;
+
             var jsonData = $.ajax({
                 url: '/dashboard/summary',
                 dataType: 'json',
                 async: false,
                 success: function (data) {
 
-                    for (var i = 0; i < data.length; i++) {
-                        row = data[i];
-                        revenueTable.addRow([row[0], row[1], row[5]]);
-                        buyFeeTable.addRow([row[0], row[6], row[7], row[8]]);
-                        sellFeeTable.addRow([row[0], row[2], row[3], row[4]]);
-                    }
+                    hourlyCash = data.cashFlow.hourly;
+                    hourlyCash.unshift(['Hour', 'Cash In', 'Cash Out']);
+                    dailyCash = data.cashFlow.daily;
+                    dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
+                    monthlyCash = data.cashFlow.monthly;
+                    monthlyCash.unshift(['Month', 'Cash In', 'Cash Out']);
+
+                    buyProfit = data.profit.buys;
+                    buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
+                    sellProfit = data.profit.sells;
+                    sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
                 }
             });
 
-            var revenueTableOptions = {
-                "title": "Revenue",
-                "curveType": "function"
-            };
-            var revenueChart = new google.visualization.LineChart(document.getElementById('revenueChart'));
-            revenueChart.draw(revenueTable, revenueTableOptions);
+            var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
+            var buyProfitChart = new google.visualization.LineChart(document.getElementById('buyProfit'));
+            buyProfitChart.draw(buyProfitData, {
+                title: 'Buy Profit',
+                curveType: 'function',
+                vAxis: { title: 'Fiat' },
+                hAxis: { title: 'Month' }
+            });
 
-            var buyFeeTableOptions = {
-                "title": "Buy Fees",
-                "isStacked": true
-            };
-            var buyFeeChart = new google.visualization.ColumnChart(document.getElementById('buyFeeChart'));
-            buyFeeChart.draw(buyFeeTable, buyFeeTableOptions);
+            var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
+            var sellProfitChart = new google.visualization.LineChart(document.getElementById('sellProfit'));
+            sellProfitChart.draw(sellProfitData, {
+                title: 'Sell Profit',
+                curveType: 'function',
+                vAxis: { title: 'Fiat' },
+                hAxis: { title: 'Month' }
+            });
 
-            var sellFeeTableOptions = {
-                "title": "Sell Fees",
-                "isStacked": true
-            };
-            var sellFeeChart = new google.visualization.ColumnChart(document.getElementById('sellFeeChart'));
-            sellFeeChart.draw(sellFeeTable, sellFeeTableOptions);
+            var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
+            var dailyCashChart = new google.visualization.AreaChart(document.getElementById('dailyCash'));
+            dailyCashChart.draw(dailyCashData, {
+                title: 'Daily Cash In/Out',
+                isStacked: true,
+                vAxis: { title: 'Fiat' },
+                hAxis: { title: 'Day' }
+            });
+
+            var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
+            var hourlyCashChart = new google.visualization.AreaChart(document.getElementById('hourlyCash'));
+            hourlyCashChart.draw(hourlyCashData, {
+                title: 'Hourly Cash In/Out',
+                isStacked: true,
+                vAxis: { title: 'Fiat' },
+                hAxis: { title: 'Hour' }
+            });
+
+            var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
+            var monthlyCashChart = new google.visualization.AreaChart(document.getElementById('monthlyCash'));
+            monthlyCashChart.draw(monthlyCashData, {
+                title: 'Monthly Cash In/Out',
+                isStacked: true,
+                vAxis: { title: 'Fiat' },
+                hAxis: { title: 'Month' }
+            });
         };

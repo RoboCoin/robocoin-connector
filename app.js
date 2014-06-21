@@ -58,7 +58,7 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     var jobs = require('./periodicJobs');
     setInterval(function () {
 
-        var randomNumber = (Math.random() * 3);
+        var randomNumber = (Math.random() * 10);
 
         // most of the time, run the autoconnector
         if (randomNumber > 1) {

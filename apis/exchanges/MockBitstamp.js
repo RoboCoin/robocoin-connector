@@ -27,6 +27,8 @@ MockBitstamp.prototype.getDepositAddress = function (callback) {
 MockBitstamp.prototype.buy = function (amount, price, callback) {
     console.log('MockBitstamp::buy amount: ' + amount + ' price: ' + price);
 
+    price = price * 0.9; // correct for padding
+
     this.getMinimumOrder(function (err, minimumOrder) {
         if (amount < minimumOrder.minimumOrder) {
             return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
@@ -38,7 +40,7 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
             type: 2,
             fiat: (price * amount),
             btc: amount,
-            fee: 0,
+            fee: (price * amount * 0.005),
             order_id: 0
         });
     });
@@ -47,6 +49,8 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
 MockBitstamp.prototype.sell = function (amount, price, callback) {
     console.log('MockBitstamp::sell amount: ' + amount + ' price: ' + price);
 
+    price = price * 1.1; // correct for padding
+
     this.getMinimumOrder(function (err, minimumOrder) {
         if (amount < minimumOrder.minimumOrder) {
             return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
@@ -58,7 +62,7 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
             type: 2,
             fiat: (price * amount),
             btc: amount,
-            fee: 0,
+            fee: (price * amount * 0.005),
             order_id: 0
         });
     });
@@ -94,7 +98,7 @@ MockBitstamp.prototype.getMinimumOrder = function (callback) {
 
 MockBitstamp.prototype.getLastPrice = function (callback) {
     console.log('MockBitstamp::getLastPrice');
-    callback(null, { price: 650.00 });
+    callback(null, { price: (Math.floor((Math.random() * (621 - 619 + 1)) + 619)) });
 };
 
 var mockBitstamp = null;
