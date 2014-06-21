@@ -8,7 +8,7 @@ possible for operators.
 ## How it works
 
 On a buy, the user puts fiat into the kiosk. Then the bank transfers BTC from the operator's account to the user's
-account. We publish this transaction in the public API. The connector sees that the operator account sent money, then
+account. We publish this transaction in the public API. The connector sees that the operator account sent BTC, then
 executes a buy on the exchange for the amount sent, then withdraws that amount to the operator's account, replenishing
 the sold BTC.
 
@@ -62,6 +62,10 @@ Requirements:
 * mocha (for tests)
 
         npm install mocha -g
+
+* grunt (to run the grunt file)
+
+        npm install -g grunt-cli
 
 Run scripts/database.sql:
 
