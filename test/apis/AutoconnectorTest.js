@@ -319,7 +319,6 @@ describe('Autoconnector', function () {
                     robocoin_miners_fee: 0.00005,
                     robocoin_tx_time: 1402697232,
                     exchange_tx_id: 234,
-                    exchange_tx_type: 0,
                     exchange_fiat: '5.00',
                     exchange_xbt: 0.008,
                     exchange_order_id: 456,

@@ -67,13 +67,25 @@ Requirements:
 
         npm install -g grunt-cli
 
+* supervisor (to ease developement)
+
+        npm install supervisor -g
+
+* forever
+
+        npm install forever -g
+
 Run scripts/database.sql:
 
         mysql -u root < database.sql
 
+In production, set the NODE_ENV environment variable to "production".
+
 In the directory containing package.json, run:
 
         npm install
+
+When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
 
 ## Extending
 

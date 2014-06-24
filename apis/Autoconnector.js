@@ -6,6 +6,7 @@ var async = require('async');
 var config = require('../lib/Config');
 var bigdecimal = require('bigdecimal');
 var Exchange = require('./Exchange');
+var winston = require('winston');
 
 var MARKET_PAD = 0.10;
 
@@ -80,12 +81,12 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
 
             unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, buyOrder);
 
-            console.log('we bought ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
+            winston.info('we bought ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
             self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
         }
     ], function (err, results) {
 
-        if (err) console.log(err);
+        if (err) winston.log(err);
 
         // never pass the error so it'll attempt to process the next unprocessed transaction
         return callback();
@@ -95,7 +96,6 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, callback
 Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedTx, exchangeOrder) {
 
     unprocessedTx.exchange_tx_id = exchangeOrder.id;
-    unprocessedTx.exchange_tx_type = exchangeOrder.type;
     unprocessedTx.exchange_fiat = exchangeOrder.fiat;
     unprocessedTx.exchange_xbt = exchangeOrder.btc;
     unprocessedTx.exchange_order_id = exchangeOrder.order_id;
@@ -128,12 +128,12 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, callback) {
 
             unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
 
-            console.log('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
+            winston.info('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
             self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
         }
     ], function (err) {
 
-        if (err) console.log(err);
+        if (err) winston.log(err);
 
         // never pass the error so it'll attempt to process the next unprocessed transaction
         return callback();
@@ -177,11 +177,10 @@ Autoconnector.prototype._isProcessing = false;
  */
 Autoconnector.prototype.run = function (callback) {
 
-    console.log('running');
     var self = this;
 
     if (this._isProcessing) {
-        console.log('Already processing, skipping this round...');
+        winston.info('Already processing, skipping this round...');
         return callback();
     }
 
@@ -201,20 +200,17 @@ Autoconnector.prototype.run = function (callback) {
                 if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
                 if (transactions.length === 0) {
-                    console.log('no robocoin txes');
                     return waterfallCallback();
                 }
 
                 async.eachSeries(transactions, function (transaction, asyncCallback) {
 
-                    console.log('saving...');
                     self._getTransactionMapper().save(transaction, asyncCallback);
 
                 }, function (err) {
 
                     if (err) return waterfallCallback(err);
 
-                    console.log('processing unprocessed');
                     self._processUnprocessedTransactions(waterfallCallback);
                 });
             });
@@ -240,7 +236,7 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
     async.waterfall([
         function (waterfallCallback) {
 
-            console.log('doing buy: ' + aggregateBuy + 'xbt for $' + price);
+            winston.info('doing buy: ' + aggregateBuy + 'xbt for $' + price);
             self._getExchange().buy(aggregateBuy, price, function (err, order) {
 
                 if (err) return waterfallCallback('Exchange buy error: ' + err);
@@ -250,7 +246,7 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
         },
         function (order, waterfallCallback) {
 
-            console.log('withdrawing ' + order.btc + 'xbt to ' + depositAddress);
+            winston.info('withdrawing ' + order.btc + 'xbt to ' + depositAddress);
             self._getExchange().withdraw(order.btc, depositAddress, function (err) {
 
                 if (err) return waterfallCallback('Exchange withdraw error: ' + err);
@@ -291,7 +287,7 @@ Autoconnector.prototype._batchSell = function (aggregateSell, aggregatedSells, c
     async.waterfall([
         function (waterfallCallback) {
 
-            console.log('limit sell ' + aggregateSell + ' for ' + price);
+            winston.info('limit sell ' + aggregateSell + ' for ' + price);
             self._getExchange().sell(aggregateSell, price, function (err, order) {
 
                 if (err) return waterfallCallback('Exchange sell error: ' + err);
@@ -347,13 +343,12 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
 
 Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, callback) {
 
-    console.log('batch processing');
     if (unprocessedTransactions.length === 0) {
         return callback();
     }
 
     if (this._isProcessing) {
-        console.log('Already processing, skipping batch processing...');
+        winston.info('Already processing, skipping batch processing...');
         return callback();
     }
 
@@ -384,7 +379,6 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
                 async.eachSeries(unprocessedTransactions, function (tx, eachSeriesCallback) {
 
-                    console.log('processing tx: ' + tx.robocoin_tx_id + ' for ' + tx.robocoin_xbt);
                     if (tx.robocoin_tx_type == 'send') {
 
                         aggregateBuy = aggregateBuy.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
@@ -396,19 +390,14 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
                         aggregatedSells.push(tx);
                     }
 
-                    console.log('minimumOrder: ' + minimumOrder);
-                    console.log('aggregateBuy: ' + aggregateBuy.toPlainString());
-                    console.log('aggregateSell: ' + aggregateSell.toPlainString());
                     if (aggregateBuy.compareTo(minimumOrder) == 1) {
 
-                        console.log('we\'re above minimum buy');
                         aggregateBuy = aggregateBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                         self._batchBuy(aggregateBuy, aggregatedBuys, depositAddress, function (err) {
 
                             if (err) return eachSeriesCallback('Batch buy error: ' + err);
 
                             for (var i = 0; i < aggregatedBuys.length; i++) {
-                                console.log('processed: ' + aggregatedBuys[i].robocoin_tx_id);
                                 processedTransactions.push(aggregatedBuys[i].robocoin_tx_id);
                             }
                             aggregateBuy = new bigdecimal.BigDecimal(0);
@@ -418,14 +407,12 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
                     } else if (aggregateSell.compareTo(minimumOrder) == 1) {
 
-                        console.log('we\'re above minimum sell');
                         aggregateSell = aggregateSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                         self._batchSell(aggregateSell, aggregatedSells, function (err) {
 
                             if (err) return eachSeriesCallback('Batch sell error: ' + err);
 
                             for (var i = 0; i < aggregatedSells.length; i++) {
-                                console.log('processed: ' + aggregatedSells[i].robocoin_tx_id);
                                 processedTransactions.push(aggregatedSells[i].robocoin_tx_id);
                             }
                             aggregateSell = new bigdecimal.BigDecimal(0);

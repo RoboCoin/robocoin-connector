@@ -27,7 +27,6 @@ describe('TransactionMapper', function () {
 
         var exchangeTx = {};
         exchangeTx.exchange_tx_id = bitstampTxId;
-        exchangeTx.exchange_tx_type = 0;
         exchangeTx.exchange_fiat = 5.00;
         exchangeTx.exchange_xbt = 0.001;
         exchangeTx.exchange_order_id = 123456;

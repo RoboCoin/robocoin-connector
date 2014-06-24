@@ -26,9 +26,6 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, callback) {
 
     var txTypes = ['deposit', 'withdrawal', 'market trade'];
-    if (exchangeTx.bitstsamp_tx_type !== null) {
-        exchangeTx.exchange_tx_type = txTypes[exchangeTx.exchange_tx_type];
-    }
 
     if (exchangeTx.exchange_tx_time !== null) {
         exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).getTime();
@@ -38,16 +35,14 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
         'UPDATE `transactions` ' +
         'SET ' +
             '`exchange_tx_id` = ?, ' +
-            '`exchange_tx_type` = ?, ' +
             '`exchange_fiat` = ?, ' +
             '`exchange_xbt` = ?, ' +
             '`exchange_order_id` = ?, ' +
             '`exchange_tx_fee` = ?, ' +
             '`exchange_tx_time` = FROM_UNIXTIME(ROUND(?/1000)) ' +
         'WHERE `robocoin_tx_id` = ?',
-        [exchangeTx.exchange_tx_id, exchangeTx.exchange_tx_type, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt,
-            exchangeTx.exchange_order_id, exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time,
-            exchangeTx.robocoin_tx_id],
+        [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_order_id,
+            exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time, exchangeTx.robocoin_tx_id],
         function (err) {
 
             if (err) return callback('Error saving exchange transaction: ' + err);

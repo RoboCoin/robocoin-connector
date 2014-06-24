@@ -6,7 +6,6 @@ CREATE TABLE `transactions` (
     `robocoin_tx_id` VARCHAR(256) NOT NULL,
     `exchange_tx_id` INT UNSIGNED DEFAULT NULL,
     `robocoin_tx_type` VARCHAR(45) NOT NULL,
-    `exchange_tx_type` VARCHAR(45) DEFAULT NULL,
     `robocoin_fiat` DECIMAL(20,2) DEFAULT NULL,
     `exchange_fiat` DECIMAL(20,5) DEFAULT NULL,
     `robocoin_xbt` DECIMAL(20,8) NOT NULL,

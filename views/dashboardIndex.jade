@@ -24,72 +24,85 @@ block footerJs
         google.setOnLoadCallback(drawCharts);
         function drawCharts () {
 
-            var row;
-            var hourlyCash;
-            var dailyCash;
-            var monthlyCash;
-            var buyProfit;
-            var sellProfit;
-
-            var jsonData = $.ajax({
-                url: '/dashboard/summary',
-                dataType: 'json',
-                async: false,
-                success: function (data) {
-
-                    hourlyCash = data.cashFlow.hourly;
-                    hourlyCash.unshift(['Hour', 'Cash In', 'Cash Out']);
-                    dailyCash = data.cashFlow.daily;
-                    dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
-                    monthlyCash = data.cashFlow.monthly;
-                    monthlyCash.unshift(['Month', 'Cash In', 'Cash Out']);
-
-                    buyProfit = data.profit.buys;
-                    buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
-                    sellProfit = data.profit.sells;
-                    sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
-                }
-            });
-
-            var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
             var buyProfitChart = new google.visualization.LineChart(document.getElementById('buyProfit'));
-            buyProfitChart.draw(buyProfitData, {
-                title: 'Buy Profit',
-                curveType: 'function',
-                vAxis: { title: 'Fiat' },
-                hAxis: { title: 'Month' }
-            });
-
-            var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
             var sellProfitChart = new google.visualization.LineChart(document.getElementById('sellProfit'));
-            sellProfitChart.draw(sellProfitData, {
-                title: 'Sell Profit',
-                curveType: 'function',
-                vAxis: { title: 'Fiat' },
-                hAxis: { title: 'Month' }
-            });
-
-            var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
             var dailyCashChart = new google.visualization.LineChart(document.getElementById('dailyCash'));
-            dailyCashChart.draw(dailyCashData, {
-                title: 'Daily Cash In/Out',
-                vAxis: { title: 'Fiat' },
-                hAxis: { title: 'Day' }
-            });
-
-            var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
             var hourlyCashChart = new google.visualization.LineChart(document.getElementById('hourlyCash'));
-            hourlyCashChart.draw(hourlyCashData, {
-                title: 'Hourly Cash In/Out',
-                vAxis: { title: 'Fiat' },
-                hAxis: { title: 'Hour' }
-            });
-
-            var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
             var monthlyCashChart = new google.visualization.LineChart(document.getElementById('monthlyCash'));
-            monthlyCashChart.draw(monthlyCashData, {
-                title: 'Monthly Cash In/Out',
-                vAxis: { title: 'Fiat' },
-                hAxis: { title: 'Month' }
-            });
+
+            var _fetchChartData = function () {
+
+                var jsonData = $.ajax({
+                    url: '/dashboard/summary',
+                    dataType: 'json',
+                    async: false,
+                    success: function (data) {
+
+                        var buyProfit = data.profit.buys;
+                        buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
+                        var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
+                        buyProfitChart.draw(buyProfitData, {
+                            title: 'Buy Profit',
+                            curveType: 'function',
+                            vAxis: { title: 'Fiat' },
+                            hAxis: { title: 'Month' },
+                            animation: {
+                                duration: 1000
+                            }
+                        });
+
+                        var sellProfit = data.profit.sells;
+                        sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
+                        var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
+                        sellProfitChart.draw(sellProfitData, {
+                            title: 'Sell Profit',
+                            curveType: 'function',
+                            vAxis: { title: 'Fiat' },
+                            hAxis: { title: 'Month' },
+                            animation: {
+                                duration: 1000
+                            }
+                        });
+
+                        var dailyCash = data.cashFlow.daily;
+                        dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
+                        var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
+                        dailyCashChart.draw(dailyCashData, {
+                            title: 'Daily Cash In/Out',
+                            vAxis: { title: 'Fiat' },
+                            hAxis: { title: 'Day' },
+                            animation: {
+                                duration: 1000
+                            }
+                        });
+
+                        var hourlyCash = data.cashFlow.hourly;
+                        hourlyCash.unshift(['Hour', 'Cash In', 'Cash Out']);
+                        var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
+                        hourlyCashChart.draw(hourlyCashData, {
+                            title: 'Hourly Cash In/Out',
+                            vAxis: { title: 'Fiat' },
+                            hAxis: { title: 'Hour' },
+                            animation: {
+                                duration: 1000
+                            }
+                        });
+
+                        var monthlyCash = data.cashFlow.monthly;
+                        monthlyCash.unshift(['Month', 'Cash In', 'Cash Out']);
+                        var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
+                        monthlyCashChart.draw(monthlyCashData, {
+                            title: 'Monthly Cash In/Out',
+                            vAxis: { title: 'Fiat' },
+                            hAxis: { title: 'Month' },
+                            animation: {
+                                duration: 1000
+                            }
+                        });
+                    }
+                });
+            };
+
+            _fetchChartData();
+            setInterval(_fetchChartData, 60000);
         };

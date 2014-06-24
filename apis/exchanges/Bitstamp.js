@@ -6,6 +6,7 @@ var querystring = require('querystring');
 var async = require('async');
 var config = require('../../lib/Config');
 var bigdecimal = require('bigdecimal');
+var winston = require('winston');
 
 var Bitstamp = function (config) {
 
@@ -49,7 +50,7 @@ Bitstamp.prototype._post = function (url, options, callback) {
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
         if (body.error) {
-            console.log(body.error);
+            winston.log(body.error);
             return callback(
                 'Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error)
             );

@@ -3,6 +3,7 @@
 var _connection = null;
 var mysql = require('mysql');
 var config = require('../lib/Config');
+var winston = require('winston');
 
 var _connect = function () {
 
@@ -10,14 +11,14 @@ var _connect = function () {
 
     _connection.connect(function (err) {
 
-        if (err) return console.log('DB connection err: ' + err);
+        if (err) return winston.log('DB connection err: ' + err);
     });
 
     _connection.on('error', function (err) {
 
         if (err.code == 'PROTOCOL_CONNECTION_LOST') {
 
-            console.log('DB connection dropped, reconnecting...');
+            winston.log('DB connection dropped, reconnecting...');
             setTimeout(_connect, 1000);
         }
     });
