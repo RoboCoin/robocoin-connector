@@ -214,12 +214,12 @@ Autoconnector.prototype.run = function (callback) {
                     self._processUnprocessedTransactions(waterfallCallback);
                 });
             });
-        },
-        function (waterfallCallback) {
-            self._isProcessing = false;
-            return waterfallCallback();
         }
-    ], callback);
+    ], function (err) {
+
+        self._isProcessing = false;
+        callback(err);
+    });
 };
 
 Autoconnector.prototype._lastPrice = null;

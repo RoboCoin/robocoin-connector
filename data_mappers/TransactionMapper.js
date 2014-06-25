@@ -1,6 +1,6 @@
 'use strict';
 
-var Connection = require('./Connection');
+var Connection = require('./PgConnection');
 
 var TransactionMapper = function () {
 };
@@ -11,15 +11,37 @@ TransactionMapper.prototype._getConnection = function () {
 
 TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
-    this._getConnection().query(
-        'INSERT INTO `transactions` ' +
-        '(`robocoin_tx_id`, `robocoin_tx_type`, `robocoin_fiat`, `robocoin_xbt`, `confirmations`, ' +
-            '`robocoin_tx_time`, `robocoin_miners_fee`, `robocoin_tx_fee`) ' +
-        'VALUES (?, ?, ?, ?, ?, FROM_UNIXTIME(ROUND(?/1000)), ?, ?) ' +
-        'ON DUPLICATE KEY UPDATE `confirmations` = `confirmations`',
-        [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time,
-            robocoinTx.miners_fee, robocoinTx.fee],
-        callback
+    var query = this._getConnection().query;
+
+    query(
+        'UPDATE transactions SET confirmations = $1 WHERE robocoin_tx_id = $2',
+        [robocoinTx.confirmations, robocoinTx.id],
+        function (err, res) {
+
+            if (err) return callback('Error updating confirmations: ' + err);
+
+            if (res.rowCount === 0) {
+
+                robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
+
+                var params = [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt,
+                    robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee];
+
+                query(
+                    'INSERT INTO transactions ' +
+                        '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_xbt, confirmations, ' +
+                        'robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee) ' +
+                    'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+                    params,
+                    function (err) {
+
+                        if (err) return callback('Error saving transaction: ' + err);
+
+                        return callback();
+                    }
+                );
+            }
+        }
     );
 };
 
@@ -28,19 +50,19 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
     var txTypes = ['deposit', 'withdrawal', 'market trade'];
 
     if (exchangeTx.exchange_tx_time !== null) {
-        exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).getTime();
+        exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).toUTCString();
     }
 
     this._getConnection().query(
-        'UPDATE `transactions` ' +
+        'UPDATE transactions ' +
         'SET ' +
-            '`exchange_tx_id` = ?, ' +
-            '`exchange_fiat` = ?, ' +
-            '`exchange_xbt` = ?, ' +
-            '`exchange_order_id` = ?, ' +
-            '`exchange_tx_fee` = ?, ' +
-            '`exchange_tx_time` = FROM_UNIXTIME(ROUND(?/1000)) ' +
-        'WHERE `robocoin_tx_id` = ?',
+            'exchange_tx_id = $1, ' +
+            'exchange_fiat = $2, ' +
+            'exchange_xbt = $3, ' +
+            'exchange_order_id = $4, ' +
+            'exchange_tx_fee = $5, ' +
+            'exchange_tx_time = $6 ' +
+        'WHERE robocoin_tx_id = $7',
         [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_order_id,
             exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time, exchangeTx.robocoin_tx_id],
         function (err) {
@@ -56,12 +78,12 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
 
     this._getConnection().query(
         'SELECT * ' +
-        'FROM `transactions` ' +
-        'WHERE (`robocoin_tx_type` = \'send\' AND `exchange_tx_time` IS NULL) ' +
-            'OR (`robocoin_tx_type` = \'forward\' AND `confirmations` >= 6 AND `exchange_order_id` IS NULL)' +
-        'ORDER BY `robocoin_tx_time`',
-        function (err, rows) {
-            return callback(err, rows);
+        'FROM transactions ' +
+        'WHERE (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_order_id IS NULL)' +
+        'ORDER BY robocoin_tx_time',
+        function (err, res) {
+            return callback(err, res.rows);
         }
     );
 };
@@ -69,12 +91,12 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
 TransactionMapper.prototype.findLastTransactionTime = function (callback) {
 
     this._getConnection().query(
-        'SELECT UNIX_TIMESTAMP(MAX(`robocoin_tx_time`)) `last_time` FROM `transactions`',
-        function (err, rows) {
+        'SELECT MAX(robocoin_tx_time) last_time FROM transactions',
+        function (err, res) {
 
             if (err) return callback('Error getting last transaction time: ' + err);
 
-            return callback(err, rows[0].last_time);
+            return callback(err, res.rows[0].last_time);
         }
     );
 };
@@ -83,18 +105,18 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
 
     this._getConnection().query(
         'SELECT ' +
-            'DATE_FORMAT(`robocoin_tx_time`, \'%Y-%m-%d\') `date`, ' +
-            '`robocoin_tx_type` `type`, ' +
-            'IFNULL(SUM(`robocoin_fiat`), 0) `robocoinFiat`, ' +
-            'IFNULL(SUM(`exchange_fiat`), 0) `exchangeFiat`, ' +
-            'IFNULL(SUM(`robocoin_miners_fee` * (`robocoin_fiat` / `robocoin_xbt`)), 0) `robocoinMinersFee`, ' +
-            'IFNULL(SUM(`exchange_miners_fee` * (ABS(`exchange_fiat`) / ABS(`exchange_xbt`))), 0) `exchangeMinersFee`, ' +
-            'IFNULL(SUM(`robocoin_tx_fee` * (`robocoin_fiat` / `robocoin_xbt`)), 0) `robocoinTxFee`, ' +
-            'IFNULL(SUM(`exchange_tx_fee`), 0) `exchangeTxFee` ' +
-        'FROM `transactions` ' +
-        'WHERE `exchange_tx_time` IS NOT NULL ' +
-        'GROUP BY `date`, `robocoin_tx_type`',
-        function (err, rows) {
+            'TO_CHAR(robocoin_tx_time, \'YYYY-MM-DD HH\') date, ' +
+            'robocoin_tx_type txType, ' +
+            'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
+            'COALESCE(SUM(exchange_fiat), 0) exchangeFiat, ' +
+            'COALESCE(SUM(robocoin_miners_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinMinersFee, ' +
+            'COALESCE(SUM(exchange_miners_fee * (ABS(exchange_fiat) / ABS(exchange_xbt))), 0) exchangeMinersFee, ' +
+            'COALESCE(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinTxFee, ' +
+            'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee ' +
+        'FROM transactions ' +
+        'WHERE exchange_tx_time IS NOT NULL ' +
+        'GROUP BY date, robocoin_tx_type',
+        function (err, res) {
 
             if (err) return callback('Error getting profit report: ' + err);
 
@@ -102,20 +124,20 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
             var buys = {};
             var sells = {};
             var row;
-            for (var i = 0; i < rows.length; i++) {
+            for (var i = 0; i < res.rows.length; i++) {
 
-                row = rows[i];
+                row = res.rows[i];
 
                 // if it's a sell...
-                if (row.type == 'forward') {
+                if (row.txtype == 'forward') {
 
-                    sells[row.date] = [row.date, row.exchangeFiat - row.robocoinFiat, row.robocoinTxFee,
-                        row.exchangeTxFee, row.robocoinMinersFee];
+                    sells[row.date] = [row.date, row.exchangefiat - row.robocoinfiat, parseFloat(row.robocointxfee),
+                        parseFloat(row.exchangetxfee), parseFloat(row.robocoinminersfee)];
 
-                } else if (row.type == 'send') { // or if it's a buy...
+                } else if (row.txtype == 'send') { // or if it's a buy...
 
-                    buys[row.date] = [row.date, row.robocoinFiat - row.exchangeFiat, row.robocoinTxFee,
-                        row.exchangeTxFee, row.exchangeMinersFee];
+                    buys[row.date] = [row.date, row.robocoinfiat - row.exchangefiat, parseFloat(row.robocointxfee),
+                        parseFloat(row.exchangetxfee), parseFloat(row.exchangeminersfee)];
                 }
             }
 
@@ -131,17 +153,17 @@ TransactionMapper.prototype.buildCashFlowReport = function (callback) {
 
     this._getConnection().query(
         'SELECT ' +
-            'SUM(`robocoin_fiat`) `fiat`, ' +
-            'IF(`robocoin_tx_type` = \'send\', \'cash in\', ' +
-                'IF(`robocoin_tx_type` = \'forward\', \'cash out\', `robocoin_tx_type`)) `tx_type`, ' +
-            'DATE_FORMAT(`robocoin_tx_time`, \'%m\') `month`, ' +
-            'DATE_FORMAT(`robocoin_tx_time`, \'%w\') `day`, ' +
-            'DATE_FORMAT(`robocoin_tx_time`, \'%H\') `hour` ' +
-        'FROM `transactions` ' +
-        'WHERE `robocoin_tx_time` >= DATE_SUB(NOW(), INTERVAL 1 YEAR) ' +
-        'GROUP BY `tx_type`, `month`, `day`, `hour` ' +
-        'ORDER BY `robocoin_tx_time`',
-        function (err, rows) {
+            'SUM(robocoin_fiat) fiat, ' +
+            'CASE WHEN robocoin_tx_type = \'send\' THEN \'cash in\' ' +
+                'WHEN robocoin_tx_type = \'forward\' THEN \'cash out\' ELSE robocoin_tx_type END tx_type, ' +
+            'TO_CHAR(robocoin_tx_time, \'MM\') tx_month, ' +
+            'TO_CHAR(robocoin_tx_time, \'D\') tx_day, ' +
+            'TO_CHAR(robocoin_tx_time, \'HH\') tx_hour ' +
+        'FROM transactions ' +
+        'WHERE robocoin_tx_time >= (NOW() - INTERVAL \'1 YEAR\') ' +
+        'GROUP BY tx_type, tx_month, tx_day, tx_hour, robocoin_tx_time ' +
+        'ORDER BY robocoin_tx_time',
+        function (err, res) {
 
             if (err) return callback('Error getting cash flow report: ' + err);
 
@@ -150,33 +172,33 @@ TransactionMapper.prototype.buildCashFlowReport = function (callback) {
             var monthly = {};
             var row;
 
-            for (var i = 0; i < rows.length; i++) {
+            for (var i = 0; i < res.rows.length; i++) {
 
-                row = rows[i];
+                row = res.rows[i];
 
-                if (!hourly[row.hour]) {
-                    hourly[row.hour] = [row.hour, 0, 0];
+                if (!hourly[row.tx_hour]) {
+                    hourly[row.tx_hour] = [row.tx_hour, 0, 0];
                 }
 
-                if (!daily[row.day]) {
-                    daily[row.day] = [row.day, 0, 0];
+                if (!daily[row.tx_day]) {
+                    daily[row.tx_day] = [row.tx_day, 0, 0];
                 }
 
-                if (!monthly[row.month]) {
-                    monthly[row.month] = [row.month, 0, 0];
+                if (!monthly[row.tx_month]) {
+                    monthly[row.tx_month] = [row.tx_month, 0, 0];
                 }
 
                 if (row.tx_type == 'cash in') {
 
-                    hourly[row.hour][1] += row.fiat;
-                    daily[row.day][1] += row.fiat;
-                    monthly[row.month][1] += row.fiat;
+                    hourly[row.tx_hour][1] += parseFloat(row.fiat);
+                    daily[row.tx_day][1] += parseFloat(row.fiat);
+                    monthly[row.tx_month][1] += parseFloat(row.fiat);
 
                 } else if (row.tx_type == 'cash out') {
 
-                    hourly[row.hour][2] += row.fiat;
-                    daily[row.day][2] += row.fiat;
-                    monthly[row.month][2] += row.fiat;
+                    hourly[row.tx_hour][2] += parseFloat(row.fiat);
+                    daily[row.tx_day][2] += parseFloat(row.fiat);
+                    monthly[row.tx_month][2] += parseFloat(row.fiat);
                 }
             }
 
@@ -195,14 +217,22 @@ TransactionMapper.prototype.buildCashFlowReport = function (callback) {
 
 TransactionMapper.prototype.findAllByIds = function (ids, callback) {
 
+    // build query without parameters because pg +
+    var idString = '';
+    for (var i = 0; i < ids.length; i++) {
+        if (idString != '') {
+            idString += ',';
+        }
+        idString += '\'' + ids[i] + '\'';
+    }
+
     this._getConnection().query(
-        'SELECT * FROM `transactions` WHERE `robocoin_tx_id` IN (?)',
-        [ids],
-        function (err, rows) {
+        'SELECT * FROM transactions WHERE robocoin_tx_id IN (' + idString + ')',
+        function (err, res) {
 
             if (err) return callback('Error finding all transactions by IDs: ' + err);
 
-            return callback(null, rows);
+            return callback(null, res.rows);
         }
     );
 

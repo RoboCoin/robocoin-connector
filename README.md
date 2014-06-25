@@ -58,7 +58,7 @@ requests, from the Configuration page, specify your API keys and check the "Test
 Requirements:
 
 * NodeJs + npm
-* MySQL
+* MySQL or PostgreSQL
 * mocha (for tests)
 
         npm install mocha -g
@@ -78,6 +78,8 @@ Requirements:
 Run scripts/database.sql:
 
         mysql -u root < database.sql
+        OR
+        psql -U postgres robocoin_connector < database.sql
 
 In production, set the NODE_ENV environment variable to "production".
 
