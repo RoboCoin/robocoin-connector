@@ -1,9 +1,10 @@
 'use strict';
 
-var robocoin = require('../apis/Robocoin').getInstance();
-var config = require('../lib/Config');
-var exchange = require('../apis/Exchange').get(config.exchangeClass);
+var Robocoin = require('../apis/Robocoin');
+var Exchange = require('../apis/Exchange');
 var async = require('async');
+var ConfigMapper = require('../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
 
 exports.transactions = function (req, res) {
     res.render('transactions');
@@ -11,32 +12,39 @@ exports.transactions = function (req, res) {
 
 exports.accountInfo = function (req, res) {
 
-    // must be series because of the bitstamp nonce
-    async.series({
-        robocoinAccountInfo: function (asyncCallback) {
-            robocoin.getAccountInfo(asyncCallback);
-        },
-        exchangeAccountInfo: function (asyncCallback) {
-            exchange.getBalance(asyncCallback);
-        },
-        exchangeAddress: function (asyncCallback) {
-            exchange.getDepositAddress(asyncCallback);
-        }
-    }, function (err, asyncRes) {
+    configMapper.findAll(function (configErr, config) {
 
-        if (err) {
+        if (configErr) return res.send(configErr);
+
+        var exchange = Exchange.get(config);
+        // must be series because of the bitstamp nonce
+        async.series({
+            robocoinAccountInfo: function (asyncCallback) {
+
+                Robocoin.getInstance(config).getAccountInfo(asyncCallback);
+            },
+            exchangeAccountInfo: function (asyncCallback) {
+                exchange.getBalance(asyncCallback);
+            },
+            exchangeAddress: function (asyncCallback) {
+                exchange.getDepositAddress(asyncCallback);
+            }
+        }, function (err, asyncRes) {
+
+            if (err) {
+                return res.render('accountInfo', {
+                    robocoinAccount: { xbt_balance: '--' },
+                    exchangeAccount: {},
+                    error: err
+                });
+            }
+
+            asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress;
+
             return res.render('accountInfo', {
-                robocoinAccount: { xbt_balance: '--' },
-                exchangeAccount: {},
-                error: err
+                robocoinAccount: asyncRes.robocoinAccountInfo,
+                exchangeAccount: asyncRes.exchangeAccountInfo
             });
-        }
-
-        asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress;
-
-        return res.render('accountInfo', {
-            robocoinAccount: asyncRes.robocoinAccountInfo,
-            exchangeAccount: asyncRes.exchangeAccountInfo
         });
     });
 };

@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    get: function (className) {
-        return require('./exchanges/' + className).getInstance();
+    get: function (config) {
+        return require('./exchanges/' + config.get('exchangeClass')).getInstance(config.getAllParams());
     }
 };

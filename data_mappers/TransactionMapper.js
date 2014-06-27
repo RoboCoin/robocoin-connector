@@ -5,13 +5,9 @@ var Connection = require('./PgConnection');
 var TransactionMapper = function () {
 };
 
-TransactionMapper.prototype._getConnection = function () {
-    return Connection.getConnection();
-};
-
 TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
-    var query = this._getConnection().query;
+    var query = Connection.getConnection().query;
 
     query(
         'UPDATE transactions SET confirmations = $1 WHERE robocoin_tx_id = $2',
@@ -40,6 +36,9 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
                         return callback();
                     }
                 );
+            } else {
+
+                return callback();
             }
         }
     );
@@ -53,7 +52,7 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
         exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).toUTCString();
     }
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'UPDATE transactions ' +
         'SET ' +
             'exchange_tx_id = $1, ' +
@@ -76,7 +75,7 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
 
 TransactionMapper.prototype.findUnprocessed = function (callback) {
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'SELECT * ' +
         'FROM transactions ' +
         'WHERE (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
@@ -90,7 +89,7 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
 
 TransactionMapper.prototype.findLastTransactionTime = function (callback) {
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'SELECT MAX(robocoin_tx_time) last_time FROM transactions',
         function (err, res) {
 
@@ -103,7 +102,7 @@ TransactionMapper.prototype.findLastTransactionTime = function (callback) {
 
 TransactionMapper.prototype.buildProfitReport = function (callback) {
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'SELECT ' +
             'TO_CHAR(robocoin_tx_time, \'YYYY-MM-DD HH\') date, ' +
             'robocoin_tx_type txType, ' +
@@ -151,7 +150,7 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
 
 TransactionMapper.prototype.buildCashFlowReport = function (callback) {
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'SELECT ' +
             'SUM(robocoin_fiat) fiat, ' +
             'CASE WHEN robocoin_tx_type = \'send\' THEN \'cash in\' ' +
@@ -226,7 +225,7 @@ TransactionMapper.prototype.findAllByIds = function (ids, callback) {
         idString += '\'' + ids[i] + '\'';
     }
 
-    this._getConnection().query(
+    Connection.getConnection().query(
         'SELECT * FROM transactions WHERE robocoin_tx_id IN (' + idString + ')',
         function (err, res) {
 

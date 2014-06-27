@@ -11,7 +11,7 @@ var Robocoin = function (config) {
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
 
-    if (config.testMode) {
+    if (config.testMode == '1') {
         this._mode = 'random';
     }
 };
@@ -139,13 +139,16 @@ Robocoin.prototype.getTransactions = function (since, callback) {
 var robocoin = null;
 
 module.exports = {
-    getInstance: function () {
+    getInstance: function (config) {
 
         if (robocoin === null) {
             // TODO check for test mode and return either tester or real API
-            robocoin = new Robocoin(config.robocoin);
+            robocoin = new Robocoin(config.getParamsByPrefix('robocoin'));
         }
 
         return robocoin;
+    },
+    clearInstance: function () {
+        robocoin = null;
     }
 };

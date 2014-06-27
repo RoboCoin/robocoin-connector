@@ -1,10 +1,7 @@
 'use strict';
 
 var pg = require('pg');
-var config = require('../lib/Config');
-var winston = require('winston');
-var connectionString = 'postgres://' + config.db.user + ':' + config.db.password + '@' + config.db.host + '/'
-    + config.db.database;
+var connectionString = process.env.DATABASE_URL;
 
 var connection = {
     query: function (sql, params, callback) {

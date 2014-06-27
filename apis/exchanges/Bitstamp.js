@@ -4,7 +4,6 @@ var request = require('request');
 var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
-var config = require('../../lib/Config');
 var bigdecimal = require('bigdecimal');
 var winston = require('winston');
 
@@ -216,10 +215,10 @@ var bitstamp = null;
 
 module.exports = {
 
-    getInstance: function () {
+    getInstance: function (config) {
 
         if (bitstamp === null) {
-            bitstamp = new Bitstamp(config.bitstamp);
+            return new Bitstamp(config);
         }
 
         return bitstamp;

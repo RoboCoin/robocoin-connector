@@ -11,7 +11,12 @@ describe('Bitstamp', function () {
     beforeEach(function () {
 
         Bitstamp.clearInstance();
-        bitstamp = Bitstamp.getInstance();
+        bitstamp = Bitstamp.getInstance({
+            baseUrl: 'https://www.bitstamp.net/api',
+            clientId: '24916868473977308962',
+            secret: 'ZyyuQ9bTONt1axtVdLkw',
+            apiKey: 'zwr01RLxDGPxbIHEqeNn'
+        });
 
         sinon
             .stub(bitstamp, '_request')
@@ -26,8 +31,8 @@ describe('Bitstamp', function () {
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
                 form: {
-                    key: 'cwoEIvpFp55moesPp6KEXBnm53u6HYLC',
-                    signature: 'C2D398F384F7E77C22F87269F49E4D0C8418B89AE79BABD1E01E59EE5176584C',
+                    key: 'zwr01RLxDGPxbIHEqeNn',
+                    signature: 'FD6AE5117EBE7D33B4708AD7ED777C12B689D8053616E1407C4DA799EE0DC297',
                     nonce: 1402016237000
                 },
                 method: 'POST',
@@ -47,8 +52,8 @@ describe('Bitstamp', function () {
             var expectedOptions = {
                 url: 'https://www.bitstamp.net/api/some_url',
                 form: {
-                    key: 'cwoEIvpFp55moesPp6KEXBnm53u6HYLC',
-                    signature: 'C2D398F384F7E77C22F87269F49E4D0C8418B89AE79BABD1E01E59EE5176584C',
+                    key: 'zwr01RLxDGPxbIHEqeNn',
+                    signature: 'FD6AE5117EBE7D33B4708AD7ED777C12B689D8053616E1407C4DA799EE0DC297',
                     nonce: 1402016237000,
                     optional: true
                 },

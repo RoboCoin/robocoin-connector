@@ -1,18 +1,29 @@
 'use strict';
 
-var robocoin = require('../apis/Robocoin').getInstance();
+var Robocoin = require('../apis/Robocoin');
 var TransactionMapper = require('../data_mappers/TransactionMapper');
 var transactionMapper = new TransactionMapper();
+var ConfigMapper = require('../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
+var winston = require('winston');
 
 exports.getTransactions = function (req, res) {
 
     var sinceDate = new Date(req.body.sinceDate);
 
-    robocoin.getTransactions(sinceDate.getTime(), function (err, transactions) {
+    configMapper.findAll(function (configErr, config) {
 
-        if (err) return res.json(500, {});
+        if (configErr) {
+            winston.log('Error finding config: ' + configErr);
+            return res.json(500, {});
+        }
 
-        return res.json(transactions);
+        Robocoin.getInstance(config).getTransactions(sinceDate.getTime(), function (err, transactions) {
+
+            if (err) return res.json(500, {});
+
+            return res.json(transactions);
+        });
     });
 };
 

@@ -1,17 +1,28 @@
 'use strict';
 
-var config = require('../lib/Config');
+var ConfigMapper = require('../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
+var winston = require('winston');
+var Config = require('../lib/Config');
 
 exports.index = function (req, res) {
 
-    var currentExchange = config.exchangeClass;
-    var robocoinTestMode = config.robocoin.testMode;
-    var bitstampTestMode = (config.exchangeClass == 'MockBitstamp');
+    configMapper.findAll(function (err, config) {
 
-    return res.render('configurationIndex', {
-        currentExchange: currentExchange,
-        robocoinTestMode: robocoinTestMode,
-        bitstampTestMode: bitstampTestMode
+        if (err) {
+            winston.log('configMapper.findAll: ' + err);
+            return res.send('Error getting confguration.');
+        }
+
+        var currentExchange = config.get('exchangeClass');
+        var robocoinTestMode = config.get('robocoin.testMode');
+        var bitstampTestMode = (config.get('exchangeClass') == 'MockBitstamp');
+
+        return res.render('configurationIndex', {
+            currentExchange: currentExchange,
+            robocoinTestMode: robocoinTestMode,
+            bitstampTestMode: bitstampTestMode
+        });
     });
 };
 
@@ -22,16 +33,17 @@ exports.saveExchange = function (req, res) {
     var apiSecret = req.body.apiSecret;
     var testMode = (req.body.testMode == 'true');
 
-    config.bitstamp.clientId = clientId;
-    config.bitstamp.apiKey = apiKey;
-    config.bitstamp.secret = apiSecret;
+    var config = new Config();
+    config.set('bitstamp.clientId', clientId);
+    config.set('bitstamp.apiKey', apiKey);
+    config.set('bitstamp.secret', apiSecret);
     if (testMode) {
-        config.exchangeClass = 'MockBitstamp';
+        config.set('exchangeClass', 'MockBitstamp');
     } else {
-        config.exchangeClass = 'Bitstamp';
+        config.set('exchangeClass', 'Bitstamp');
     }
 
-    config.save(function (err) {
+    configMapper.save(config, function (err) {
         if (err) return res.send(err);
         return res.send('Exchange configuration saved');
     });
@@ -41,12 +53,14 @@ exports.saveRobocoin = function (req, res) {
 
     var apiKey = req.body.apiKey;
     var apiSecret = req.body.apiSecret;
-    var testMode = (req.body.testMode == 'true') ? true : false;
+    var testMode = (req.body.testMode == 'true') ? '1' : '0';
 
-    config.robocoin.key = apiKey;
-    config.robocoin.secret = apiSecret;
-    config.robocoin.testMode = testMode;
-    config.save(function (err) {
+    var config = new Config();
+    config.set('robocoin.key', apiKey);
+    config.set('robocoin.secret', apiSecret);
+    config.set('robocoin.testMode', testMode);
+
+    configMapper.save(config, function (err) {
         if (err) return res.send(err);
         return res.send('Robocoin configuration saved');
     });

@@ -15,3 +15,13 @@ CREATE TABLE transactions (
     robocoin_tx_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     exchange_tx_time TIMESTAMP NULL DEFAULT NULL
 );
+
+CREATE TABLE config (
+    param_name varchar(256) not null unique,
+    param_value varchar(256)
+);
+INSERT INTO config (param_name, param_value) VALUES
+    ('exchangeClass', 'MockBitstamp'),
+    ('bitstamp.baseUrl', 'https://www.bitstamp.net/api'),
+    ('robocoin.baseUrl', 'https://www.somefutureurl.net/api/0'),
+    ('robocoin.testMode', '1');

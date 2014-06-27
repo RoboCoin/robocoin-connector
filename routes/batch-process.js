@@ -4,8 +4,11 @@ var TransactionMapper = require('../data_mappers/TransactionMapper');
 var transactionMapper = new TransactionMapper();
 var Autoconnector = require('../apis/Autoconnector');
 var autoconnector = new Autoconnector();
-var robocoin = require('../apis/Robocoin').getInstance();
+var Robocoin = require('../apis/Robocoin');
 var async = require('async');
+var ConfigMapper = require('../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
+var Exchange = require('../apis/Exchange');
 
 exports.index = function (req, res) {
 
@@ -18,16 +21,25 @@ exports.index = function (req, res) {
         },
         function (transactions, asyncCallback) {
 
+            configMapper.findAll(function (err, config) {
+                return asyncCallback(err, config, transactions);
+            });
+        },
+        function (config, transactions, asyncCallback) {
+
+            var robocoin = Robocoin.getInstance(config);
             robocoin.getAccountInfo(function (err, info) {
 
                 if (err) return asyncCallback(err);
 
-                return asyncCallback(null, transactions, info.deposit_address);
+                return asyncCallback(null, transactions, info.deposit_address, config);
             });
         },
-        function (transactions, depositAddress, asyncCallback) {
+        function (transactions, depositAddress, config, asyncCallback) {
 
-            autoconnector.batchProcess(transactions, depositAddress, asyncCallback);
+            var exchange = Exchange.get(config);
+
+            autoconnector.batchProcess(transactions, depositAddress, exchange, asyncCallback);
         }
     ], function (err, transactionsProcessed) {
 

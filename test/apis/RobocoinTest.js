@@ -3,12 +3,20 @@
 var Robocoin = require('../../apis/Robocoin');
 var sinon = require('sinon');
 var assert = require('assert');
+var Config = require('../../lib/Config');
 
 describe('Robocoin', function () {
 
     it('includes a nonce, key and signature with every request', function (done) {
 
-        var robocoin = Robocoin.getInstance();
+        var config = new Config({
+            'robocoin.testMode': '1',
+            'robocoin.secret': 'gpNrX0HZii0UK4MNp2tm',
+            'robocoin.baseUrl': 'https://www.somefutureurl.net/api/0',
+            'robocoin.key': 'KmHKNmEXpWC4fzRnscic'
+        });
+        Robocoin.clearInstance();
+        var robocoin = Robocoin.getInstance(config);
 
         sinon.stub(robocoin, '_request')
             .callsArg(1);
@@ -27,7 +35,7 @@ describe('Robocoin', function () {
                 json: true,
                 headers: {
                     'X-API-key': 'KmHKNmEXpWC4fzRnscic',
-                    'X-API-signature': 'd1e02e8415032b9d95bf499827d9ad40fc7a3291870835e25cf2a09a78a4558b'
+                    'X-API-signature': '85450aee42105dc8472e289e18ed2abd8bf61e23e504ee5ba5422c8790012606'
                 }
             };
 
