@@ -12,28 +12,30 @@ block nav
 
 block content
     h1 Unprocessed Transactions
-    table.table.table-striped.table-condensed.table-bordered#unprocessedTransactions
-        tr
-            th Transaction ID
-            th Action
-            th Fiat
-            th XBT
-            th Robocoin Fee
-            th Robocoin Miner's Fee
-            th Confirmations
-            th Time
-            th Manual transaction
+    div.table-responsive
+        table.table.table-striped.table-condensed.table-bordered#unprocessedTransactions
+            tr
+                th Transaction ID
+                th Action
+                th Fiat
+                th XBT
+                th Robocoin Fee
+                th Robocoin Miner's Fee
+                th Confirmations
+                th Time
+                th Manual transaction
     button#processButton Process
     h1 Exchange Transactions
-    table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
-        tr
-            th Transaction ID
-            th Order ID
-            th Type
-            th Fiat
-            th XBT
-            th Transaction Fee
-            th Time
+    div.table-responsive
+        table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
+            tr
+                th Transaction ID
+                th Order ID
+                th Type
+                th Fiat
+                th XBT
+                th Transaction Fee
+                th Time
 
 block footerJs
     script.
