@@ -17,34 +17,6 @@ Robocoin automatically sends this BTC amount from the operator's account to thei
 confirmations are on that transaction and this info is in the public API. When the connector sees enough confirmations,
 it executes a sell for that amount on the exchange.
 
-## Configuration
-
-You'll need to put a configuration file one directory above the application directory. You must name this file
-connectorConfig.json and it should look something like this:
-
-    {
-        "bitstamp": {
-            "baseUrl": "https://www.bitstamp.net/api",
-            "clientId": "xxxx",
-            "apiKey": "xxxx",
-            "secret": "xxxx"
-        },
-        "db": {
-            "host": "localhost",
-            "user": "root",
-            "database": "robocoin_connector"
-        },
-        "robocoin": {
-            "baseUrl": "https://www.somefutureurl.net/api/0",
-            "key": "xxxx",
-            "secret": "xxxx"
-        },
-        "exchangeClass": "Bitstamp"
-    }
-
-You can either specify API keys directly in this file, then restart the connector application, or you can specify API
-keys through the Configuration menu item.
-
 ### Test mode
 
 To run the connector with randomly-generated Robocoin test data, from the Configuration page, specify your API keys and
@@ -58,7 +30,7 @@ requests, from the Configuration page, specify your API keys and check the "Test
 Requirements:
 
 * NodeJs + npm
-* MySQL or PostgreSQL
+* PostgreSQL
 * mocha (for tests)
 
         npm install mocha -g
@@ -77,8 +49,6 @@ Requirements:
 
 Run scripts/database.sql:
 
-        mysql -u root < database.sql
-        OR
         psql -U postgres robocoin_connector < database.sql
 
 In production, set the NODE_ENV environment variable to "production".
