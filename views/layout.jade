@@ -23,7 +23,7 @@ html(lang="en")
                   ul.nav.navbar-nav
                       block nav
       .container
-          if (message != '')
+          if (message)
             .alert.alert-warning #{ message }
           block content
       script(src="/js/jquery-2.1.1.min.js")

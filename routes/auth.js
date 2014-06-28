@@ -1,9 +1,16 @@
 'use strict';
 
 exports.loginIndex = function (req, res) {
+
+    var message;
+    var errors = req.flash('error');
+    if (errors.length > 0) {
+        message = errors;
+    }
+
     res.render('loginIndex', {
         csrfToken: req.csrfToken(),
-        message: req.flash('error')
+        message: message
     });
 };
 

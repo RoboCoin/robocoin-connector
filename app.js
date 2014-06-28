@@ -113,9 +113,7 @@ var auth = require('./routes/auth');
 app.get('/login', auth.loginIndex);
 app.post('/login',
     passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-    function (req, res) {
-        console.log('ok so far');
-        res.redirect('/'); }
+    function (req, res) { res.redirect('/'); }
 );
 app.get('/logout', auth.logout);
 
