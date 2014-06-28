@@ -7,6 +7,9 @@ var Config = require('../lib/Config');
 
 exports.index = function (req, res) {
 
+    var message = (req.protocol == 'http') ?
+        'Your connection is\'t secure. Don\'t submit this form over a public network.' :
+        '';
     configMapper.findAll(function (err, config) {
 
         if (err) {
@@ -22,7 +25,8 @@ exports.index = function (req, res) {
             currentExchange: currentExchange,
             robocoinTestMode: robocoinTestMode,
             bitstampTestMode: bitstampTestMode,
-            csrfToken: req.csrfToken()
+            csrfToken: req.csrfToken(),
+            securityMessage: message
         });
     });
 };

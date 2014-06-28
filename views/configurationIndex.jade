@@ -13,6 +13,8 @@ block nav
         a(href="/logout") Logout
 
 block content
+    if (securityMessage != '')
+        .alert.alert-danger #{ securityMessage }
     h1 Exchange
     p You are using #{ currentExchange }
     input(type="hidden" value="#{ csrfToken }")#_csrf
