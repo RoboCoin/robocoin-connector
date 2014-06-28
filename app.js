@@ -26,13 +26,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // cookies
-app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa'));
+app.use(cookieParser(
+    'UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa',
+    { expires: 0, maxAge: 0, httpOnly: true }
+));
 // sessions
 app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
     store: new SessionMapper(),
     cookie: {
-        secure: (app.get('env') === 'production')
+        secure: (app.get('env') === 'production'),
+        httpOnly: true,
+        maxAge: 0
     }
 }));
 // csrf protection
