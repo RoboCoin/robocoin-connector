@@ -9,8 +9,8 @@ exports.loginIndex = function (req, res) {
     }
 
     res.render('loginIndex', {
-        csrfToken: req.csrfToken(),
-        message: message
+        message: message,
+        csrfToken: req.csrfToken()
     });
 };
 

@@ -21,15 +21,19 @@ var flash = require('connect-flash');
 
 var app = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // cookies
 app.use(cookieParser(
-    'UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa',
-    { expires: 0, maxAge: 0, httpOnly: true }
+    'UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa',{
+        cookie: {
+            httpOnly: true
+        },
+        proxy: (app.get('env') === 'production')
+    }
 ));
 // sessions
 app.use(session({
@@ -37,10 +41,10 @@ app.use(session({
     store: new SessionMapper(),
     cookie: {
         secure: (app.get('env') === 'production'),
-        httpOnly: true,
-        maxAge: 0
+        httpOnly: true
     }
 }));
+
 // csrf protection
 app.use(csrf());
 
@@ -88,6 +92,14 @@ if ('development' == app.get('env')) {
     app.use(morgan({ format: 'dev'}));
 }
 
+var auth = require('./routes/auth');
+app.get('/login', auth.loginIndex);
+app.post('/login',
+    passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+    function (req, res) { res.redirect('/'); }
+);
+app.get('/logout', auth.logout);
+
 var index = require('./routes/index');
 app.get('/transactions', ensureAuthenticated, index.transactions);
 app.get('/account-info', ensureAuthenticated, index.accountInfo);
@@ -114,14 +126,6 @@ var configuration = require('./routes/configuration');
 app.get('/configuration', ensureAuthenticated, configuration.index);
 app.post('/configuration/save-exchange', ensureAuthenticated, configuration.saveExchange);
 app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
-
-var auth = require('./routes/auth');
-app.get('/login', auth.loginIndex);
-app.post('/login',
-    passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-    function (req, res) { res.redirect('/'); }
-);
-app.get('/logout', auth.logout);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 
