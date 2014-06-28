@@ -27,22 +27,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // cookies
-app.use(cookieParser(
-    'UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa',{
-        cookie: {
-            httpOnly: true
-        },
-        proxy: (app.get('env') === 'production')
-    }
-));
+app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa'));
 // sessions
 app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
-    store: new SessionMapper(),
-    cookie: {
-        secure: (app.get('env') === 'production'),
-        httpOnly: true
-    }
+    store: new SessionMapper()
 }));
 
 // csrf protection
