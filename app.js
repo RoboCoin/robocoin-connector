@@ -21,6 +21,7 @@ var flash = require('connect-flash');
 
 var app = express();
 
+app.set('trust proxy', true);
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
