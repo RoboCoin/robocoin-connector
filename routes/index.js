@@ -7,7 +7,7 @@ var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
 
 exports.transactions = function (req, res) {
-    res.render('transactions');
+    res.render('transactions', { csrfToken: req.csrfToken() });
 };
 
 exports.accountInfo = function (req, res) {
@@ -50,5 +50,5 @@ exports.accountInfo = function (req, res) {
 };
 
 exports.buyAndSell = function (req, res) {
-    res.render('buyAndSell');
+    res.render('buyAndSell', { csrfToken: req.csrfToken() });
 };

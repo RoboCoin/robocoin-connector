@@ -9,6 +9,8 @@ block nav
         a(href="/buy-and-sell") Buy and Sell
     li
         a(href="/configuration") Configuration
+    li
+        a(href="/logout") Logout
 
 block content
     h1 Unprocessed Transactions
@@ -24,7 +26,8 @@ block content
                 th Confirmations
                 th Time
                 th Manual transaction
-    button#processButton Process
+    input(type="hidden" value="#{csrfToken}")#_csrf
+    button#processButton.btn.btn-default Process
     h1 Exchange Transactions
     div.table-responsive
         table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
@@ -151,16 +154,23 @@ block footerJs
                 $.ajax({
                     url: '/batch-process',
                     data: {
-                        orders: ordersToProcess.join(',')
+                        orders: ordersToProcess.join(','),
+                        _csrf: $('#_csrf').val()
                     },
                     type: 'POST',
                     success: function (data) {
 
+                        $('.alert').remove();
                         $button.after('<div class="alert alert-success">' + data.message + '</td>');
                         var $unprocessedTransactionsTable = $('#unprocessedTransactions');
                         for (var i = 0; i < data.transactions.length; i++) {
                             $unprocessedTransactionsTable.find('tr[data-tx-id="' + data.transactions[i] + '"]').remove();
                         }
+                    },
+                    error: function (data) {
+
+                        $('.alert').remove();
+                        $button.after('<div class="alert alert-danger">' + data.statusText+ '</td>');
                     }
                 });
             });

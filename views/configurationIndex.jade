@@ -9,10 +9,13 @@ block nav
         a(href="/buy-and-sell") Buy and Sell
     li.active
         a(href="/configuration") Configuration
+    li
+        a(href="/logout") Logout
 
 block content
     h1 Exchange
     p You are using #{ currentExchange }
+    input(type="hidden" value="#{ csrfToken }")#_csrf
     form(role="form")
         .form-group
             label(for="bitstampClientId") Client ID
@@ -47,10 +50,10 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            function appendAlert(text, $element) {
+            function appendAlert(text, $element, type) {
 
                 var $alert = $('<div></div>')
-                    .addClass('alert alert-dismissable alert-success')
+                    .addClass('alert alert-dismissable alert-' + type)
                     .append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
                     .append(text);
                 $element.after($alert);
@@ -68,11 +71,16 @@ block footerJs
                         clientId: $('#bitstampClientId').val(),
                         apiKey: $('#bitstampApiKey').val(),
                         apiSecret: $('#bitstampApiSecret').val(),
-                        testMode: $('#bitstampTestMode').is(':checked')
+                        testMode: $('#bitstampTestMode').is(':checked'),
+                        _csrf: $('#_csrf').val()
                     },
                     success: function (data) {
                         $button.parent().find('.alert').remove();
-                        appendAlert(data, $button);
+                        appendAlert(data, $button, 'success');
+                    },
+                    error: function (data) {
+                        $button.parent().find('.alert').remove();
+                        appendAlert(data.statusText, $button, 'danger');
                     }
                 });
             });
@@ -88,11 +96,16 @@ block footerJs
                     data: {
                         apiKey: $('#robocoinApiKey').val(),
                         apiSecret: $('#robocoinApiSecret').val(),
-                        testMode: $('#robocoinTestMode').is(':checked')
+                        testMode: $('#robocoinTestMode').is(':checked'),
+                        _csrf: $('#_csrf').val()
                     },
                     success: function (data) {
                         $button.parent().find('.alert').remove();
-                        appendAlert(data, $button);
+                        appendAlert(data, $button, 'success');
+                    },
+                    error: function (data) {
+                        $button.parent().find('.alert').remove();
+                        appendAlert(data.statusText, $button, 'danger');
                     }
                 });
             });

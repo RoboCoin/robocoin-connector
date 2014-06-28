@@ -21,7 +21,8 @@ exports.index = function (req, res) {
         return res.render('configurationIndex', {
             currentExchange: currentExchange,
             robocoinTestMode: robocoinTestMode,
-            bitstampTestMode: bitstampTestMode
+            bitstampTestMode: bitstampTestMode,
+            csrfToken: req.csrfToken()
         });
     });
 };

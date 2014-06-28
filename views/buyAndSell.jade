@@ -9,6 +9,8 @@ block nav
         a(href="#") Buy and Sell
     li
         a(href="/configuration") Configuration
+    li
+        a(href="/logout") Logout
 
 block content
     .col-md-12
@@ -17,6 +19,7 @@ block content
             div(style="float:left;width:100%;")
                 p(style="float:left;") Last exchange price: $
                 span#lastPrice ----
+    input(type="hidden" value="#{ csrfToken }")#_csrf
     .col-md-12
         .row
             fieldset
@@ -48,6 +51,16 @@ block footerJs
             var updater = new PriceUpdater('lastPrice');
             updater.start();
 
+            var _showAlert = function (message, type, $button) {
+
+                $('.alert').remove();
+                $button.after('<div class="alert alert-' + type + '">' + message + '<div>');
+                // re-enable the fieldset
+                var $fieldset = $button.parent().parent();
+                $fieldset.attr('disabled', false);
+                $('body').css('cursor', 'default');
+            };
+
             var _onTradeButtonClicked = function (action, event) {
 
                 event.preventDefault();
@@ -63,15 +76,14 @@ block footerJs
                     url: '/exchange/' + action.toLowerCase(),
                     data: {
                         btcAmount: $('#btc' + action + 'Amount').val(),
-                        btcPrice: $('#btc' + action + 'Price').val()
+                        btcPrice: $('#btc' + action + 'Price').val(),
+                        _csrf: $('#_csrf').val()
                     },
                     success: function(data) {
-
-                        $('.alert').remove();
-                        $button.after('<div class="alert alert-success">' + data + '<div>');
-                        // re-enable the fieldset
-                        $fieldset.attr('disabled', false);
-                        $body.css('cursor', 'default');
+                        _showAlert(data, 'success', $button);
+                    },
+                    error: function (data) {
+                        _showAlert(data.statusText, 'danger', $button);
                     }
                 });
             };

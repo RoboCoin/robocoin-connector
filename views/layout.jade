@@ -16,11 +16,15 @@ html(lang="en")
                       span.icon-bar
                       span.icon-bar
                       span.icon-bar
-                  a(href="/").navbar-brand Robocoin Exchange Connector
+                  a(href="/").navbar-brand
+                    img(src="/images/logo.png" style="height: 30px; width: 30px; margin-right: 1em;")
+                    span Connector
               .collapse.navbar-collapse
                   ul.nav.navbar-nav
                       block nav
       .container
+          if (message != '')
+            .alert.alert-warning #{ message }
           block content
       script(src="/js/jquery-2.1.1.min.js")
       script(src="/js/bootstrap.min.js")

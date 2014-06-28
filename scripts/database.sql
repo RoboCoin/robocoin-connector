@@ -25,3 +25,19 @@ INSERT INTO config (param_name, param_value) VALUES
     ('bitstamp.baseUrl', 'https://www.bitstamp.net/api'),
     ('robocoin.baseUrl', 'https://www.somefutureurl.net/api/0'),
     ('robocoin.testMode', '1');
+
+CREATE TABLE sessions (
+    sid text NOT NULL UNIQUE,
+    session_data text NOT NULL
+);
+
+CREATE TABLE users (
+    id SERIAL UNIQUE,
+    username VARCHAR(32) NOT NULL UNIQUE,
+    password_hash VARCHAR(64) NOT NULL,
+    locked_until TIMESTAMP NULL DEFAULT NULL
+);
+CREATE TABLE failed_logins (
+    user_id INT NOT NULL REFERENCES users (id),
+    time_attempted TIMESTAMP NOT NULL DEFAULT current_timestamp
+);

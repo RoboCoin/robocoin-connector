@@ -8,8 +8,59 @@ var bodyParser = require('body-parser');
 var errorHandler = require('errorhandler');
 require('./logConfig');
 var winston = require('winston');
+var toobusy = require('toobusy');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var SessionMapper = require('./data_mappers/SessionMapper');
+var csrf = require('csurf');
+var helmet = require('helmet');
+var passport = require('passport');
+var UserMapper = require('./data_mappers/UserMapper');
+var LocalStrategy = require('passport-local').Strategy;
+var flash = require('connect-flash');
 
 var app = express();
+
+app.use(helmet());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// cookies
+app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa'));
+// sessions
+app.use(session({
+    secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
+    store: new SessionMapper(),
+    cookie: {
+        secure: (app.get('env') === 'production')
+    }
+}));
+// csrf protection
+app.use(csrf());
+
+// DoS mitigation
+toobusy.maxLag(250);
+app.use(function (req, res, next) {
+    if (toobusy()) {
+        res.send(503, 'The server is under heavy load and rejecting some requests.');
+    } else {
+        next();
+    }
+});
+
+// HSTS
+app.use(helmet.hsts({ maxAge: 7776000000 })); // ninety days
+
+// logins
+var userMapper = new UserMapper();
+passport.use(new LocalStrategy(function (username, password, callback) {
+    userMapper.findByLogin(username, password, function (err, user) {
+        if (err) return callback(null, false, { message: 'Invalid login' });
+        return callback(null, user);
+    });
+}));
+passport.serializeUser(function (user, done) { done(null, user.id); });
+passport.deserializeUser(userMapper.findById);
 
 var AUTOCONNECTOR_INTERVAL = 60000;
 
@@ -17,11 +68,12 @@ var AUTOCONNECTOR_INTERVAL = 60000;
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(methodOverride());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
 // development only
 if ('development' == app.get('env')) {
@@ -31,31 +83,41 @@ if ('development' == app.get('env')) {
 }
 
 var index = require('./routes/index');
-app.get('/transactions', index.transactions);
-app.get('/account-info', index.accountInfo);
-app.get('/buy-and-sell', index.buyAndSell);
+app.get('/transactions', ensureAuthenticated, index.transactions);
+app.get('/account-info', ensureAuthenticated, index.accountInfo);
+app.get('/buy-and-sell', ensureAuthenticated, index.buyAndSell);
 
 var exchange = require('./routes/exchange');
-app.get('/exchange/last-price', exchange.lastPrice);
-app.post('/exchange/buy', exchange.buy);
-app.post('/exchange/sell', exchange.sell);
-app.get('/exchange/latest-transactions', exchange.latestTransactions);
+app.get('/exchange/last-price', ensureAuthenticated, exchange.lastPrice);
+app.post('/exchange/buy', ensureAuthenticated, exchange.buy);
+app.post('/exchange/sell', ensureAuthenticated, exchange.sell);
+app.get('/exchange/latest-transactions', ensureAuthenticated, exchange.latestTransactions);
 
 var robocoin = require('./routes/robocoin');
-app.post('/robocoin/transactions', robocoin.getTransactions);
-app.get('/robocoin/unprocessed-transactions', robocoin.getUnprocessedTransactions);
+app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions);
+app.get('/robocoin/unprocessed-transactions', ensureAuthenticated, robocoin.getUnprocessedTransactions);
 
 var dashboard = require('./routes/dashboard');
-app.get('/', dashboard.index);
-app.get('/dashboard/summary', dashboard.summary);
+app.get('/', ensureAuthenticated, dashboard.index);
+app.get('/dashboard/summary', ensureAuthenticated, dashboard.summary);
 
 var batchProcess = require('./routes/batch-process');
-app.post('/batch-process', batchProcess.index);
+app.post('/batch-process', ensureAuthenticated, batchProcess.index);
 
 var configuration = require('./routes/configuration');
-app.get('/configuration', configuration.index);
-app.post('/configuration/save-exchange', configuration.saveExchange);
-app.post('/configuration/save-robocoin', configuration.saveRobocoin);
+app.get('/configuration', ensureAuthenticated, configuration.index);
+app.post('/configuration/save-exchange', ensureAuthenticated, configuration.saveExchange);
+app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
+
+var auth = require('./routes/auth');
+app.get('/login', auth.loginIndex);
+app.post('/login',
+    passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+    function (req, res) {
+        console.log('ok so far');
+        res.redirect('/'); }
+);
+app.get('/logout', auth.logout);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 
@@ -83,10 +145,18 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 process.on('SIGINT', function () {
     winston.log('Got SIGINT, exiting...');
     server.close();
+    toobusy.shutdown();
     process.exit();
 });
 process.on('SIGTERM', function () {
     winston.log('Got SIGTERM, exiting...');
     server.close();
+    toobusy.shutdown();
     process.exit();
 });
+
+function ensureAuthenticated (req, res, next) {
+
+    if (req.isAuthenticated()) { return next(); }
+    res.redirect('/login');
+};

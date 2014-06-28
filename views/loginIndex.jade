@@ -1,0 +1,22 @@
+extends layout
+
+block nav
+    li
+        a(href="/transactions") Transactions
+    li
+        a(href="/account-info") Account info
+    li
+        a(href="/buy-and-sell") Buy and Sell
+    li
+        a(href="/configuration") Configuration
+
+block content
+    form(role="form" method="POST" action="/login")
+        .form-group
+            label(for="username") Username
+            input(type="text" name="username" autocomplete="off").form-control#username
+        .form-group
+            label(for="password") Password
+            input(type="password" name="password").form-control#password
+        input(type="hidden" name="_csrf" value="#{ csrfToken }")
+        button(type="submit").btn.btn-default Submit
