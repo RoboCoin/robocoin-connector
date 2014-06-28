@@ -80,3 +80,8 @@ To run JsHint:
 There's also a watcher task that runs the tests and JsHint whenever a file changes:
 
         grunt watch
+
+## Demo
+
+There's a running demo at <https://still-sierra-5744.herokuapp.com>. The username is "bobo" and the password is
+"hu3SGRxU3UnWAMtXTFw".
