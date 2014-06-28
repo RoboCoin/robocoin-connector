@@ -54,7 +54,7 @@ app.use(helmet.hsts({ maxAge: 7776000000 })); // ninety days
 var userMapper = new UserMapper();
 passport.use(new LocalStrategy(function (username, password, callback) {
     userMapper.findByLogin(username, password, function (err, user) {
-        if (err) return callback(null, false, { message: 'Invalid login' });
+        if (err) return callback(null, false, { message: err });
         return callback(null, user);
     });
 }));

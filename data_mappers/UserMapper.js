@@ -3,35 +3,65 @@
 var Connection = require('./PgConnection');
 var bcrypt = require('bcrypt');
 var winston = require('winston');
+var async = require('async');
+var FailedLoginMapper = require('./FailedLoginMapper');
 
 var UserMapper = function () {
 };
 
 UserMapper.prototype.findByLogin = function (username, password, callback) {
 
-    Connection.getConnection().query(
-        'SELECT id, username, password_hash FROM users WHERE username = $1',
-        [username],
-        function (err, queryResult) {
+    var failedLoginMapper = new FailedLoginMapper();
 
-            if (err) return callback('Error looking up user by username: ' + err);
+    async.series([
+        function (asyncCallback) {
 
-            if (queryResult.rowCount == 0) {
-                winston.log('username not found: ' + username);
-                return callback({});
-            }
+            failedLoginMapper.isUserLockedOut(username, function (err, isLocked) {
 
-            bcrypt.compare(password, queryResult.rows[0].password_hash, function (err, compareResult) {
+                if (err) return asyncCallback(err);
 
-                if (!compareResult) {
-                    winston.log('Wrong password');
-                    return callback({});
-                }
+                if (isLocked) return asyncCallback('This account is temporarily locked out.');
 
-                return callback(null, queryResult.rows[0]);
+                return asyncCallback();
             });
+        },
+        function (asyncCallback) {
+
+            Connection.getConnection().query(
+                'SELECT id, username, password_hash FROM users WHERE username = $1',
+                [username],
+                function (err, queryResult) {
+
+                    if (err) return asyncCallback('Error looking up user by username: ' + err);
+
+                    if (queryResult.rowCount == 0) {
+                        winston.log('username not found: ' + username);
+                        return asyncCallback('Invalid login');
+                    }
+
+                    bcrypt.compare(password, queryResult.rows[0].password_hash, function (err, compareResult) {
+
+                        if (!compareResult) {
+
+                            winston.log('Wrong password');
+                            failedLoginMapper.incrementForUsername(username, function (err) {
+
+                                if (err) winston.log('Error incrementing failed logins: ' + err);
+
+                                return asyncCallback('Invalid login');
+                            });
+                        } else {
+
+                            return asyncCallback(null, queryResult.rows[0]);
+                        }
+                    });
+                }
+            );
         }
-    );
+    ], function (err, res) {
+        
+        return callback(err, res[1]);
+    });
 };
 
 UserMapper.prototype.findById = function (id, callback) {

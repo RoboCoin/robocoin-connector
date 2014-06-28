@@ -34,10 +34,10 @@ CREATE TABLE sessions (
 CREATE TABLE users (
     id SERIAL UNIQUE,
     username VARCHAR(32) NOT NULL UNIQUE,
-    password_hash VARCHAR(64) NOT NULL,
-    locked_until TIMESTAMP NULL DEFAULT NULL
+    password_hash VARCHAR(64) NOT NULL
 );
 CREATE TABLE failed_logins (
     user_id INT NOT NULL REFERENCES users (id),
     time_attempted TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
+CREATE INDEX ON failed_logins (time_attempted);
