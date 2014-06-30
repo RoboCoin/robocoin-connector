@@ -31,9 +31,10 @@ CREATE TABLE sessions (
     session_data text NOT NULL
 );
 
+CREATE EXTENSION citext;
 CREATE TABLE users (
     id SERIAL UNIQUE,
-    username VARCHAR(32) NOT NULL UNIQUE,
+    username CITEXT NOT NULL UNIQUE,
     password_hash VARCHAR(64) NOT NULL
 );
 CREATE TABLE failed_logins (

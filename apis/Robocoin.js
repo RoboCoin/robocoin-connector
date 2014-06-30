@@ -69,7 +69,7 @@ Robocoin.prototype._getRandomNumber = function (min, max) {
 
 Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
-    var numberOfTransactions = this._getRandomNumber(0, 5);
+    var numberOfTransactions = this._getRandomNumber(0, 2);
     var transactions = [];
     var actions = ['send', 'forward'];
     var now = (new Date()).getTime();
