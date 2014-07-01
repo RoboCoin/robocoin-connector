@@ -3,6 +3,8 @@
 var Connection = require('./PgConnection');
 var async = require('async');
 var Config = require('../lib/Config');
+var crypto = require('crypto');
+var encryptionKey = process.env.ENCRYPTION_KEY;
 
 var ConfigMapper = function () {
 };
@@ -16,8 +18,15 @@ ConfigMapper.prototype.findAll = function (callback) {
             if (err) return callback('Error getting config: ' + err);
 
             var config = {};
+            var decryptedValue;
+            var aesDecipher;
             for (var i = 0; i < res.rows.length; i++) {
-                config[res.rows[i].param_name] = res.rows[i].param_value;
+
+                aesDecipher = crypto.createDecipher('aes-256-cbc', encryptionKey);
+                decryptedValue = aesDecipher.update(res.rows[i].param_value, 'base64', 'utf8');
+                decryptedValue += aesDecipher.final('utf8');
+
+                config[res.rows[i].param_name] = decryptedValue;
             }
 
             return callback(null, new Config(config));
@@ -30,12 +39,18 @@ ConfigMapper.prototype.save = function (config, callback) {
     var dirtyParams = config.getDirty();
     var dirtyKeys = Object.keys(dirtyParams);
     var connection = Connection.getConnection();
+    var encryptedValue;
+    var aes;
 
     async.eachSeries(dirtyKeys, function (dirtyKey, asyncCallback) {
 
+        aes = crypto.createCipher('aes-256-cbc', encryptionKey);
+        encryptedValue = aes.update(dirtyParams[dirtyKey], 'utf8', 'base64');
+        encryptedValue += aes.final('base64');
+
         connection.query(
             'UPDATE config SET param_value = $1 WHERE param_name = $2',
-            [dirtyParams[dirtyKey], dirtyKey],
+            [encryptedValue, dirtyKey],
             function (err, res) {
 
                 if (err) return asyncCallback(err);
@@ -44,7 +59,7 @@ ConfigMapper.prototype.save = function (config, callback) {
 
                     connection.query(
                         'INSERT INTO config (param_name, param_value) VALUES ($1, $2)',
-                        [dirtyKey, dirtyParams[dirtyKey]],
+                        [dirtyKey, encryptedValue],
                         asyncCallback
                     );
 

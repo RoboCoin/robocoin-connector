@@ -53,9 +53,18 @@ Run scripts/database.sql:
 
 In production, set the NODE_ENV environment variable to "production".
 
+Set the ENCRYPTION_KEY environment variable to a secret, preferably created with scripts/getSecret
+
 In the directory containing package.json, run:
 
         npm install
+
+Run scripts/setConfigParam.js with
+
+* exchangeClass MockBitstamp
+* bitstamp.baseUrl https://www.bitstamp.net/api
+* robocoin.baseUrl https://www.somefutureurl.net/api/0
+* robocoin.testMode 1
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
 
