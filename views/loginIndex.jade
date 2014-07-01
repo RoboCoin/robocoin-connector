@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li
@@ -11,12 +12,4 @@ block nav
         a(href="/configuration") Configuration
 
 block content
-    form(role="form" method="POST" action="/login")
-        .form-group
-            label(for="username") Username
-            input(type="text" name="username" autocomplete="off").form-control#username
-        .form-group
-            label(for="password") Password
-            input(type="password" name="password").form-control#password
-        input(type="hidden" name="_csrf" value="#{ csrfToken }")
-        button(type="submit").btn.btn-default Submit
+    +loginForm(true)

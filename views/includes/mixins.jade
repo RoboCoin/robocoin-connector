@@ -1,0 +1,26 @@
+mixin loginForm(showSubmit)
+    form(role="form" method="POST" action="/login")
+        .form-group
+            label(for="username") Username
+            input(type="text" name="username" autocomplete="off").form-control#username
+        .form-group
+            label(for="password") Password
+            input(type="password" name="password").form-control#password
+        input(type="hidden" name="_csrf" value="#{ csrfToken }")
+        if (showSubmit)
+            button(type="submit").btn.btn-default Submit
+
+mixin loginModal(buttonText)
+    .modal.fade#loginModal
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    button(type="button" data-dismiss="modal").close
+                        span(aria-hidden="true") &times;
+                            span.sr-only Close
+                    h4.modal-title This feature requires re-authentication
+                .modal-body
+                    +loginForm
+                .modal-footer
+                    button(type="button" data-dismiss="modal").btn.btn-default Close
+                    button(type="button").btn.btn-primary#reauthButton #{ buttonText }

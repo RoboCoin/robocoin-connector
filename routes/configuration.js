@@ -4,6 +4,9 @@ var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
 var winston = require('winston');
 var Config = require('../lib/Config');
+var UserMapper = require('../data_mappers/UserMapper');
+var userMapper = new UserMapper();
+var async = require('async');
 
 exports.index = function (req, res) {
 
@@ -37,19 +40,29 @@ exports.saveExchange = function (req, res) {
     var apiKey = req.body.apiKey;
     var apiSecret = req.body.apiSecret;
     var testMode = (req.body.testMode == 'true');
+    var username = req.body.username;
+    var password = req.body.password;
 
-    var config = new Config();
-    config.set('bitstamp.clientId', clientId);
-    config.set('bitstamp.apiKey', apiKey);
-    config.set('bitstamp.secret', apiSecret);
-    if (testMode) {
-        config.set('exchangeClass', 'MockBitstamp');
-    } else {
-        config.set('exchangeClass', 'Bitstamp');
-    }
+    async.series([
+        function (asyncCallback) {
+            userMapper.findByLogin(username, password, asyncCallback);
+        },
+        function (asyncCallback) {
 
-    configMapper.save(config, function (err) {
-        if (err) return res.send(err);
+            var config = new Config();
+            config.set('bitstamp.clientId', clientId);
+            config.set('bitstamp.apiKey', apiKey);
+            config.set('bitstamp.secret', apiSecret);
+            if (testMode) {
+                config.set('exchangeClass', 'MockBitstamp');
+            } else {
+                config.set('exchangeClass', 'Bitstamp');
+            }
+
+            configMapper.save(config, asyncCallback);
+        }
+    ], function (err) {
+        if (err) return res.send(err, 400);
         return res.send('Exchange configuration saved');
     });
 };
@@ -59,14 +72,26 @@ exports.saveRobocoin = function (req, res) {
     var apiKey = req.body.apiKey;
     var apiSecret = req.body.apiSecret;
     var testMode = (req.body.testMode == 'true') ? '1' : '0';
+    var username = req.body.username;
+    var password = req.body.password;
 
-    var config = new Config();
-    config.set('robocoin.key', apiKey);
-    config.set('robocoin.secret', apiSecret);
-    config.set('robocoin.testMode', testMode);
+    async.series([
+        function (asyncCallback) {
+            userMapper.findByLogin(username, password, asyncCallback);
+        },
+        function (asyncCallback) {
 
-    configMapper.save(config, function (err) {
-        if (err) return res.send(err);
+            var config = new Config();
+            config.set('robocoin.key', apiKey);
+            config.set('robocoin.secret', apiSecret);
+            config.set('robocoin.testMode', testMode);
+
+            configMapper.save(config, asyncCallback);
+        }
+    ], function (err) {
+        if (err) return res.send(err, 400);
         return res.send('Robocoin configuration saved');
     });
+
+
 };

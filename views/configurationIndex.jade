@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li
@@ -48,6 +49,8 @@ block content
                 | Test Mode
         button.btn.btn-default#robocoinSave Save
 
+    +loginModal('Save')
+
 block footerJs
     script.
         $(document).ready(function () {
@@ -61,54 +64,70 @@ block footerJs
                 $element.after($alert);
             };
 
-            $('#exchangeSave').on('click', function () {
+            var $loginModal = $('#loginModal');
+            $loginModal.modal({ show: false });
+
+            $('#exchangeSave').on('click', function (event) {
 
                 event.preventDefault();
                 var $button = $(this);
+                $loginModal.modal('show');
+                var $reauthButton = $('#reauthButton');
 
-                $.ajax({
-                    url: '/configuration/save-exchange',
-                    type: 'POST',
-                    data: {
-                        clientId: $('#bitstampClientId').val(),
-                        apiKey: $('#bitstampApiKey').val(),
-                        apiSecret: $('#bitstampApiSecret').val(),
-                        testMode: $('#bitstampTestMode').is(':checked'),
-                        _csrf: $('#_csrf').val()
-                    },
-                    success: function (data) {
-                        $button.parent().find('.alert').remove();
-                        appendAlert(data, $button, 'success');
-                    },
-                    error: function (data) {
-                        $button.parent().find('.alert').remove();
-                        appendAlert(data.statusText, $button, 'danger');
-                    }
+                $reauthButton.off('click').on('click', function () {
+                    $.ajax({
+                        url: '/configuration/save-exchange',
+                        type: 'POST',
+                        data: {
+                            clientId: $('#bitstampClientId').val(),
+                            apiKey: $('#bitstampApiKey').val(),
+                            apiSecret: $('#bitstampApiSecret').val(),
+                            testMode: $('#bitstampTestMode').is(':checked'),
+                            _csrf: $('#_csrf').val(),
+                            username: $('#username').val(),
+                            password: $('#password').val()
+                        },
+                        success: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data, $reauthButton, 'success');
+                        },
+                        error: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data.responseText, $reauthButton, 'danger');
+                        }
+                    });
                 });
             });
 
-            $('#robocoinSave').on('click', function () {
+            $('#robocoinSave').off('click').on('click', function (event) {
 
                 event.preventDefault();
                 var $button = $(this);
+                $loginModal.modal('show');
+                var $reauthButton = $('#reauthButton');
 
-                $.ajax({
-                    url: '/configuration/save-robocoin',
-                    type: 'POST',
-                    data: {
-                        apiKey: $('#robocoinApiKey').val(),
-                        apiSecret: $('#robocoinApiSecret').val(),
-                        testMode: $('#robocoinTestMode').is(':checked'),
-                        _csrf: $('#_csrf').val()
-                    },
-                    success: function (data) {
-                        $button.parent().find('.alert').remove();
-                        appendAlert(data, $button, 'success');
-                    },
-                    error: function (data) {
-                        $button.parent().find('.alert').remove();
-                        appendAlert(data.statusText, $button, 'danger');
-                    }
+                $reauthButton.off('click').on('click', function () {
+
+                    $.ajax({
+                        url: '/configuration/save-robocoin',
+                        type: 'POST',
+                        data: {
+                            apiKey: $('#robocoinApiKey').val(),
+                            apiSecret: $('#robocoinApiSecret').val(),
+                            testMode: $('#robocoinTestMode').is(':checked'),
+                            _csrf: $('#_csrf').val(),
+                            username: $('#username').val(),
+                            password: $('#password').val()
+                        },
+                        success: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data, $reauthButton, 'success');
+                        },
+                        error: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data.responseText, $reauthButton, 'danger');
+                        }
+                    });
                 });
             });
         });

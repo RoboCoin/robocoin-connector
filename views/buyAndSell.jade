@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li
@@ -42,6 +43,7 @@ block content
                     label(for="btcSellPrice") BTC price
                     input(type="text").form-control#btcSellPrice
                 button.btn.btn-default#sellButton Sell
+    +loginModal('Make Trade')
 
 block footerJs
     script(src="/js/buy-and-sell.js")
@@ -54,7 +56,7 @@ block footerJs
             var _showAlert = function (message, type, $button) {
 
                 $('.alert').remove();
-                $button.after('<div class="alert alert-' + type + '">' + message + '<div>');
+                $button.after('<div class="alert alert-' + type + '" role="alert">' + message + '<div>');
                 // re-enable the fieldset
                 var $fieldset = $button.parent().parent();
                 $fieldset.attr('disabled', false);
@@ -77,22 +79,35 @@ block footerJs
                     data: {
                         btcAmount: $('#btc' + action + 'Amount').val(),
                         btcPrice: $('#btc' + action + 'Price').val(),
-                        _csrf: $('#_csrf').val()
+                        _csrf: $('#_csrf').val(),
+                        username: $('#username').val(),
+                        password: $('#password').val()
                     },
                     success: function(data) {
                         _showAlert(data, 'success', $button);
+                        $('#username').val('');
+                        $('#password').val('');
                     },
                     error: function (data) {
-                        _showAlert(data.statusText, 'danger', $button);
+                        _showAlert(data.responseText, 'danger', $button);
                     }
                 });
             };
 
+            var $loginModal = $('#loginModal');
+            $loginModal.modal({ show: false });
+
             $('#buyButton').on('click', function (event) {
-                _onTradeButtonClicked('Buy', event);
+                $loginModal.modal('show');
+                $('#reauthButton').off('click').on('click', function (event) {
+                    _onTradeButtonClicked('Buy', event);
+                });
             });
 
             $('#sellButton').on('click', function (event) {
-                _onTradeButtonClicked('Sell', event);
+                $loginModal.modal('show');
+                $('#reauthButton').off('click').on('click', function (event) {
+                    _onTradeButtonClicked('Sell', event);
+                });
             });
         });

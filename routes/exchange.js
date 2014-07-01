@@ -6,6 +6,8 @@ var Robocoin = require('../apis/Robocoin');
 var async = require('async');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
+var UserMapper = require('../data_mappers/UserMapper');
+var userMapper = new UserMapper();
 
 exports.lastPrice = function (req, res) {
 
@@ -27,6 +29,8 @@ exports.buy = function (req, res) {
 
     var amount = req.body.btcAmount;
     var price = req.body.btcPrice;
+    var username = req.body.username;
+    var password = req.body.password;
 
     configMapper.findAll(function (configErr, config) {
 
@@ -34,6 +38,9 @@ exports.buy = function (req, res) {
 
         var exchange = Exchange.get(config);
         async.series({
+            reauth: function (asyncCallback) {
+                userMapper.findByLogin(username, password, asyncCallback);
+            },
             buy: function (asyncCallback) {
                 exchange.buy(amount, price, asyncCallback);
             },
@@ -49,7 +56,7 @@ exports.buy = function (req, res) {
             }
         }, function (err, asyncResponse) {
 
-            if (err) return res.send(err);
+            if (err) return res.send(err, 400);
 
             return res.send('Bought ' + asyncResponse.buy.btc + ' for $' + Math.abs(asyncResponse.buy.fiat) +
                 ' with a fee of $' + asyncResponse.buy.fee);
@@ -61,18 +68,27 @@ exports.sell = function (req, res) {
 
     var amount = req.body.btcAmount;
     var price = req.body.btcPrice;
+    var username = req.body.username;
+    var password = req.body.password;
 
     configMapper.findAll(function (configErr, config) {
 
         if (configErr) return res.send(configErr);
 
         var exchange = Exchange.get(config);
-        exchange.sell(amount, price, function (err, sellOrder) {
+        async.series({
+            reauth: function (asyncCallback) {
+                userMapper.findByLogin(username, password, asyncCallback);
+            },
+            sell: function (asyncCallback) {
+                exchange.sell(amount, price, asyncCallback);
+            }
+        }, function (err, asyncResponse) {
 
-            if (err) return res.send(err);
+            if (err) return res.send(err, 400);
 
-            return res.send('Sold ' + Math.abs(sellOrder.btc) + ' for $' + Math.abs(sellOrder.fiat) +
-                ' with a fee of $' + sellOrder.fee);
+            return res.send('Sold ' + Math.abs(asyncResponse.sell.btc) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
+                ' with a fee of $' + asyncResponse.sell.fee);
         });
     });
 };
