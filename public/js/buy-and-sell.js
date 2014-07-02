@@ -1,8 +1,9 @@
 'use strict';
 
-var PriceUpdater = function (updateElementid) {
+var PriceUpdater = function (updateBuyElementId, updateSellElementId) {
 
-    this._element = $('#' + updateElementid);
+    this._buyElement = $('#' + updateBuyElementId);
+    this._sellElement = $('#' + updateSellElementId);
 };
 
 PriceUpdater.prototype._update = function (updateBuyElement, updateSellElement) {
@@ -10,8 +11,8 @@ PriceUpdater.prototype._update = function (updateBuyElement, updateSellElement) 
     $.ajax({
         url: '/exchange/last-prices',
         success: function (data) {
-            updateBuyElement.html(data.prices.buyPrice);
-            updateSellElement.html(data.prices.sellPrice);
+            updateBuyElement.html(data.buyPrice);
+            updateSellElement.html(data.sellPrice);
         },
         dataType: 'json'
     });
@@ -19,9 +20,8 @@ PriceUpdater.prototype._update = function (updateBuyElement, updateSellElement) 
 
 PriceUpdater.prototype.start = function () {
 
-    var updateElement = this._element;
     var self = this;
 
-    this._update(updateElement);
-    setInterval(function () { self._update(updateElement); }, 30000);
+    this._update(this._buyElement, this._sellElement);
+    setInterval(function () { self._update(this._buyElement, this._sellElement); }, 30000);
 };

@@ -18,10 +18,10 @@ block content
         .row
             h1 Buy and Sell
             div(style="float:left;width:100%;")
-                p(style="float:left;") Last exchange buy price: $
-                span#lastBuyPrice ----
-                p(style="float:left;") Last exchange sell price: $
-                span#lastSellPrice ----
+                p(style="float:left;") Buy price: $
+                span(style="clear:right;")#lastBuyPrice ----
+                p(style="float:left;clear:left;") Sell price: $
+                span(style="float:left;")#lastSellPrice ----
     input(type="hidden" value="#{ csrfToken }")#_csrf
     .col-md-12
         .row
