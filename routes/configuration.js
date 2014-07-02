@@ -7,12 +7,33 @@ var Config = require('../lib/Config');
 var UserMapper = require('../data_mappers/UserMapper');
 var userMapper = new UserMapper();
 var async = require('async');
+var fs = require('fs');
+
+var _getExchangeConfigs = function () {
+
+    var files = fs.readdirSync('apis/exchanges');
+    var configFiles = {};
+    var regex = /^(.*)\.json$/;
+    var matches;
+    var key;
+    for (var i = 0; i < files.length; i++) {
+        if (regex.test(files[i])) {
+            matches = files[i].match(regex);
+            key = matches[1].charAt(0).toLowerCase() + matches[1].slice(1);
+            configFiles[key] = require('../apis/exchanges/' + matches[0]);
+        }
+    }
+
+    return configFiles;
+};
 
 exports.index = function (req, res) {
 
     var message = (req.protocol == 'http') ?
         'Your connection is\'t secure. Don\'t submit this form over a public network.' :
         '';
+
+    var exchangeDefs = _getExchangeConfigs();
     configMapper.findAll(function (err, config) {
 
         if (err) {
@@ -29,19 +50,19 @@ exports.index = function (req, res) {
             robocoinTestMode: robocoinTestMode,
             bitstampTestMode: bitstampTestMode,
             csrfToken: req.csrfToken(),
-            securityMessage: message
+            securityMessage: message,
+            exchangeDefs: exchangeDefs
         });
     });
 };
 
 exports.saveExchange = function (req, res) {
 
-    var clientId = req.body.clientId;
-    var apiKey = req.body.apiKey;
-    var apiSecret = req.body.apiSecret;
-    var testMode = (req.body.testMode == 'true');
     var username = req.body.username;
     var password = req.body.password;
+    delete req.body.username;
+    delete req.body.password;
+    delete req.body._csrf;
 
     async.series([
         function (asyncCallback) {
@@ -50,13 +71,8 @@ exports.saveExchange = function (req, res) {
         function (asyncCallback) {
 
             var config = new Config();
-            config.set('bitstamp.clientId', clientId);
-            config.set('bitstamp.apiKey', apiKey);
-            config.set('bitstamp.secret', apiSecret);
-            if (testMode) {
-                config.set('exchangeClass', 'MockBitstamp');
-            } else {
-                config.set('exchangeClass', 'Bitstamp');
+            for (var configParam in req.body) {
+                config.set(configParam, req.body[configParam]);
             }
 
             configMapper.save(config, asyncCallback);

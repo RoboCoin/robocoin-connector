@@ -1,0 +1,11 @@
+{
+    "label": "Bitstamp",
+    "nonConfigurables": {
+        "baseUrl": { "label": "Base URL", "value": "https://www.bitstamp.net/api" }
+    },
+    "configurables": {
+        "clientId": { "label": "Client ID" },
+        "apiKey": { "label": "API Key" },
+        "secret": { "label": "API Secret" }
+    }
+}

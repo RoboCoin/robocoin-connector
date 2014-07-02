@@ -66,20 +66,15 @@ In the directory containing package.json, run:
 
 Run scripts/setConfigParam.js with 'heroku run bash'
 
-* exchangeClass MockBitstamp
-* bitstamp.baseUrl https://www.bitstamp.net/api
 * robocoin.baseUrl https://www.somefutureurl.net/api/0
-* robocoin.testMode 1
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
 
 ## Extending
 
-To write an exchange class for a new exchange, write a class that implements each of the public (not beginning with an
-underscore) methods in the Bitstamp class. Also implement the same module interface, with the getInstance method. The
-clearInstance method is useful for testing. Put this new class file in apis/exchanges and change the exchangeClass
-config parameter to point to the new class file. Test files can go in the respective directory under the "test"
-directory.
+To write an exchange class for a new exchange, write a class that implements each of the methods described below. Also
+implement the same module interface, with the getInstance method. The clearInstance method is useful for testing. Put
+this new class file in apis/exchanges. Test files can go in the respective directory under the "test" directory.
 
 The class constructor must accept a config object as its only parameter. It must use a reference to it as a member
 parameter. The reason for using a reference is so that the class can immediately use updates to the configuration.
@@ -107,6 +102,11 @@ The methods you must implement in this class are:
         getMinimumSellOrder(callback) : callback(err, { minimumSellOrder })
 
         getWithdrawMinersFee() : returns float
+
+In order for the exchange to be configurable from the Configuration page, you'll need to place a JSON file with the
+same name and in the same directory as the exchange class. This file must contain a valid JSON object, with a property
+for the exchange's label as displayed in the dashboard, an object for non-configurable parameters and an object for
+configurable parameters. See examples in the apis/exchanges directory. 
 
 ## Grunt
 

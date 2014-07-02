@@ -18,7 +18,7 @@ CREATE TABLE transactions (
 
 CREATE TABLE config (
     param_name varchar(256) not null unique,
-    param_value VARCHAR(64)
+    param_value TEXT
 );
 
 CREATE TABLE sessions (

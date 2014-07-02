@@ -21,18 +21,21 @@ block content
     input(type="hidden" value="#{ csrfToken }")#_csrf
     form(role="form")
         .form-group
-            label(for="bitstampClientId") Client ID
-            input(type="text" autocomplete="off").form-control#bitstampClientId
-        .form-group
-            label(for="bitstampApiKey") API Key
-            input(type="text" autocomplete="off").form-control#bitstampApiKey
-        .form-group
-            label(for="bitstampApiSecret") API Secret
-            input(type="text" autocomplete="off").form-control#bitstampApiSecret
-        .checkbox
-            label
-                input(type="checkbox" checked=bitstampTestMode==true)#bitstampTestMode
-                | Test Mode
+            label(for="exchangeName") Use
+            select.form-control#exchangeName
+                option
+                each exchange, name in exchangeDefs
+                    option(value="#{ name }") #{ exchange.label }
+        - each exchange, name in exchangeDefs
+            div(id="#{ name }Controls").exchangeControls.hidden
+                - each nonConfigurable, paramName in exchange.nonConfigurables
+                    .form-group
+                        label(for="#{ name }_#{ paramName }") #{ nonConfigurable.label }
+                        input(type="text" disabled value="#{ nonConfigurable.value }" id="#{ name }_#{ paramName }").form-control
+                - each configurable, paramName in exchange.configurables
+                    .form-group
+                        label(for="#{ name }_#{ paramName }") #{ configurable.label }
+                        input(type="text" autocomplete="off" id="#{ name }_#{ paramName }").form-control
         button.btn.btn-default#exchangeSave Save
 
     h1 Robocoin
@@ -75,18 +78,22 @@ block footerJs
                 var $reauthButton = $('#reauthButton');
 
                 $reauthButton.off('click').on('click', function () {
+
+                    var $controls = $('.exchangeControls.show input');
+                    var data = {};
+                    for (var i = 0; i < $controls.length; i++) {
+                        data[$controls[i].id.replace('_', '.')] = $controls[i].value;
+                    }
+                    data._csrf = $('#_csrf').val();
+                    data.username = $('#username').val();
+                    data.password = $('#password').val();
+                    var exchangeName = $('#exchangeName').val()
+                    data.exchangeClass = (exchangeName.charAt(0).toUpperCase() + exchangeName.slice(1));
+
                     $.ajax({
                         url: '/configuration/save-exchange',
                         type: 'POST',
-                        data: {
-                            clientId: $('#bitstampClientId').val(),
-                            apiKey: $('#bitstampApiKey').val(),
-                            apiSecret: $('#bitstampApiSecret').val(),
-                            testMode: $('#bitstampTestMode').is(':checked'),
-                            _csrf: $('#_csrf').val(),
-                            username: $('#username').val(),
-                            password: $('#password').val()
-                        },
+                        data: data,
                         success: function (data) {
                             $reauthButton.parent().find('.alert').remove();
                             appendAlert(data, $reauthButton, 'success');
@@ -129,5 +136,11 @@ block footerJs
                         }
                     });
                 });
+            });
+
+            $('#exchangeName').on('change', function () {
+
+                $('.exchangeControls').removeClass('show').addClass('hidden');
+                $('#' + $(this).val() + 'Controls').removeClass('hidden').addClass('show');
             });
         });

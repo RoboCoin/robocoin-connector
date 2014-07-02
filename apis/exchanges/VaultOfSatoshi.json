@@ -1,0 +1,10 @@
+{
+    "label": "Vault of Satoshi",
+    "nonConfigurables": {
+        "baseUrl": { "label": "Base URL", "value": "https://api.vaultofsatoshi.com" }
+    },
+    "configurables": {
+        "apiKey": { "label": "API Key" },
+        "apiSecret": { "label": "API Secret" }
+    }
+}
