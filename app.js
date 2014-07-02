@@ -95,7 +95,7 @@ app.get('/account-info', ensureAuthenticated, index.accountInfo);
 app.get('/buy-and-sell', ensureAuthenticated, index.buyAndSell);
 
 var exchange = require('./routes/exchange');
-app.get('/exchange/last-price', ensureAuthenticated, exchange.lastPrice);
+app.get('/exchange/last-prices', ensureAuthenticated, exchange.lastPrices);
 app.post('/exchange/buy', ensureAuthenticated, exchange.buy);
 app.post('/exchange/sell', ensureAuthenticated, exchange.sell);
 app.get('/exchange/latest-transactions', ensureAuthenticated, exchange.latestTransactions);

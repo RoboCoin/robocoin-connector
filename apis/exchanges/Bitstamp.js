@@ -11,7 +11,9 @@ var Bitstamp = function (config) {
 
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
-    this._timeGotLastPrice = null;
+    this._timeGotLastPrices = null;
+    this._nextBuyPrice = null;
+    this._nextSellPrice = null;
 };
 
 Bitstamp.prototype._request = request;
@@ -131,7 +133,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
             id: tradeOrder.id,
             type: tradeOrder.type,
             fiat: tradeOrder.usd,//
-            btc: tradeOrder.btc,//
+            xbt: tradeOrder.btc,//
             fee: tradeOrder.fee,//
             order_id: tradeOrder.order_id
         };
@@ -168,46 +170,75 @@ Bitstamp.prototype.withdraw = function (amount, address, callback) {
 };
 
 Bitstamp.prototype.userTransactions = function (callback) {
-    this._post('/user_transactions/', callback);
+    this._post('/user_transactions/', function (err, exchangeTransactions) {
+
+        if (err) return callback('Error getting transactions: ' + err);
+
+        var transactions = [];
+        var transaction;
+        for (var i = 0; i < exchangeTransactions.length; i++) {
+
+            transaction = exchangeTransactions[i];
+            transactions.push({
+                datetime: transaction.datetime,
+                type: transaction.type,
+                fiat: transaction.usd,
+                xbt: transaction.btc,
+                fee: transaction.fee,
+                order_id: transaction.order_id
+            });
+        }
+
+        return callback(null, transactions);
+    });
 };
 
-Bitstamp.prototype.getLastPrice = function (callback) {
+Bitstamp.prototype.getPrices = function (callback) {
 
     var FIVE_MINUTES = 300000;
 
     // cache the price for five minutes
-    if (this._timeGotLastPrice === null || this._timeGotLastPrice.getTime() < ((new Date()).getTime() - FIVE_MINUTES)) {
+    if (this._timeGotLastPrices === null || this._timeGotLastPrices.getTime() < ((new Date()).getTime() - FIVE_MINUTES)) {
 
-        this._request('https://www.bitstamp.net/api/ticker/', { json: true }, function (err, response, body) {
+        this._request('https://www.bitstamp.net/api/order_book/', { json: true }, function (err, response, body) {
 
-            if (err) return callback('Get last price error: ' + err);
+            if (err) return callback('Get last prices error: ' + err);
 
-            this._lastPrice = body.last;
-            this._timeGotLastPrice = new Date();
+            this._nextBuyPrice = body.asks[0][0];
+            this._nextSellPrice = body.bids[0][0];
+            this._timeGotLastPrices = new Date();
 
-            return callback(null, { price: body.last });
+            return callback(null, { buyPrice: this._nextBuyPrice, sellPrice: this._nextSellPrice });
         });
 
     } else {
 
-        return callback(null, { price: this._lastPrice });
+        return callback(null, { buyPrice: this._nextBuyPrice, sellPrice: this._nextSellPrice });
     }
 };
 
-Bitstamp.prototype.getMinimumOrder = function (callback) {
+Bitstamp.prototype.getMinimumOrders = function (callback) {
 
-    this.getLastPrice(function (err, lastPrice) {
+    this.getPrices(function (err, prices) {
 
         if (err) return callback('Error getting last price: ' + err);
 
         var minimumOrderInFiat = new bigdecimal.BigDecimal(5.00);
-        lastPrice = new bigdecimal.BigDecimal(lastPrice.price);
-        var minimumOrderInXbt = minimumOrderInFiat
-            .divide(lastPrice, bigdecimal.MathContext.DECIMAL128())
+        var buyPrice = new bigdecimal.BigDecimal(prices.buyPrice);
+        var minimumBuyOrderInXbt = minimumOrderInFiat
+            .divide(buyPrice, bigdecimal.MathContext.DECIMAL128())
+            .setScale(8, bigdecimal.RoundingMode.DOWN())
+            .toPlainString();
+        var sellPrice = new bigdecimal.BigDecimal(prices.sellPrice);
+        var minimumSellOrderInXbt = minimumOrderInFiat
+            .divide(sellPrice, bigdecimal.MathContext.DECIMAL128())
             .setScale(8, bigdecimal.RoundingMode.DOWN())
             .toPlainString();
 
-        return callback(null, { minimumOrder: parseFloat(minimumOrderInXbt) });
+        return callback(null, {
+            minimumBuy: parseFloat(minimumBuyOrderInXbt),
+            minimumSell: parseFloat(minimumSellOrderInXbt)
+        });
     });
 };
 

@@ -112,16 +112,19 @@ describe('Autoconnector', function () {
             };
 
             var exchange = {
-                getLastPrice: function () {},
+                getPrices: function () {},
                 buy: function () {},
-                withdraw: function () {}
+                withdraw: function () {},
+                getMinimumOrders: function () {}
             };
-            sinon.stub(exchange, 'getLastPrice')
-                .callsArgWith(0, null, { price: 650.00000 });
+            sinon.stub(exchange, 'getPrices')
+                .callsArgWith(0, null, { buyPrice: 650.00000, sellPrice: 650.00000 });
             sinon.stub(exchange, 'buy')
                 .callsArgWith(2, null, { id: 123 });
             sinon.stub(exchange, 'withdraw')
                 .callsArgWith(2, null);
+            sinon.stub(exchange, 'getMinimumOrders')
+                .callsArgWith(0, null, { minimumBuy: 0.01, minimumSell: 0.01 });
 
             var robocoin = {
                 getAccountInfo: function () {}
@@ -131,7 +134,7 @@ describe('Autoconnector', function () {
 
             autoconnector._replenishAccountBtc(unprocessedTx, robocoin, exchange, function (err) {
 
-                assert(exchange.getLastPrice.called);
+                assert(exchange.getPrices.called);
                 assert(exchange.buy.calledWith(0.01, '715.00'));
                 assert(robocoin.getAccountInfo.called);
                 assert(exchange.withdraw.calledWith(0.01, 'address'));
@@ -151,17 +154,17 @@ describe('Autoconnector', function () {
             };
 
             var exchange = {
-                getLastPrice: function () {},
+                getPrices: function () {},
                 sell: function () {}
             };
-            sinon.stub(exchange, 'getLastPrice')
-                .callsArgWith(0, null, { price: 650.00 });
+            sinon.stub(exchange, 'getPrices')
+                .callsArgWith(0, null, { buyPrice: 650.00, sellPrice: 650.00 });
             sinon.stub(exchange, 'sell')
                 .callsArgWith(2, null, {});
 
             autoconnector._sellBtcForFiat(unprocessedTx, exchange, function (err) {
 
-                assert(exchange.getLastPrice.called);
+                assert(exchange.getPrices.called);
                 assert(exchange.sell.calledWith(0.01, '585.00'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
 
@@ -227,17 +230,17 @@ describe('Autoconnector', function () {
 
             var exchange = {
                 getMinimumOrder: function () {},
-                getLastPrice: function () {}
+                getPrices: function () {}
             };
             sinon.stub(exchange, 'getMinimumOrder')
                 .callsArgWith(0, null, { minimumOrder: 0.011 });
-            sinon.stub(exchange, 'getLastPrice')
+            sinon.stub(exchange, 'getPrices')
                 .callsArgWith(0, null, { price: 650.00 });
 
             autoconnector.batchProcess(unprocessedTransactions, '123abc', exchange,  function (err) {
 
                 assert(exchange.getMinimumOrder.called);
-                assert(exchange.getLastPrice.called);
+                assert(exchange.getPrices.called);
                 assert(autoconnector._batchBuy.calledWith('0.01200000', [t3, t4, t4]));
                 assert(autoconnector._batchSell.calledWith('0.01200000', [t1, t2, t6]));
 
@@ -251,8 +254,8 @@ describe('Autoconnector', function () {
                 datetime: '',
                 id: 0,
                 type: 0,
-                usd: 5.20,
-                btc: 0.008,
+                fiat: 5.20,
+                xbt: 0.008,
                 fee: 0,
                 order_id: 0
             };
@@ -260,7 +263,7 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector, '_saveTransaction')
                 .callsArg(2);
 
-            autoconnector._lastPrice = 650.00;
+            autoconnector._lastBuyPrice = 650.00;
             var buys = [];
             var t1 = {
                 robocoin_tx_type: 'send',
@@ -298,8 +301,8 @@ describe('Autoconnector', function () {
                 datetime: '',
                 id: 0,
                 type: 0,
-                usd: 5.20,
-                btc:0.008,
+                fiat: 5.20,
+                xbt:0.008,
                 fee: 0,
                 order_id: 0
             };
@@ -307,7 +310,7 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector, '_saveTransaction')
                 .callsArg(2);
 
-            autoconnector._lastPrice = 650.00;
+            autoconnector._lastSellPrice = 650.00;
             var sells = [];
             var t1 = {
                 robocoin_tx_type: 'forward',
@@ -351,7 +354,7 @@ describe('Autoconnector', function () {
                 datetime: '2014-06-13 12:34:45',
                 type: 0,
                 fiat: 10.00,
-                btc: 0.016,
+                xbt: 0.016,
                 withdraw_id: 345,
                 fee: 0.03,
                 order_id: 456

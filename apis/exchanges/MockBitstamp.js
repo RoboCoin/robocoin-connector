@@ -39,7 +39,7 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
             id: 0,
             type: 2,
             fiat: (price * amount),
-            btc: amount,
+            xbt: amount,
             fee: (price * amount * 0.005),
             order_id: 0
         });
@@ -61,7 +61,7 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
             id: 0,
             type: 2,
             fiat: (price * amount),
-            btc: amount,
+            xbt: amount,
             fee: (price * amount * 0.005),
             order_id: 0
         });
@@ -83,10 +83,9 @@ MockBitstamp.prototype.userTransactions = function (callback) {
     console.log('MockBitstamp::userTransactions');
     callback(null, [{
         datetime: '2014-06-16 14:41:14',
-        id: 0,
         type: 0,
-        usd: 0,
-        btc: 0,
+        fiat: 0,
+        xbt: 0,
         fee: 0,
         order_id: 0
     }]);
@@ -96,9 +95,12 @@ MockBitstamp.prototype.getMinimumOrder = function (callback) {
     return callback(null, { minimumOrder: 0.00769231 });
 };
 
-MockBitstamp.prototype.getLastPrice = function (callback) {
-    console.log('MockBitstamp::getLastPrice');
-    callback(null, { price: (Math.floor((Math.random() * (621 - 619 + 1)) + 619)) });
+MockBitstamp.prototype.getPrices = function (callback) {
+    console.log('MockBitstamp::getPrice');
+    callback(null, {
+        buyPrice: (Math.floor((Math.random() * (621 - 619 + 1)) + 619)),
+        sellPrice: (Math.floor((Math.random() * (621 - 619 + 1)) + 619))
+    });
 };
 
 var mockBitstamp = null;

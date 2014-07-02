@@ -8,7 +8,8 @@ module.exports = function (grunt) {
         },
         watch: {
             scripts: {
-                files: ['apis/**/*.js', 'routes/**/*.js', 'test/**/*.js', 'data_mappers/**/*.js', 'lib/**/*.js'],
+                files: ['apis/**/*.js', 'routes/**/*.js', 'test/**/*Test.js', 'data_mappers/**/*.js', 'lib/**/*.js',
+                    'Gruntfile.js'],
                 tasks: ['mochacli', 'jshint']
             }
         },
@@ -20,7 +21,8 @@ module.exports = function (grunt) {
                     module: true,
                     exports: true,
                     setTimeout: true,
-                    console: true
+                    console: true,
+                    Buffer: true
                 },
                 globalstrict: true
             }

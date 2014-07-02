@@ -5,12 +5,13 @@ var PriceUpdater = function (updateElementid) {
     this._element = $('#' + updateElementid);
 };
 
-PriceUpdater.prototype._update = function (updateElement) {
+PriceUpdater.prototype._update = function (updateBuyElement, updateSellElement) {
 
     $.ajax({
-        url: '/exchange/last-price',
+        url: '/exchange/last-prices',
         success: function (data) {
-            updateElement.html(data.price);
+            updateBuyElement.html(data.prices.buyPrice);
+            updateSellElement.html(data.prices.sellPrice);
         },
         dataType: 'json'
     });

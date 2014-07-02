@@ -9,18 +9,18 @@ var configMapper = new ConfigMapper();
 var UserMapper = require('../data_mappers/UserMapper');
 var userMapper = new UserMapper();
 
-exports.lastPrice = function (req, res) {
+exports.lastPrices = function (req, res) {
 
     configMapper.findAll(function (configErr, config) {
 
         if (configErr) return res.json(500, { price: configErr });
 
         var exchange = Exchange.get(config);
-        exchange.getLastPrice(function (err, lastPrice) {
+        exchange.getPrices(function (err, prices) {
 
             if (err) return res.json(500, { price: err });
 
-            res.json({ price: lastPrice.price });
+            res.json({ buyPrice: prices.buyPrice, sellPrice: prices.sellPrice});
         });
     });
 };
@@ -58,7 +58,7 @@ exports.buy = function (req, res) {
 
             if (err) return res.send(err, 400);
 
-            return res.send('Bought ' + asyncResponse.buy.btc + ' for $' + Math.abs(asyncResponse.buy.fiat) +
+            return res.send('Bought ' + asyncResponse.buy.xbt + ' for $' + Math.abs(asyncResponse.buy.fiat) +
                 ' with a fee of $' + asyncResponse.buy.fee);
         });
     });
@@ -87,7 +87,7 @@ exports.sell = function (req, res) {
 
             if (err) return res.send(err, 400);
 
-            return res.send('Sold ' + Math.abs(asyncResponse.sell.btc) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
+            return res.send('Sold ' + Math.abs(asyncResponse.sell.xbt) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
                 ' with a fee of $' + asyncResponse.sell.fee);
         });
     });

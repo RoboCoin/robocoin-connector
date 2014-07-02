@@ -32,7 +32,6 @@ block content
     div.table-responsive
         table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
             tr
-                th Transaction ID
                 th Order ID
                 th Type
                 th Fiat
@@ -66,11 +65,10 @@ block footerJs
                         }
 
                         rows += '<tr class="' + rowClass + '">';
-                        rows += '<td>' + row.id + '</td>';
                         rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
                         rows += '<td>' + TYPES[row.type] + '</td>';
                         rows += '<td>' + (row.fiat ?  row.fiat : '') + '</td>';
-                        rows += '<td>' + row.btc + '</td>';
+                        rows += '<td>' + row.xbt + '</td>';
                         rows += '<td>' + row.fee + '</td>';
                         rows += '<td>' + (new Date(row.datetime).toUTCString()) + '</td>';
                         rows += '</tr>';

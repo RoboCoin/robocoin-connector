@@ -25,6 +25,7 @@
     "passport-local": "^1.0.0",
     "pg": "^3.3.0",
     "prompt": "^0.2.13",
+    "querystring": "^0.2.0",
     "request": "^2.36.0",
     "serve-favicon": "^2.0.1",
     "toobusy": "^0.2.4",

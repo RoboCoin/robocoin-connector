@@ -45,14 +45,16 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
     async.waterfall([
         function (asyncCallback) {
 
-            exchange.getLastPrice(asyncCallback);
+            // get the price of bitcoin
+            exchange.getPrices(asyncCallback);
         },
-        function (lastPrice, asyncCallback) {
+        function (prices, asyncCallback) {
 
-            lastPrice = new bigdecimal.BigDecimal(lastPrice.price);
+            // pad the price and place the order
+            price = new bigdecimal.BigDecimal(prices.buyPrice);
 
             var price =
-                lastPrice.multiply(
+                price.multiply(
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
 
@@ -60,11 +62,13 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         },
         function (fetchedBuyOrder, asyncCallback) {
 
+            // get the executed order and get account info for the withdraw address
             buyOrder = fetchedBuyOrder;
             robocoin.getAccountInfo(asyncCallback);
         },
         function (accountInfo, asyncCallback) {
 
+            // do the withdrawal
             exchange.withdraw(
                 Math.abs(unprocessedTx.robocoin_xbt),
                 accountInfo.deposit_address,
@@ -73,6 +77,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         },
         function (asyncCallback) {
 
+            // merge the exchange with the robocoin transaction and save it
             unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, buyOrder);
 
             winston.info('we bought ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
@@ -91,7 +96,7 @@ Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedT
 
     unprocessedTx.exchange_tx_id = exchangeOrder.id;
     unprocessedTx.exchange_fiat = exchangeOrder.fiat;
-    unprocessedTx.exchange_xbt = exchangeOrder.btc;
+    unprocessedTx.exchange_xbt = exchangeOrder.xbt;
     unprocessedTx.exchange_order_id = exchangeOrder.order_id;
     unprocessedTx.exchange_tx_fee = exchangeOrder.fee;
     unprocessedTx.exchange_tx_time = exchangeOrder.datetime;
@@ -106,15 +111,14 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, cal
     async.waterfall([
         function (asyncCallback) {
 
-            exchange.getLastPrice(asyncCallback);
+            exchange.getPrices(asyncCallback);
         },
-        function (lastPrice, asyncCallback) {
+        function (prices, asyncCallback) {
 
-            lastPrice = new bigdecimal.BigDecimal(lastPrice.price);
-            var price
-                = lastPrice.multiply(
-                    new bigdecimal.BigDecimal(1 - MARKET_PAD))
-                    .setScale(2, bigdecimal.RoundingMode.DOWN());
+            var price = new bigdecimal.BigDecimal(prices.sellPrice);
+            price = price.multiply(
+                new bigdecimal.BigDecimal(1 - MARKET_PAD))
+                .setScale(2, bigdecimal.RoundingMode.DOWN());
 
             exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
         },
@@ -228,12 +232,13 @@ Autoconnector.prototype.run = function (callback) {
     });
 };
 
-Autoconnector.prototype._lastPrice = null;
+Autoconnector.prototype._lastBuyPrice = null;
+Autoconnector.prototype._lastSellPrice = null;
 
 Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depositAddress, exchange, callback) {
 
     var self = this;
-    var lastPrice = new bigdecimal.BigDecimal(this._lastPrice);
+    var lastPrice = new bigdecimal.BigDecimal(this._lastBuyPrice);
     var price = lastPrice
         .multiply(new bigdecimal.BigDecimal(1 + MARKET_PAD))
         .setScale(2, bigdecimal.RoundingMode.DOWN())
@@ -252,8 +257,8 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
         },
         function (order, waterfallCallback) {
 
-            winston.info('withdrawing ' + order.btc + 'xbt to ' + depositAddress);
-            exchange.withdraw(order.btc, depositAddress, function (err) {
+            winston.info('withdrawing ' + order.xbt + 'xbt to ' + depositAddress);
+            exchange.withdraw(order.xbt, depositAddress, function (err) {
 
                 if (err) return waterfallCallback('Exchange withdraw error: ' + err);
 
@@ -284,7 +289,7 @@ Autoconnector.prototype._batchBuy = function (aggregateBuy, aggregatedBuys, depo
 Autoconnector.prototype._batchSell = function (aggregateSell, aggregatedSells, exchange, callback) {
 
     var self = this;
-    var lastPrice = new bigdecimal.BigDecimal(this._lastPrice);
+    var lastPrice = new bigdecimal.BigDecimal(this._lastSellPrice);
     var price = lastPrice
         .multiply(new bigdecimal.BigDecimal(1 - MARKET_PAD))
         .setScale(2, bigdecimal.RoundingMode.DOWN())
@@ -329,7 +334,7 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
     tx.exchange_xbt = tx.robocoin_xbt;
 
     var robocoinTxXbt = new bigdecimal.BigDecimal(tx.robocoin_xbt);
-    var exchangeBtc = new bigdecimal.BigDecimal(exchangeTx.btc);
+    var exchangeBtc = new bigdecimal.BigDecimal(exchangeTx.xbt);
     var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.fiat);
 
     var txFiat = robocoinTxXbt
@@ -349,7 +354,7 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
 
 Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, exchange, callback) {
 
-    if (unprocessedTransactions.length === 0) {
+    if (unprocessedTransactions.length <= 1) {
         return callback();
     }
 
@@ -370,11 +375,14 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
         },
         function (minimumOrder, waterfallCallback) {
 
-            exchange.getLastPrice(function (err, lastPrice) {
+            // assuming only a couple of small orders that, combined, won't move the market, let's use one price for
+            // the whole batch
+            exchange.getPrices(function (err, price) {
 
                 if (err) return waterfallCallback('Error getting last price from exchange: ' + err);
 
-                self._lastPrice = lastPrice.price;
+                self._lastBuyPrice = price.buyPrice;
+                self._lastSellPrice = price.sellPrice;
                 var aggregateBuy = new bigdecimal.BigDecimal(0);
                 var aggregatedBuys = [];
                 var aggregateSell = new bigdecimal.BigDecimal(0);

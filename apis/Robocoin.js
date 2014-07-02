@@ -87,7 +87,8 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         action = actions[this._getRandomNumber(0, 1)];
         // how much fiat they put in or get out
-        fiat = new bigdecimal.BigDecimal(this._getRandomNumber(5, 20));
+        // one in ten times, it's a small amount
+        fiat = new bigdecimal.BigDecimal((this._getRandomNumber(1, 10) == 1) ? 5 : this._getRandomNumber(6, 8));
         // BTC price, between $615 and $625
         rate = new bigdecimal.BigDecimal(this._getRandomNumber(619, 621));
 

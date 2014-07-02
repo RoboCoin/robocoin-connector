@@ -5,6 +5,11 @@ Robocoin will not run this code on its platform. We suggest operators use a plat
 As the development of the connector progresses, leading up to release, we'll make owning this code as simple as
 possible for operators.
 
+Two common, expected scenarios for running the connector are:
+
+1. Operators for the code and host it on their own servers. Then can modify it freely.
+2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
+
 ## How it works
 
 On a buy, the user puts fiat into the kiosk. Then the bank transfers BTC from the operator's account to the user's
@@ -59,7 +64,7 @@ In the directory containing package.json, run:
 
         npm install
 
-Run scripts/setConfigParam.js with
+Run scripts/setConfigParam.js with 'heroku run bash'
 
 * exchangeClass MockBitstamp
 * bitstamp.baseUrl https://www.bitstamp.net/api
@@ -75,6 +80,33 @@ underscore) methods in the Bitstamp class. Also implement the same module interf
 clearInstance method is useful for testing. Put this new class file in apis/exchanges and change the exchangeClass
 config parameter to point to the new class file. Test files can go in the respective directory under the "test"
 directory.
+
+The class constructor must accept a config object as its only parameter. It must use a reference to it as a member
+parameter. The reason for using a reference is so that the class can immediately use updates to the configuration.
+
+The methods you must implement in this class are:
+
+        getBalance(callback) : callback(err, { btc_available, fiat_available, fee })
+
+        getDepositAddress(callback) : callback(err, { address })
+
+        buy(amount, price, callback) : callback(err, { datetime, id, type, fiat, xbt, fee, order_id })
+
+        sell(amount, price, callback) : callback(err, { datetime, id, type, fiat, xbt, fee, order_id })
+
+        withdraw(amount, address, callback) : callback(err)
+
+        userTransactions(callback) : callback(err, [{ datetime, type, fiat, xbt, fee, order_id }])
+
+        getBuyPrice(callback) : callback(err, { price })
+
+        getPrices(callback) : callback(err, { buyPrice, sellPrice })
+
+        getMinimumBuyOrder(callback) : callback(err, { minimumBuyOrder })
+
+        getMinimumSellOrder(callback) : callback(err, { minimumSellOrder })
+
+        getWithdrawMinersFee() : returns float
 
 ## Grunt
 

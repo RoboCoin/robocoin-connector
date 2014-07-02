@@ -18,8 +18,10 @@ block content
         .row
             h1 Buy and Sell
             div(style="float:left;width:100%;")
-                p(style="float:left;") Last exchange price: $
-                span#lastPrice ----
+                p(style="float:left;") Last exchange buy price: $
+                span#lastBuyPrice ----
+                p(style="float:left;") Last exchange sell price: $
+                span#lastSellPrice ----
     input(type="hidden" value="#{ csrfToken }")#_csrf
     .col-md-12
         .row
@@ -50,7 +52,7 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            var updater = new PriceUpdater('lastPrice');
+            var updater = new PriceUpdater('lastBuyPrice', 'lastSellPrice');
             updater.start();
 
             var _showAlert = function (message, type, $button) {
