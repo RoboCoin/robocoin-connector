@@ -9,13 +9,12 @@ var Exchange = require('./Exchange');
 var winston = require('winston');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 
-var MARKET_PAD = 0.10;
+var MARKET_PAD = 0.01;
 
 var Autoconnector = function () {
 
     this._robocoin = null;
     this._transactionMapper = null;
-    this._exchange = null;
     this._configMapper = null;
 };
 
@@ -57,7 +56,6 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
                 price.multiply(
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
-
             exchange.buy(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
         },
         function (fetchedBuyOrder, asyncCallback) {

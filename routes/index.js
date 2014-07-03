@@ -39,7 +39,7 @@ exports.accountInfo = function (req, res) {
                 });
             }
 
-            asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress;
+            asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress.address;
 
             return res.render('accountInfo', {
                 robocoinAccount: asyncRes.robocoinAccountInfo,

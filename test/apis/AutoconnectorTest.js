@@ -135,7 +135,7 @@ describe('Autoconnector', function () {
             autoconnector._replenishAccountBtc(unprocessedTx, robocoin, exchange, function (err) {
 
                 assert(exchange.getPrices.called);
-                assert(exchange.buy.calledWith(0.01, '715.00'));
+                assert(exchange.buy.calledWith(0.01, '656.50'));
                 assert(robocoin.getAccountInfo.called);
                 assert(exchange.withdraw.calledWith(0.01, 'address'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
@@ -165,7 +165,7 @@ describe('Autoconnector', function () {
             autoconnector._sellBtcForFiat(unprocessedTx, exchange, function (err) {
 
                 assert(exchange.getPrices.called);
-                assert(exchange.sell.calledWith(0.01, '585.00'));
+                assert(exchange.sell.calledWith(0.01, '643.49'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
 
                 done(err);
@@ -287,7 +287,7 @@ describe('Autoconnector', function () {
 
             autoconnector._batchBuy(0.008, buys, 'abc123', exchange, function (err) {
 
-                assert(exchange.buy.calledWith(0.008, '715.00'));
+                assert(exchange.buy.calledWith(0.008, '656.50'));
                 assert(exchange.withdraw.calledWith(0.008, 'abc123'));
                 assert(autoconnector._saveTransaction.called);
 
@@ -331,7 +331,7 @@ describe('Autoconnector', function () {
 
             autoconnector._batchSell(0.008, sells, exchange, function (err) {
 
-                assert(exchange.sell.calledWith(0.008, '585.00'));
+                assert(exchange.sell.calledWith(0.008, '643.49'));
                 assert(autoconnector._saveTransaction.called);
 
                 done(err);

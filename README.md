@@ -106,7 +106,7 @@ The methods you must implement in this class are:
 In order for the exchange to be configurable from the Configuration page, you'll need to place a JSON file with the
 same name and in the same directory as the exchange class. This file must contain a valid JSON object, with a property
 for the exchange's label as displayed in the dashboard, an object for non-configurable parameters and an object for
-configurable parameters. See examples in the apis/exchanges directory. 
+configurable parameters. See examples in the apis/exchanges directory.
 
 ## Grunt
 

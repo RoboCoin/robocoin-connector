@@ -49,7 +49,6 @@ block footerJs
 
                     var rows = '';
                     var row;
-                    var TYPES = ['deposit', 'withdrawal', 'market trade'];
                     var rowClass;
                     var btcAsFloat;
 
@@ -66,7 +65,7 @@ block footerJs
 
                         rows += '<tr class="' + rowClass + '">';
                         rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
-                        rows += '<td>' + TYPES[row.type] + '</td>';
+                        rows += '<td>' + row.type + '</td>';
                         rows += '<td>' + (row.fiat ?  row.fiat : '') + '</td>';
                         rows += '<td>' + row.xbt + '</td>';
                         rows += '<td>' + row.fee + '</td>';

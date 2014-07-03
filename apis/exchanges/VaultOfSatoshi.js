@@ -156,14 +156,37 @@ VaultOfSatoshi.prototype._doTrade = function (type, amount, price, callback) {
 
                     if (err) return callback(err);
 
-                    return callback(null, {
-                        datetime: tradeOrder.datetime,
-                        id: tradeOrder.order_id,
-                        type: tradeOrder.type,
-                        fiat: tradeOrder.fiat,
-                        xbt: tradeOrder.xbt,
-                        fee: tradeOrder.fee,
-                        order_id: tradeOrder.order_id
+                    self._post('/info/order_detail', { order_id: tradeOrder.order_id }, function (err, res) {
+
+                        if (err) return callback('Error getting order details: ' + err);
+
+                        var fiat = bigdecimal.BigDecimal.ZERO();
+                        var xbt = bigdecimal.BigDecimal.ZERO();
+                        var fee = bigdecimal.BigDecimal.ZERO();
+
+                        async.each(res,
+                            function (item, eachCallback) {
+
+                                fiat = fiat.add(new bigdecimal.BigDecimal(item.total.value));
+                                xbt = xbt.add(new bigdecimal.BigDecimal(item.units_traded.value));
+                                fee = fee.add(new bigdecimal.BigDecimal(item.fee.value));
+                                return eachCallback();
+                            },
+                            function (err) {
+
+                                if (err) return callback('Error processing order details: ' + err);
+
+                                return callback(null, {
+                                    datetime: tradeOrder.datetime,
+                                    id: tradeOrder.order_id,
+                                    type: tradeOrder.type,
+                                    fiat: fiat.toPlainString(),
+                                    xbt: xbt.toPlainString(),
+                                    fee: fee.toPlainString(),
+                                    order_id: tradeOrder.order_id
+                                });
+                            }
+                        );
                     });
                 }
             );
@@ -204,7 +227,7 @@ VaultOfSatoshi.prototype.userTransactions = function (callback) {
 
             transaction = res[i];
             transactions.push({
-                datetime: transaction.order_date,
+                datetime: Math.round(transaction.order_date / 1000),
                 type: transaction.type,
                 fiat: transaction.total.value,
                 xbt: transaction.units.value - transaction.units_remaining.value,

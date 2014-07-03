@@ -23,5 +23,5 @@ PriceUpdater.prototype.start = function () {
     var self = this;
 
     this._update(this._buyElement, this._sellElement);
-    setInterval(function () { self._update(this._buyElement, this._sellElement); }, 30000);
+    setInterval(function () { self._update(self._buyElement, self._sellElement); }, 30000);
 };
