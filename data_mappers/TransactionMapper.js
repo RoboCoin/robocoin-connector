@@ -87,6 +87,19 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     );
 };
 
+TransactionMapper.prototype.findProcessed = function (callback) {
+
+    Connection.getConnection().query(
+        'SELECT * FROM transactions WHERE exchange_tx_time IS NOT NULL ORDER BY exchange_tx_time DESC LIMIT 50',
+        function (err, res) {
+
+            if (err) return callback(err);
+
+            return callback(null, res.rows);
+        }
+    );
+};
+
 TransactionMapper.prototype.findLastTransactionTime = function (callback) {
 
     Connection.getConnection().query(

@@ -54,3 +54,13 @@ exports.getUnprocessedTransactions = function (req, res) {
         return res.send(outputTransactions);
     });
 };
+
+exports.getProcessedTransactions = function (req, res) {
+
+    transactionMapper.findProcessed(function (err, transactions) {
+
+        if (err) return res.send(err);
+
+        return res.send(transactions);
+    });
+};

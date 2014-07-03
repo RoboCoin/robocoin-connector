@@ -103,6 +103,7 @@ app.get('/exchange/latest-transactions', ensureAuthenticated, exchange.latestTra
 var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions);
 app.get('/robocoin/unprocessed-transactions', ensureAuthenticated, robocoin.getUnprocessedTransactions);
+app.get('/robocoin/processed-transactions', ensureAuthenticated, robocoin.getProcessedTransactions);
 
 var dashboard = require('./routes/dashboard');
 app.get('/', ensureAuthenticated, dashboard.index);

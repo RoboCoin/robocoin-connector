@@ -28,6 +28,25 @@ block content
                 th Manual transaction
     input(type="hidden" value="#{csrfToken}")#_csrf
     button#processButton.btn.btn-default Process
+
+    h1 Processed Transactions
+    div.table-responsive
+        table.table.table-striped.table-condensed.table-bordered#processedTransactions
+            tr
+                th RC TX ID
+                th Exchange TX ID
+                th RC TX Type
+                th RC Fiat
+                th Exchange Fiat
+                th RC XBT
+                th Exchange XBT
+                th RC TX Fee
+                th Exchange TX Fee
+                th RC Miner's Fee
+                th Exchange Miner's Fee
+                th RC TX Time
+                th Exchange TX Time
+
     h1 Exchange Transactions
     div.table-responsive
         table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
@@ -116,6 +135,41 @@ block footerJs
                 dataType: 'json',
                 success: function (data) {
                     writeRobocoinTable(data, 'unprocessedTransactions', true);
+                }
+            });
+
+            $.ajax({
+                url: '/robocoin/processed-transactions',
+                dataType: 'json',
+                success: function (data) {
+
+                    var transaction;
+                    var rows = [];
+                    var $row;
+
+                    for (var i = 0; i < data.length; i++) {
+
+                        transaction = data[i];
+
+                        $row = $('<tr></tr>')
+                            .addClass(transaction.action)
+                            .append('<td>' + transaction.robocoin_tx_id + '</td>')
+                            .append('<td>' + transaction.exchange_tx_id + '</td>')
+                            .append('<td>' + transaction.robocoin_tx_type + '</td>')
+                            .append('<td>' + transaction.robocoin_fiat + '</td>')
+                            .append('<td>' + transaction.exchange_fiat + '</td>')
+                            .append('<td>' + transaction.robocoin_xbt + '</td>')
+                            .append('<td>' + transaction.exchange_xbt + '</td>')
+                            .append('<td>' + transaction.robocoin_tx_fee + '</td>')
+                            .append('<td>' + transaction.exchange_tx_fee + '</td>')
+                            .append('<td>' + transaction.robocoin_miners_fee + '</td>')
+                            .append('<td>' + (transaction.exchange_miners_fee || 0) + '</td>')
+                            .append('<td>' + (new Date(transaction.robocoin_tx_time)).toUTCString() + '</td>')
+                            .append('<td>' + (new Date(transaction.exchange_tx_time)).toUTCString() + '</td>');
+                        rows.push($row);
+                    }
+                    console.log(rows[0]);
+                    $('#processedTransactions').append(rows);
                 }
             });
 
