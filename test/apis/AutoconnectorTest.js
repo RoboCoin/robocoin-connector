@@ -224,22 +224,22 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector, '_batchBuy')
                 .callsArg(4);
             sinon.stub(autoconnector, '_batchSell')
-                .callsArg(2);
+                .callsArg(3);
             sinon.stub(autoconnector._configMapper, 'findAll')
                 .callsArgWith(0, null, config);
 
             var exchange = {
-                getMinimumOrder: function () {},
+                getMinimumOrders: function () {},
                 getPrices: function () {}
             };
-            sinon.stub(exchange, 'getMinimumOrder')
-                .callsArgWith(0, null, { minimumOrder: 0.011 });
+            sinon.stub(exchange, 'getMinimumOrders')
+                .callsArgWith(0, null, { minimumBuy: 0.011, minimumSell: 0.011 });
             sinon.stub(exchange, 'getPrices')
                 .callsArgWith(0, null, { price: 650.00 });
 
             autoconnector.batchProcess(unprocessedTransactions, '123abc', exchange,  function (err) {
 
-                assert(exchange.getMinimumOrder.called);
+                assert(exchange.getMinimumOrders.called);
                 assert(exchange.getPrices.called);
                 assert(autoconnector._batchBuy.calledWith('0.01200000', [t3, t4, t4]));
                 assert(autoconnector._batchSell.calledWith('0.01200000', [t1, t2, t6]));

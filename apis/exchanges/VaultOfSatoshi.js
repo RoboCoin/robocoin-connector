@@ -94,6 +94,8 @@ VaultOfSatoshi.prototype.getDepositAddress = function (callback) {
 
     this._post('/info/wallet_address', { currency: 'btc' }, function (err, res) {
 
+        if (err) return callback('Error getting wallet address: ' + err);
+
         return callback(null, { address: res.wallet_address });
     });
 };
@@ -118,11 +120,11 @@ VaultOfSatoshi.prototype._doTrade = function (type, amount, price, callback) {
             order_currency: 'BTC',
             "units[precision]": 8,
             "units[value]": amount,
-            "units[value_int]": amount * Math.pow(10, 8),
+            "units[value_int]": Math.round(amount * Math.pow(10, 8)),
             payment_currency: 'USD',
             "price[precision]": 5,
             "price[value]": price,
-            "price[value_int]": price * Math.pow(10, 5)
+            "price[value_int]": Math.round(price * Math.pow(10, 5))
         },
         function (err, res) {
 

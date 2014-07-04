@@ -79,7 +79,7 @@ Bitstamp.prototype.getDepositAddress = function (callback) {
 
         if (err) return callback('Bitstamp get address error: ' + err);
 
-        return callback(null, res);
+        return callback(null, { address: res });
     });
 };
 
@@ -128,17 +128,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
         if (err) return callback(err);
 
-        var returnOrder = {
-            datetime: tradeOrder.datetime,
-            id: tradeOrder.id,
-            type: tradeOrder.type,
-            fiat: tradeOrder.usd,//
-            xbt: tradeOrder.btc,//
-            fee: tradeOrder.fee,//
-            order_id: tradeOrder.order_id
-        };
-
-        return callback(null, returnOrder);
+        return callback(null, tradeOrder);
     });
 };
 

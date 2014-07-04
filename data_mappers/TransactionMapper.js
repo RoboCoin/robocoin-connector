@@ -127,6 +127,8 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
             'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee ' +
         'FROM transactions ' +
         'WHERE exchange_tx_time IS NOT NULL ' +
+        'AND robocoin_xbt > 0 ' +
+        'AND exchange_xbt > 0' +
         'GROUP BY date, robocoin_tx_type',
         function (err, res) {
 

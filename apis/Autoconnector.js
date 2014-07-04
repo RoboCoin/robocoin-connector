@@ -226,7 +226,7 @@ Autoconnector.prototype.run = function (callback) {
     ], function (err) {
 
         self._isProcessing = false;
-        callback(err);
+        return callback(err);
     });
 };
 
@@ -369,7 +369,7 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
             return waterfallCallback();
         },
         function (waterfallCallback) {
-            exchange.getMinimumOrder(waterfallCallback);
+            exchange.getMinimumOrders(waterfallCallback);
         },
         function (minimumOrder, waterfallCallback) {
 
@@ -381,12 +381,15 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
                 self._lastBuyPrice = price.buyPrice;
                 self._lastSellPrice = price.sellPrice;
-                var aggregateBuy = new bigdecimal.BigDecimal(0);
+                var aggregateBuy = new bigdecimal.BigDecimal.ZERO();
                 var aggregatedBuys = [];
-                var aggregateSell = new bigdecimal.BigDecimal(0);
+                var aggregateSell = new bigdecimal.BigDecimal.ZERO();
                 var aggregatedSells = [];
                 var processedTransactions = [];
-                minimumOrder = new bigdecimal.BigDecimal(minimumOrder.minimumOrder);
+                var minimumBuy = new bigdecimal.BigDecimal(minimumOrder.minimumBuy);
+                var minimumSell = new bigdecimal.BigDecimal(minimumOrder.minimumSell);
+                var aggregateBuyAsNumber;
+                var aggregateSellAsNumber;
 
                 async.eachSeries(unprocessedTransactions, function (tx, eachSeriesCallback) {
 
@@ -401,12 +404,16 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
                         aggregatedSells.push(tx);
                     }
 
-                    if (aggregateBuy.compareTo(minimumOrder) == 1) {
+                    if (aggregateBuy.compareTo(minimumBuy) == 1) {
 
-                        aggregateBuy = aggregateBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
-                        self._batchBuy(aggregateBuy, aggregatedBuys, depositAddress, exchange, function (err) {
+                        aggregateBuyAsNumber = aggregateBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                        self._batchBuy(aggregateBuyAsNumber, aggregatedBuys, depositAddress, exchange, function (err) {
 
-                            if (err) return eachSeriesCallback('Batch buy error: ' + err);
+                            if (err) {
+                                // on error, just skip to the next
+                                winston.log('Batch buy error: ' + err);
+                                return eachSeriesCallback();
+                            }
 
                             for (var i = 0; i < aggregatedBuys.length; i++) {
                                 processedTransactions.push(aggregatedBuys[i].robocoin_tx_id);
@@ -416,12 +423,16 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
                             return eachSeriesCallback();
                         });
 
-                    } else if (aggregateSell.compareTo(minimumOrder) == 1) {
+                    } else if (aggregateSell.compareTo(minimumSell) == 1) {
 
-                        aggregateSell = aggregateSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
-                        self._batchSell(aggregateSell, aggregatedSells, function (err) {
+                        aggregateSellAsNumber = aggregateSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                        self._batchSell(aggregateSellAsNumber, aggregatedSells, exchange, function (err) {
 
-                            if (err) return eachSeriesCallback('Batch sell error: ' + err);
+                            if (err) {
+                                // on error, just skip to the next
+                                winston.log('Batch sell error: ' + err);
+                                return eachSeriesCallback();
+                            }
 
                             for (var i = 0; i < aggregatedSells.length; i++) {
                                 processedTransactions.push(aggregatedSells[i].robocoin_tx_id);
@@ -446,7 +457,11 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
             self._isProcessing = false;
             return waterfallCallback(null, processedTransactions);
         }
-    ], callback);
+    ], function (err) {
+
+        self._isProcessing = false;
+        return callback(err);
+    });
 };
 
 module.exports = Autoconnector;
