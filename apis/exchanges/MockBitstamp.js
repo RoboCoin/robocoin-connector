@@ -108,9 +108,8 @@ var mockBitstamp = null;
 module.exports = {
 
     getInstance: function (config) {
-        console.log('MockBitstamp::getInstance');
+
         if (mockBitstamp === null) {
-            console.log(' creating a new instance');
             mockBitstamp = new MockBitstamp();
         }
 
