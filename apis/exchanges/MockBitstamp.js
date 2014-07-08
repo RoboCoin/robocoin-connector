@@ -110,7 +110,7 @@ module.exports = {
     getInstance: function (config) {
 
         if (mockBitstamp === null) {
-            return new MockBitstamp();
+            mockBitstamp = new MockBitstamp();
         }
 
         return mockBitstamp;
