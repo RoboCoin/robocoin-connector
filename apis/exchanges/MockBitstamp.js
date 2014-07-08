@@ -1,7 +1,7 @@
 'use strict';
 
 var MockBitstamp = function () {
-
+    console.log('In MockBitstamp constructor');
 };
 
 MockBitstamp.prototype.getBalance = function (callback) {
@@ -109,7 +109,8 @@ module.exports = {
 
     getInstance: function (config) {
 
-        if (mockBitstamp == null) {
+        console.log('checking if mockBitstamp is null');
+        if (mockBitstamp === null) {
             console.log('mockBitstamp is null');
             mockBitstamp = new MockBitstamp();
         }
