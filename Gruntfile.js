@@ -24,7 +24,8 @@ module.exports = function (grunt) {
                     console: true,
                     Buffer: true
                 },
-                globalstrict: true
+                globalstrict: true,
+                maxcomplexity: 10
             }
         }
     });

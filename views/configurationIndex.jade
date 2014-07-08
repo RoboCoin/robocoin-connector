@@ -17,7 +17,7 @@ block content
     if (securityMessage != '')
         .alert.alert-danger #{ securityMessage }
     h1 Exchange
-    p You are using #{ currentExchange }
+    p You are using #{ currentExchange } trading in #{ currency }
     input(type="hidden" value="#{ csrfToken }")#_csrf
     form(role="form")
         .form-group
@@ -36,6 +36,11 @@ block content
                     .form-group
                         label(for="#{ name }_#{ paramName }") #{ configurable.label }
                         input(type="text" autocomplete="off" id="#{ name }_#{ paramName }").form-control
+                .form-group
+                    label(for="currency") Currency
+                    select.form-control.currencyControl
+                        - each currency in exchange.currencies
+                            option(value="#{ currency }") #{ currency }
         button.btn.btn-default#exchangeSave Save
 
     h1 Robocoin
@@ -84,6 +89,7 @@ block footerJs
                     for (var i = 0; i < $controls.length; i++) {
                         data[$controls[i].id.replace('_', '.')] = $controls[i].value;
                     }
+                    data.currency = $('.exchangeControls.show .currencyControl option:selected').val();
                     data._csrf = $('#_csrf').val();
                     data.username = $('#username').val();
                     data.password = $('#password').val();

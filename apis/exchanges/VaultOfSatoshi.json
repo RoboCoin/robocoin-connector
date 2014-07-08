@@ -6,5 +6,6 @@
     "configurables": {
         "apiKey": { "label": "API Key" },
         "apiSecret": { "label": "API Secret" }
-    }
+    },
+    "currencies": ["USD", "CAD"]
 }

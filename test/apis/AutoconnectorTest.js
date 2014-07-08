@@ -19,7 +19,8 @@ describe('Autoconnector', function () {
         autoconnector = new Autoconnector();
         autoconnector._configMapper = new ConfigMapper();
 
-        config = new Config({
+        config = Config.getInstance();
+        config.updateParams({
             robocoin: {
                 testMode: true
             },

@@ -11,7 +11,7 @@ var Robocoin = function (config) {
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
 
-    if (config.testMode == '1') {
+    if (config.get('robocoin.testMode') == '1') {
         this._mode = 'random';
     }
 };
@@ -26,16 +26,16 @@ Robocoin.prototype._post = function (endpoint, options, callback) {
 
     options.nonce = this._getNonce();
 
-    var hmac = crypto.createHmac('sha256', this._config.secret);
+    var hmac = crypto.createHmac('sha256', this._config.get('robocoin.secret'));
     hmac.update(JSON.stringify(options));
 
     var requestOptions = {
-        url: this._config.baseUrl + endpoint,
+        url: this._config.get('robocoin.baseUrl') + endpoint,
         form: options,
         method: 'POST',
         json: true,
         headers: {
-            'X-API-key': this._config.key,
+            'X-API-key': this._config.get('robocoin.key'),
             'X-API-signature': hmac.digest('hex')
         }
     };
@@ -144,7 +144,7 @@ module.exports = {
 
         if (robocoin === null) {
             // TODO check for test mode and return either tester or real API
-            robocoin = new Robocoin(config.getParamsByPrefix('robocoin'));
+            robocoin = new Robocoin(config);
         }
 
         return robocoin;

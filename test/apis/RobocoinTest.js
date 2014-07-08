@@ -9,7 +9,8 @@ describe('Robocoin', function () {
 
     it('includes a nonce, key and signature with every request', function (done) {
 
-        var config = new Config({
+        var config = Config.getInstance();
+        config.updateParams({
             'robocoin.testMode': '1',
             'robocoin.secret': 'gpNrX0HZii0UK4MNp2tm',
             'robocoin.baseUrl': 'https://www.somefutureurl.net/api/0',

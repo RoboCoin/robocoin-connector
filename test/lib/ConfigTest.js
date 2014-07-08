@@ -7,7 +7,8 @@ describe('Config', function () {
 
     it('initializes from an object', function () {
 
-        var config = new Config({
+        var config = Config.getInstance();
+        config.updateParams({
             'some.parameter': '1',
             'some.other.parameter': '2'
         });
@@ -18,7 +19,8 @@ describe('Config', function () {
 
     it('sets parameters', function () {
 
-        var config = new Config({
+        var config = Config.getInstance();
+        config.updateParams({
             'some.param': 'yeah',
             'some.other.param': 'okay'
         });
@@ -31,7 +33,8 @@ describe('Config', function () {
 
     it('can return a list of dirty parameters', function () {
 
-        var config = new Config({
+        var config = Config.getInstance();
+        config.updateParams({
             'some.param': 'yeah',
             'some.other.param': 'okay'
         });
@@ -46,7 +49,8 @@ describe('Config', function () {
 
     it('gets parameter sets by prefix', function () {
 
-        var config = new Config({
+        var config = Config.getInstance();
+        config.updateParams({
             'robocoin.this': 'this',
             'robocoin.that': 'that',
             'somethingElse.whatever': 'nope'

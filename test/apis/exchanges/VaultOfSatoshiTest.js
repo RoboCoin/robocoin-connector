@@ -3,13 +3,20 @@
 var VaultOfSatoshi = require('../../../apis/exchanges/VaultOfSatoshi');
 var sinon = require('sinon');
 var assert = require('assert');
-var config = require('../../../../connectorConfig').vaultOfSatoshi;
+var configFile = require('../../../../connectorConfig').vaultOfSatoshi;
+var Config = require('../../../lib/Config');
 
 describe('VaultOfSatoshi', function() {
 
     var vaultOfSatoshi;
 
     beforeEach(function () {
+
+        var config = Config.getInstance();
+
+        for (var param in configFile) {
+            config.set('vaultOfSatoshi.' + param, configFile[param]);
+        }
 
         vaultOfSatoshi = VaultOfSatoshi.getInstance(config);
         sinon.stub(vaultOfSatoshi, '_getNonce')

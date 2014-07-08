@@ -3,7 +3,7 @@
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
 var Config = require('../lib/Config');
-var config = new Config();
+var config = Config.getInstance();
 var prompt = require('prompt');
 
 

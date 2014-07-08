@@ -3,6 +3,7 @@
 var Connection = require('./PgConnection');
 var async = require('async');
 var Config = require('../lib/Config');
+var configInstance = null;
 var crypto = require('crypto');
 var encryptionKey = process.env.ENCRYPTION_KEY;
 
@@ -17,7 +18,7 @@ ConfigMapper.prototype.findAll = function (callback) {
 
             if (err) return callback('Error getting config: ' + err);
 
-            var config = {};
+            var params = {};
             var decryptedValue;
             var aesDecipher;
             for (var i = 0; i < res.rows.length; i++) {
@@ -26,10 +27,18 @@ ConfigMapper.prototype.findAll = function (callback) {
                 decryptedValue = aesDecipher.update(res.rows[i].param_value, 'base64', 'utf8');
                 decryptedValue += aesDecipher.final('utf8');
 
-                config[res.rows[i].param_name] = decryptedValue;
+                params[res.rows[i].param_name] = decryptedValue;
             }
 
-            return callback(null, new Config(config));
+            var returnConfig;
+            if (configInstance === null) {
+                configInstance = Config.getInstance();
+                configInstance.updateParams(params);
+            } else {
+                configInstance.updateParams(params);
+            }
+
+            return callback(null, configInstance);
         }
     );
 };
@@ -41,6 +50,7 @@ ConfigMapper.prototype.save = function (config, callback) {
     var connection = Connection.getConnection();
     var encryptedValue;
     var aes;
+    configInstance = config;
 
     async.eachSeries(dirtyKeys, function (dirtyKey, asyncCallback) {
 

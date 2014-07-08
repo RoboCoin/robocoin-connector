@@ -7,5 +7,6 @@
         "clientId": { "label": "Client ID" },
         "apiKey": { "label": "API Key" },
         "secret": { "label": "API Secret" }
-    }
+    },
+    "currencies": ["USD"]
 }

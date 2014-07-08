@@ -3,6 +3,7 @@
 var Bitstamp = require('../../../apis/exchanges/Bitstamp');
 var sinon = require('sinon');
 var assert = require('assert');
+var Config = require('../../../lib/Config');
 
 describe('Bitstamp', function () {
 
@@ -10,13 +11,15 @@ describe('Bitstamp', function () {
 
     beforeEach(function () {
 
-        Bitstamp.clearInstance();
-        bitstamp = Bitstamp.getInstance({
-            baseUrl: 'https://www.bitstamp.net/api',
-            clientId: '24916868473977308962',
-            secret: 'ZyyuQ9bTONt1axtVdLkw',
-            apiKey: 'zwr01RLxDGPxbIHEqeNn'
+        var config = Config.getInstance();
+        config.updateParams({
+            'bitstamp.baseUrl': 'https://www.bitstamp.net/api',
+            'bitstamp.clientId': '24916868473977308962',
+            'bitstamp.secret': 'ZyyuQ9bTONt1axtVdLkw',
+            'bitstamp.apiKey': 'zwr01RLxDGPxbIHEqeNn'
         });
+        Bitstamp.clearInstance();
+        bitstamp = Bitstamp.getInstance(config);
 
         sinon
             .stub(bitstamp, '_request')

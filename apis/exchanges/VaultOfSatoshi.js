@@ -5,6 +5,8 @@ var crypto = require('crypto');
 var querystring = require('querystring');
 var async = require('async');
 var bigdecimal = require('bigdecimal');
+var ConfigMapper = require('../../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
 
 var VaultOfSatoshi = function (config) {
     this._config = config;
@@ -27,17 +29,17 @@ VaultOfSatoshi.prototype._post = function (endpoint, options, callback) {
     options.nonce = nonce;
 
     var shasum = new Buffer(
-        crypto.createHmac('sha512', this._config.apiSecret)
+        crypto.createHmac('sha512', this._config.get('vaultOfSatoshi.apiSecret'))
             .update(endpoint + '\0' + querystring.stringify(options))
             .digest('hex')
             .toLowerCase()
     ).toString('base64');
 
     var requestOptions = {
-        url: this._config.baseUrl + endpoint,
+        url: this._config.get('vaultOfSatoshi.baseUrl') + endpoint,
         method: 'POST',
         headers: {
-            'Api-Key': this._config.apiKey,
+            'Api-Key': this._config.get('vaultOfSatoshi.apiKey'),
             'Api-Sign': shasum
         },
         form: options,
@@ -72,11 +74,16 @@ VaultOfSatoshi.prototype.getBalance = function (callback) {
         },
         fiatBalance: function (asyncCallback) {
 
-            self._post('/info/balance', { currency: 'usd' }, function (err, res) {
+            configMapper.findAll(function (err, config) {
 
-                if (err) return asyncCallback('Error getting VaultOfSatoshi fiat balance: ' + err);
+                if (err) return asyncCallback(err);
 
-                return asyncCallback(null, res);
+                self._post('/info/balance', { currency: config.get('currency').toLowerCase() }, function (err, res) {
+
+                    if (err) return asyncCallback('Error getting VaultOfSatoshi fiat balance: ' + err);
+
+                    return asyncCallback(null, res);
+                });
             });
         }
     }, function (err, res) {
@@ -113,87 +120,92 @@ VaultOfSatoshi.prototype._doTrade = function (type, amount, price, callback) {
     var self = this;
     var tradeOrder;
 
-    this._post(
-        '/trade/place',
-        {
-            type: type,
-            order_currency: 'BTC',
-            "units[precision]": 8,
-            "units[value]": amount,
-            "units[value_int]": Math.round(amount * Math.pow(10, 8)),
-            payment_currency: 'USD',
-            "price[precision]": 5,
-            "price[value]": price,
-            "price[value_int]": Math.round(price * Math.pow(10, 5))
-        },
-        function (err, res) {
+    configMapper.findAll(function (err, config) {
 
-            if (err) return callback(err);
+        if (err) return callback(err);
 
-            async.doWhilst(
-                function (doWhileCallback) {
-                    setTimeout(function () {
+        self._post(
+            '/trade/place',
+            {
+                type: type,
+                order_currency: 'BTC',
+                "units[precision]": 8,
+                "units[value]": amount,
+                "units[value_int]": Math.round(amount * Math.pow(10, 8)),
+                payment_currency: config.get('currency'),
+                "price[precision]": 5,
+                "price[value]": price,
+                "price[value_int]": Math.round(price * Math.pow(10, 5))
+            },
+            function (err, res) {
 
-                        self.userTransactions(function (err, transactions) {
+                if (err) return callback(err);
 
-                            if (err) return doWhileCallback(err);
+                async.doWhilst(
+                    function (doWhileCallback) {
+                        setTimeout(function () {
 
-                            for (var i = 0; i < transactions.length; i++) {
+                            self.userTransactions(function (err, transactions) {
 
-                                if (transactions[i].order_id == res.order_id) {
-                                    tradeOrder = transactions[i];
-                                    return doWhileCallback();
+                                if (err) return doWhileCallback(err);
+
+                                for (var i = 0; i < transactions.length; i++) {
+
+                                    if (transactions[i].order_id == res.order_id) {
+                                        tradeOrder = transactions[i];
+                                        return doWhileCallback();
+                                    }
                                 }
-                            }
 
-                            return doWhileCallback();
+                                return doWhileCallback();
+                            });
+
+                        }, 1000);
+                    },
+                    function () {
+                        return (typeof tradeOrder === 'undefined');
+                    },
+                    function (err) {
+
+                        if (err) return callback(err);
+
+                        self._post('/info/order_detail', { order_id: tradeOrder.order_id }, function (err, res) {
+
+                            if (err) return callback('Error getting order details: ' + err);
+
+                            var fiat = bigdecimal.BigDecimal.ZERO();
+                            var xbt = bigdecimal.BigDecimal.ZERO();
+                            var fee = bigdecimal.BigDecimal.ZERO();
+
+                            async.each(res,
+                                function (item, eachCallback) {
+
+                                    fiat = fiat.add(new bigdecimal.BigDecimal(item.total.value));
+                                    xbt = xbt.add(new bigdecimal.BigDecimal(item.units_traded.value));
+                                    fee = fee.add(new bigdecimal.BigDecimal(item.fee.value));
+                                    return eachCallback();
+                                },
+                                function (err) {
+
+                                    if (err) return callback('Error processing order details: ' + err);
+
+                                    return callback(null, {
+                                        datetime: tradeOrder.datetime,
+                                        id: tradeOrder.order_id,
+                                        type: tradeOrder.type,
+                                        fiat: fiat.toPlainString(),
+                                        xbt: xbt.toPlainString(),
+                                        fee: fee.toPlainString(),
+                                        order_id: tradeOrder.order_id
+                                    });
+                                }
+                            );
                         });
-
-                    }, 1000);
-                },
-                function () {
-                    return (typeof tradeOrder === 'undefined');
-                },
-                function (err) {
-
-                    if (err) return callback(err);
-
-                    self._post('/info/order_detail', { order_id: tradeOrder.order_id }, function (err, res) {
-
-                        if (err) return callback('Error getting order details: ' + err);
-
-                        var fiat = bigdecimal.BigDecimal.ZERO();
-                        var xbt = bigdecimal.BigDecimal.ZERO();
-                        var fee = bigdecimal.BigDecimal.ZERO();
-
-                        async.each(res,
-                            function (item, eachCallback) {
-
-                                fiat = fiat.add(new bigdecimal.BigDecimal(item.total.value));
-                                xbt = xbt.add(new bigdecimal.BigDecimal(item.units_traded.value));
-                                fee = fee.add(new bigdecimal.BigDecimal(item.fee.value));
-                                return eachCallback();
-                            },
-                            function (err) {
-
-                                if (err) return callback('Error processing order details: ' + err);
-
-                                return callback(null, {
-                                    datetime: tradeOrder.datetime,
-                                    id: tradeOrder.order_id,
-                                    type: tradeOrder.type,
-                                    fiat: fiat.toPlainString(),
-                                    xbt: xbt.toPlainString(),
-                                    fee: fee.toPlainString(),
-                                    order_id: tradeOrder.order_id
-                                });
-                            }
-                        );
-                    });
-                }
-            );
-        }
-    );
+                    }
+                );
+            }
+        );
+    });
 };
 
 VaultOfSatoshi.prototype.buy = function (amount, price, callback) {
@@ -244,16 +256,23 @@ VaultOfSatoshi.prototype.userTransactions = function (callback) {
 
 VaultOfSatoshi.prototype.getPrices = function (callback) {
 
-    this._post(
-        '/info/orderbook',
-        { order_currency: 'BTC', payment_currency: 'USD', group_orders: 1, round: 2, count: 1 },
-        function (err, res) {
+    var self = this;
 
-            if (err) return callback('Error getting prices: ' + err);
+    configMapper.findAll(function (err, config) {
 
-            return callback(null, { buyPrice: res.asks[0].price.value, sellPrice: res.bids[0].price.value });
-        }
-    );
+        if (err) return callback(err);
+
+        self._post(
+            '/info/orderbook',
+            { order_currency: 'BTC', payment_currency: 'USD', group_orders: 1, round: 2, count: 1 },
+            function (err, res) {
+
+                if (err) return callback('Error getting prices: ' + err);
+
+                return callback(null, { buyPrice: res.asks[0].price.value, sellPrice: res.bids[0].price.value });
+            }
+        );
+    });
 };
 
 VaultOfSatoshi.prototype.getMinimumOrders = function (callback) {

@@ -42,11 +42,13 @@ exports.index = function (req, res) {
         }
 
         var currentExchange = config.get('exchangeClass');
+        var currency = config.get('currency');
         var robocoinTestMode = config.get('robocoin.testMode');
         var bitstampTestMode = (config.get('exchangeClass') == 'MockBitstamp');
 
         return res.render('configurationIndex', {
             currentExchange: currentExchange,
+            currency: currency,
             robocoinTestMode: robocoinTestMode,
             bitstampTestMode: bitstampTestMode,
             csrfToken: req.csrfToken(),
@@ -70,7 +72,7 @@ exports.saveExchange = function (req, res) {
         },
         function (asyncCallback) {
 
-            var config = new Config();
+            var config = Config.getInstance();
             for (var configParam in req.body) {
                 config.set(configParam, req.body[configParam]);
             }
@@ -97,7 +99,7 @@ exports.saveRobocoin = function (req, res) {
         },
         function (asyncCallback) {
 
-            var config = new Config();
+            var config = Config.getInstance();
             config.set('robocoin.key', apiKey);
             config.set('robocoin.secret', apiSecret);
             config.set('robocoin.testMode', testMode);
@@ -108,6 +110,4 @@ exports.saveRobocoin = function (req, res) {
         if (err) return res.send(err, 400);
         return res.send('Robocoin configuration saved');
     });
-
-
 };
