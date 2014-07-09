@@ -1,7 +1,6 @@
 'use strict';
 
 var MockBitstamp = function () {
-    console.log('In MockBitstamp constructor');
 };
 
 MockBitstamp.prototype.getBalance = function (callback) {
@@ -15,7 +14,7 @@ MockBitstamp.prototype.getBalance = function (callback) {
 
 MockBitstamp.prototype.getDepositAddress = function (callback) {
     console.log('MockBitstamp::getDepositAddress : bac123');
-    callback(null, 'bac123');
+    callback(null, { address: 'bac123' });
 };
 
 /**
@@ -29,9 +28,9 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
 
     price = price * 0.9; // correct for padding
 
-    this.getMinimumOrder(function (err, minimumOrder) {
-        if (amount < minimumOrder.minimumOrder) {
-            return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
+    this.getMinimumOrders(function (err, minimumOrders) {
+        if (amount < minimumOrders.minimumBuy) {
+            return callback('Amount is below minimum of ' + minimumOrders.minimumBuy);
         }
 
         callback(null, {
@@ -51,9 +50,9 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
 
     price = price * 1.1; // correct for padding
 
-    this.getMinimumOrder(function (err, minimumOrder) {
-        if (amount < minimumOrder.minimumOrder) {
-            return callback('Amount is below minimum of ' + minimumOrder.minimumOrder);
+    this.getMinimumOrders(function (err, minimumOrders) {
+        if (amount < minimumOrders.minimumSell) {
+            return callback('Amount is below minimum of ' + minimumOrders.minimumSell);
         }
 
         callback(null, {
@@ -91,8 +90,8 @@ MockBitstamp.prototype.userTransactions = function (callback) {
     }]);
 };
 
-MockBitstamp.prototype.getMinimumOrder = function (callback) {
-    return callback(null, { minimumOrder: 0.00769231 });
+MockBitstamp.prototype.getMinimumOrders = function (callback) {
+    return callback(null, { minimumBuy: 0.00769231, minimumSell: 0.00769231 });
 };
 
 MockBitstamp.prototype.getPrices = function (callback) {
@@ -109,13 +108,10 @@ module.exports = {
 
     getInstance: function (config) {
 
-        console.log('checking if mockBitstamp is null');
         if (mockBitstamp === null) {
-            console.log('mockBitstamp is null');
             mockBitstamp = new MockBitstamp();
         }
 
-        console.log('returning mockBitstamp', mockBitstamp);
         return mockBitstamp;
     },
     clearInstance: function () {

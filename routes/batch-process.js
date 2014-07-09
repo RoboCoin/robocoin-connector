@@ -38,7 +38,7 @@ exports.index = function (req, res) {
         function (transactions, depositAddress, config, asyncCallback) {
 
             var exchange = Exchange.get(config);
-            console.log('about to batchProcess with ', exchange);
+
             autoconnector.batchProcess(transactions, depositAddress, exchange, asyncCallback);
         }
     ], function (err, transactionsProcessed) {

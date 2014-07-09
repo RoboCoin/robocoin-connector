@@ -369,7 +369,6 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
             return waterfallCallback();
         },
         function (waterfallCallback) {
-            console.log(exchange);
             exchange.getMinimumOrders(waterfallCallback);
         },
         function (minimumOrder, waterfallCallback) {

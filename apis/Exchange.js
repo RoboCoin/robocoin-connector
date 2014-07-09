@@ -3,9 +3,7 @@
 module.exports = {
     get: function (config) {
 
-        var Exchange = require('./exchanges/' + config.get('exchangeClass'));
-        var instance = Exchange.getInstance(config);
-        console.log('instance', instance);
-        return instance;
+        return require('./exchanges/' + config.get('exchangeClass'))
+            .getInstance(config);
     }
 };
