@@ -353,6 +353,7 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
 Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, exchange, callback) {
 
     if (unprocessedTransactions.length <= 1) {
+        winston.info('Only one unprocessed transaction, no need to process...');
         return callback();
     }
 
@@ -452,15 +453,11 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
                     return waterfallCallback(err, processedTransactions);
                 });
             });
-        },
-        function (processedTransactions, waterfallCallback) {
-            self._isProcessing = false;
-            return waterfallCallback(null, processedTransactions);
         }
-    ], function (err) {
+    ], function (err, processedTransactions) {
 
         self._isProcessing = false;
-        return callback(err);
+        return callback(err, processedTransactions);
     });
 };
 
