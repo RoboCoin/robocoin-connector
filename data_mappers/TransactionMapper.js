@@ -1,6 +1,9 @@
 'use strict';
 
+var ConfigMapper = require('./ConfigMapper');
+var configMapper = new ConfigMapper();
 var Connection = require('./PgConnection');
+var bigdecimal = require('bigdecimal');
 
 var TransactionMapper = function () {
 };
@@ -20,14 +23,14 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
                 robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
-                var params = [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.xbt,
-                    robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee];
+                var params = [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.currency,
+                    robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee];
 
                 query(
-                    'INSERT INTO transactions ' +
-                        '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_xbt, confirmations, ' +
-                        'robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee) ' +
-                    'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+                        'INSERT INTO transactions ' +
+                        '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_currency, ' +
+                        'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee) ' +
+                        'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
                     params,
                     function (err) {
 
@@ -45,32 +48,58 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 };
 
 TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, callback) {
-
+    console.log('saving', exchangeTx);
     var txTypes = ['deposit', 'withdrawal', 'market trade'];
 
     if (exchangeTx.exchange_tx_time !== null) {
         exchangeTx.exchange_tx_time = (new Date(exchangeTx.exchange_tx_time)).toUTCString();
     }
 
-    Connection.getConnection().query(
-        'UPDATE transactions ' +
-        'SET ' +
-            'exchange_tx_id = $1, ' +
-            'exchange_fiat = $2, ' +
-            'exchange_xbt = $3, ' +
-            'exchange_order_id = $4, ' +
-            'exchange_tx_fee = $5, ' +
-            'exchange_tx_time = $6 ' +
-        'WHERE robocoin_tx_id = $7',
-        [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_order_id,
-            exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time, exchangeTx.robocoin_tx_id],
-        function (err) {
+    configMapper.findAll(function (err, config) {
 
-            if (err) return callback('Error saving exchange transaction: ' + err);
+        if (err) return callback(err);
 
-            return callback();
+        var exchangeCurrency = config.get('exchangeCurrency');
+        var kioskCurrency = config.get('kioskCurrency');
+        var exchangeToKioskConversionRate = new bigdecimal.BigDecimal(config.get('exchangeToKioskConversionRate'));
+        var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.exchange_fiat);
+
+        var convertedExchangeFiat;
+        if (exchangeCurrency != kioskCurrency) {
+
+            convertedExchangeFiat = exchangeFiat
+                .divide(exchangeToKioskConversionRate, bigdecimal.MathContext.DECIMAL128())
+                .setScale(8, bigdecimal.RoundingMode.DOWN())
+                .toPlainString();
+
+        } else {
+
+            convertedExchangeFiat = exchangeFiat.toPlainString();
         }
-    );
+
+        Connection.getConnection().query(
+                'UPDATE transactions ' +
+                'SET ' +
+                'exchange_tx_id = $1, ' +
+                'exchange_fiat = $2, ' +
+                'exchange_xbt = $3, ' +
+                'exchange_tx_fee = $4, ' +
+                'exchange_tx_time = $5, ' +
+                'exchange_currency = $6,  ' +
+                'exchange_to_kiosk_conversion_rate = $7, ' +
+                'converted_exchange_fiat = $8 ' +
+                'WHERE robocoin_tx_id = $9',
+            [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_tx_fee,
+                exchangeTx.exchange_tx_time, exchangeCurrency, exchangeToKioskConversionRate.toPlainString(),
+                convertedExchangeFiat, exchangeTx.robocoin_tx_id],
+            function (err) {
+
+                if (err) return callback('Error saving exchange transaction: ' + err);
+
+                return callback();
+            }
+        );
+    });
 };
 
 TransactionMapper.prototype.findUnprocessed = function (callback) {
@@ -79,7 +108,7 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
         'SELECT * ' +
         'FROM transactions ' +
         'WHERE (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
-            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_order_id IS NULL)' +
+            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
         'ORDER BY robocoin_tx_time',
         function (err, res) {
             return callback(err, res.rows);
@@ -116,20 +145,21 @@ TransactionMapper.prototype.findLastTransactionTime = function (callback) {
 TransactionMapper.prototype.buildProfitReport = function (callback) {
 
     Connection.getConnection().query(
-        'SELECT ' +
+            'SELECT ' +
             'TO_CHAR(robocoin_tx_time, \'YYYY-MM-DD HH\') date, ' +
             'robocoin_tx_type txType, ' +
             'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
-            'COALESCE(SUM(exchange_fiat), 0) exchangeFiat, ' +
+            'COALESCE(SUM(converted_exchange_fiat), 0) exchangeFiat, ' +
             'COALESCE(SUM(robocoin_miners_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinMinersFee, ' +
-            'COALESCE(SUM(exchange_miners_fee * (ABS(exchange_fiat) / ABS(exchange_xbt))), 0) exchangeMinersFee, ' +
+            'COALESCE(SUM(exchange_miners_fee * (ABS(converted_exchange_fiat) / ABS(exchange_xbt))), 0) exchangeMinersFee, ' +
             'COALESCE(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinTxFee, ' +
-            'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee ' +
-        'FROM transactions ' +
-        'WHERE exchange_tx_time IS NOT NULL ' +
-        'AND robocoin_xbt > 0 ' +
-        'AND exchange_xbt > 0' +
-        'GROUP BY date, robocoin_tx_type',
+            'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee, ' +
+            'AVG(exchange_to_kiosk_conversion_rate) exchangeToKioskConversionRate ' +
+            'FROM transactions ' +
+            'WHERE exchange_tx_time IS NOT NULL ' +
+            'AND robocoin_xbt > 0 ' +
+            'AND exchange_xbt > 0' +
+            'GROUP BY date, robocoin_tx_type',
         function (err, res) {
 
             if (err) return callback('Error getting profit report: ' + err);

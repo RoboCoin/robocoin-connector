@@ -241,6 +241,7 @@ VaultOfSatoshi.prototype.userTransactions = function (callback) {
 
             transaction = res[i];
             transactions.push({
+                id: transaction.order_id,
                 datetime: Math.round(transaction.order_date / 1000),
                 type: transaction.type,
                 fiat: transaction.total.value,
@@ -264,7 +265,13 @@ VaultOfSatoshi.prototype.getPrices = function (callback) {
 
         self._post(
             '/info/orderbook',
-            { order_currency: 'BTC', payment_currency: 'USD', group_orders: 1, round: 2, count: 1 },
+            {
+                order_currency: 'BTC',
+                payment_currency: config.get('exchangeCurrency'),
+                group_orders: 1,
+                round: 2,
+                count: 1
+            },
             function (err, res) {
 
                 if (err) return callback('Error getting prices: ' + err);

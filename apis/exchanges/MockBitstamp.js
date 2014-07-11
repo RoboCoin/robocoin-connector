@@ -35,12 +35,11 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
 
         callback(null, {
             datetime: '2014-06-16 14:41:14',
-            id: 0,
+            id: '9845312',
             type: 2,
             fiat: (price * amount),
             xbt: amount,
-            fee: (price * amount * 0.005),
-            order_id: 0
+            fee: (price * amount * 0.005)
         });
     });
 };
@@ -57,12 +56,11 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
 
         callback(null, {
             datetime: '2014-06-16 14:41:14',
-            id: 0,
+            id: '9845333',
             type: 2,
             fiat: (price * amount),
             xbt: amount,
-            fee: (price * amount * 0.005),
-            order_id: 0
+            fee: (price * amount * 0.005)
         });
     });
 };
@@ -81,6 +79,7 @@ MockBitstamp.prototype.withdraw = function (amount, address, callback) {
 MockBitstamp.prototype.userTransactions = function (callback) {
     console.log('MockBitstamp::userTransactions');
     callback(null, [{
+        id: 1231654531,
         datetime: '2014-06-16 14:41:14',
         type: 0,
         fiat: 0,

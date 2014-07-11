@@ -134,14 +134,20 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
 /**
  *
- * @param amount
- * @param price Price to pay for the BTC
+ * @param amount Amount of BTC to buy
+ * @param price Bid price to pay for the BTC
  * @param callback callback(err, order)
  */
 Bitstamp.prototype.buy = function (amount, price, callback) {
     this._doTrade('buy', amount, price, callback);
 };
 
+/**
+ *
+ * @param amount Amount of BTC to sell
+ * @param price Ask price for the BTC
+ * @param callback callback(err, order)
+ */
 Bitstamp.prototype.sell = function (amount, price, callback) {
     this._doTrade('sell', amount, price, callback);
 };
@@ -170,6 +176,7 @@ Bitstamp.prototype.userTransactions = function (callback) {
 
             transaction = exchangeTransactions[i];
             transactions.push({
+                id: transaction.id,
                 datetime: transaction.datetime,
                 type: transaction.type,
                 fiat: transaction.usd,

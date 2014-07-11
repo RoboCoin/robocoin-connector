@@ -116,6 +116,7 @@ var configuration = require('./routes/configuration');
 app.get('/configuration', ensureAuthenticated, configuration.index);
 app.post('/configuration/save-exchange', ensureAuthenticated, configuration.saveExchange);
 app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
+app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
 

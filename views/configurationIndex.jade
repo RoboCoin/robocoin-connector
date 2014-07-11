@@ -17,7 +17,7 @@ block content
     if (securityMessage != '')
         .alert.alert-danger #{ securityMessage }
     h1 Exchange
-    p You are using #{ currentExchange } trading in #{ currency }
+    p You are using #{ currentExchange } trading in #{ exchangeCurrency }
     input(type="hidden" value="#{ csrfToken }")#_csrf
     form(role="form")
         .form-group
@@ -42,6 +42,27 @@ block content
                         - each currency in exchange.currencies
                             option(value="#{ currency }") #{ currency }
         button.btn.btn-default#exchangeSave Save
+
+    h1 Currency Conversion
+    p Configure this if the kiosk accepts and dispenses a currency other than what the exchange trades on.
+    form(role="form")
+        .form-group
+            label(for="exchangeCurrency") Exchange Currency
+            input(type="text" disabled value="#{ exchangeCurrency }").form-control#exchangeCurrency
+        .form-group
+            label(for="kioskCurrency") Kiosk Currency
+            select.form-control#kioskCurrency
+                option
+                each supportedCurrency in supportedCurrencies
+                    option(value="#{ supportedCurrency }" selected=kioskCurrency===supportedCurrency) #{ supportedCurrency }
+        .form-group
+            label(style="display:block;") Rate
+            span 1&nbsp;
+            span #{ exchangeCurrency }
+            span &nbsp;=
+            input(disabled value="#{ exchangeToKioskConversionRate }")#conversionRate
+            span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
+        button(disabled).btn.btn-default#currencyConversionSave Save
 
     h1 Robocoin
     form(role="form")
@@ -148,5 +169,44 @@ block footerJs
 
                 $('.exchangeControls').removeClass('show').addClass('hidden');
                 $('#' + $(this).val() + 'Controls').removeClass('hidden').addClass('show');
+            });
+
+            $('#kioskCurrency').on('change', function () {
+
+                var newValue = $(this).val();
+                $('#kioskCurrencySpan').html('&nbsp;' + newValue);
+                var isDisabled = (newValue === '');
+
+                $('#conversionRate').attr('disabled', isDisabled);
+                $('#currencyConversionSave').attr('disabled', isDisabled);
+            });
+
+            $('#currencyConversionSave').off('click').on('click', function (event) {
+
+                event.preventDefault();
+                $loginModal.modal('show');
+                var $reauthButton = $('#reauthButton');
+                $reauthButton.off('click').on('click', function () {
+
+                    $.ajax({
+                        url: '/configuration/save-currency-conversion',
+                        type: 'POST',
+                        data: {
+                            _csrf: $('#_csrf').val(),
+                            username: $('#username').val(),
+                            password: $('#password').val(),
+                            kioskCurrency: $('#kioskCurrency').val(),
+                            conversionRate: $('#conversionRate').val()
+                        },
+                        success: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data, $reauthButton, 'success');
+                        },
+                        error: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data.responseText, $reauthButton, 'danger');
+                        }
+                    });
+                });
             });
         });

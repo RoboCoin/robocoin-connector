@@ -46,7 +46,7 @@ block footerJs
                         buyProfitChart.draw(buyProfitData, {
                             title: 'Buy Profit',
                             curveType: 'function',
-                            vAxis: { title: 'Fiat' },
+                            vAxis: { title: '#{ kioskCurrency }' },
                             hAxis: { title: 'Month' },
                             animation: {
                                 duration: 1000
@@ -59,7 +59,7 @@ block footerJs
                         sellProfitChart.draw(sellProfitData, {
                             title: 'Sell Profit',
                             curveType: 'function',
-                            vAxis: { title: 'Fiat' },
+                            vAxis: { title: '#{ kioskCurrency }' },
                             hAxis: { title: 'Month' },
                             animation: {
                                 duration: 1000
@@ -71,7 +71,7 @@ block footerJs
                         var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
                         dailyCashChart.draw(dailyCashData, {
                             title: 'Daily Cash In/Out',
-                            vAxis: { title: 'Fiat' },
+                            vAxis: { title: '#{ kioskCurrency }' },
                             hAxis: { title: 'Day' },
                             animation: {
                                 duration: 1000
@@ -83,7 +83,7 @@ block footerJs
                         var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
                         hourlyCashChart.draw(hourlyCashData, {
                             title: 'Hourly Cash In/Out',
-                            vAxis: { title: 'Fiat' },
+                            vAxis: { title: '#{ kioskCurrency }' },
                             hAxis: { title: 'Hour' },
                             animation: {
                                 duration: 1000
@@ -95,7 +95,7 @@ block footerJs
                         var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
                         monthlyCashChart.draw(monthlyCashData, {
                             title: 'Monthly Cash In/Out',
-                            vAxis: { title: 'Fiat' },
+                            vAxis: { title: '#{ kioskCurrency }' },
                             hAxis: { title: 'Month' },
                             animation: {
                                 duration: 1000

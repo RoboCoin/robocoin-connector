@@ -113,6 +113,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             id: this._getRandomNumber(100, 1000000),
             action: action,
             fiat: fiat.setScale(2, bigdecimal.RoundingMode.DOWN()).toPlainString(),
+            currency: "USD",
             xbt: xbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             time: time,
             confirmations: confirmations,

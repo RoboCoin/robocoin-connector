@@ -76,14 +76,12 @@ describe('Autoconnector', function () {
             unprocessedTxs.push({
                 robocoin_tx_type: 'send',
                 exchange_withdrawal_id: null,
-                confirmations: null,
-                exchange_order_id: null
+                confirmations: null
             });
             unprocessedTxs.push({
                 robocoin_tx_type: 'forward',
                 exchange_withdrawal_id: null,
-                confirmations: 6,
-                exchange_order_id: null
+                confirmations: 6
             });
 
             sinon.stub(autoconnector._transactionMapper, 'findUnprocessed')
@@ -377,7 +375,6 @@ describe('Autoconnector', function () {
                     exchange_tx_id: 234,
                     exchange_fiat: '5.00',
                     exchange_xbt: 0.008,
-                    exchange_order_id: 456,
                     exchange_tx_fee: 0.03,
                     exchange_tx_time: '2014-06-13 12:34:45'
                 };

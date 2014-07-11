@@ -29,7 +29,6 @@ describe('TransactionMapper', function () {
         exchangeTx.exchange_tx_id = bitstampTxId;
         exchangeTx.exchange_fiat = 5.00;
         exchangeTx.exchange_xbt = 0.001;
-        exchangeTx.exchange_order_id = 123456;
         exchangeTx.exchange_tx_fee = 0.3;
         exchangeTx.exchange_withdrawal_id = 98764;
         exchangeTx.exchange_tx_time = '2014-06-11 23:59:59';

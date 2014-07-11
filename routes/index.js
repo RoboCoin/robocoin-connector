@@ -43,12 +43,24 @@ exports.accountInfo = function (req, res) {
 
             return res.render('accountInfo', {
                 robocoinAccount: asyncRes.robocoinAccountInfo,
-                exchangeAccount: asyncRes.exchangeAccountInfo
+                exchangeAccount: asyncRes.exchangeAccountInfo,
+                exchangeCurrency: config.get('exchangeCurrency')
             });
         });
     });
 };
 
 exports.buyAndSell = function (req, res) {
-    res.render('buyAndSell', { csrfToken: req.csrfToken() });
+
+    configMapper.findAll(function (err, config) {
+
+        var exchangeCurrency = '???';
+
+        if (!err) exchangeCurrency = config.get('exchangeCurrency');
+
+        res.render('buyAndSell', {
+            csrfToken: req.csrfToken(),
+            exchangeCurrency: exchangeCurrency
+        });
+    });
 };

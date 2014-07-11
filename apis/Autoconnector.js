@@ -95,7 +95,6 @@ Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedT
     unprocessedTx.exchange_tx_id = exchangeOrder.id;
     unprocessedTx.exchange_fiat = exchangeOrder.fiat;
     unprocessedTx.exchange_xbt = exchangeOrder.xbt;
-    unprocessedTx.exchange_order_id = exchangeOrder.order_id;
     unprocessedTx.exchange_tx_fee = exchangeOrder.fee;
     unprocessedTx.exchange_tx_time = exchangeOrder.datetime;
 

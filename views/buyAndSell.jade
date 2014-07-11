@@ -19,9 +19,11 @@ block content
             h1 Buy and Sell
             div(style="float:left;width:100%;")
                 p(style="float:left;") Buy price: $
-                span(style="clear:right;")#lastBuyPrice ----
+                span#lastBuyPrice ----
+                span(style="clear:right;") &nbsp;#{ exchangeCurrency }
                 p(style="float:left;clear:left;") Sell price: $
                 span(style="float:left;")#lastSellPrice ----
+                span(style="float:left;") &nbsp;#{ exchangeCurrency }
     input(type="hidden" value="#{ csrfToken }")#_csrf
     .col-md-12
         .row
