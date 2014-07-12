@@ -48,7 +48,7 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 };
 
 TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, callback) {
-    console.log('saving', exchangeTx);
+
     var txTypes = ['deposit', 'withdrawal', 'market trade'];
 
     if (exchangeTx.exchange_tx_time !== null) {
