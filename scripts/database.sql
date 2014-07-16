@@ -40,3 +40,10 @@ CREATE TABLE failed_logins (
     time_attempted TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 CREATE INDEX ON failed_logins (time_attempted);
+
+CREATE TABLE logs (
+    ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    level VARCHAR(7) NOT NULL,
+    message TEXT NOT NULL,
+    meta TEXT NOT NULL
+);
