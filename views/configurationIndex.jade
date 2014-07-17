@@ -110,7 +110,7 @@ block footerJs
                     for (var i = 0; i < $controls.length; i++) {
                         data[$controls[i].id.replace('_', '.')] = $controls[i].value;
                     }
-                    data.currency = $('.exchangeControls.show .currencyControl option:selected').val();
+                    data.exchangeCurrency = $('.exchangeControls.show .currencyControl option:selected').val();
                     data._csrf = $('#_csrf').val();
                     data.username = $('#username').val();
                     data.password = $('#password').val();
