@@ -14,7 +14,7 @@ exports.getTransactions = function (req, res) {
     configMapper.findAll(function (configErr, config) {
 
         if (configErr) {
-            winston.log('Error finding config: ' + configErr);
+            winston.err('Error finding config: ' + configErr);
             return res.json(500, {});
         }
 

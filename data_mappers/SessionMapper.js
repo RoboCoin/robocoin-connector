@@ -74,7 +74,7 @@ SessionMapper.prototype.destroy = function (sid, callback) {
         function (err) {
 
             // log it but don't throw the error
-            if (err) winston.log('Error deleting session: ' + err);
+            if (err) winston.err('Error deleting session: ' + err);
 
             return callback();
         }

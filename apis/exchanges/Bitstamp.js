@@ -51,7 +51,7 @@ Bitstamp.prototype._post = function (url, options, callback) {
         if (response.statusCode != 200) return callback('Bitstamp response status code: ' + response.statusCode);
 
         if (body.error) {
-            winston.log(body.error);
+            winston.err(body.error);
             return callback(
                 'Bitstamp response error: ' + ((typeof body.error === 'object') ? body.error.__all__ : body.error)
             );

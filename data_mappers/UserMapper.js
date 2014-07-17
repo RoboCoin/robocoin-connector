@@ -35,7 +35,7 @@ UserMapper.prototype.findByLogin = function (username, password, callback) {
                     if (err) return asyncCallback('Error looking up user by username: ' + err);
 
                     if (queryResult.rowCount == 0) {
-                        winston.log('username not found: ' + username);
+                        winston.warn('username not found: ' + username);
                         return asyncCallback('Invalid login');
                     }
 
@@ -43,10 +43,10 @@ UserMapper.prototype.findByLogin = function (username, password, callback) {
 
                         if (!compareResult) {
 
-                            winston.log('Wrong password');
+                            winston.warn('Wrong password');
                             failedLoginMapper.incrementForUsername(username, function (err) {
 
-                                if (err) winston.log('Error incrementing failed logins: ' + err);
+                                if (err) winston.err('Error incrementing failed logins: ' + err);
 
                                 return asyncCallback('Invalid login');
                             });

@@ -57,7 +57,7 @@ exports.index = function (req, res) {
     _getConfigMapper().findAll(function (err, config) {
 
         if (err) {
-            winston.log('configMapper.findAll: ' + err);
+            winston.err('configMapper.findAll: ' + err);
             return res.send('Error getting confguration.');
         }
 
