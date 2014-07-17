@@ -83,7 +83,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         }
     ], function (err, results) {
 
-        if (err) winston.err(err);
+        if (err) winston.error(err);
 
         // never pass the error so it'll attempt to process the next unprocessed transaction
         return callback();
@@ -128,7 +128,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, cal
         }
     ], function (err) {
 
-        if (err) winston.err(err);
+        if (err) winston.error(err);
 
         // never pass the error so it'll attempt to process the next unprocessed transaction
         return callback();
@@ -411,7 +411,7 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
                             if (err) {
                                 // on error, just skip to the next
-                                winston.err('Batch buy error: ' + err);
+                                winston.error('Batch buy error: ' + err);
                                 return eachSeriesCallback();
                             }
 
@@ -430,7 +430,7 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
                             if (err) {
                                 // on error, just skip to the next
-                                winston.err('Batch sell error: ' + err);
+                                winston.error('Batch sell error: ' + err);
                                 return eachSeriesCallback();
                             }
 

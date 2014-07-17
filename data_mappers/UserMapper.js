@@ -46,7 +46,7 @@ UserMapper.prototype.findByLogin = function (username, password, callback) {
                             winston.warn('Wrong password');
                             failedLoginMapper.incrementForUsername(username, function (err) {
 
-                                if (err) winston.err('Error incrementing failed logins: ' + err);
+                                if (err) winston.error('Error incrementing failed logins: ' + err);
 
                                 return asyncCallback('Invalid login');
                             });
