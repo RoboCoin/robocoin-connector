@@ -1,4 +1,10 @@
+CREATE TABLE kiosks (
+    id VARCHAR(45) UNIQUE,
+    name VARCHAR(32) NOT NULL UNIQUE
+);
+
 CREATE TABLE transactions (
+    kiosk_id VARCHAR(45) REFERENCES kiosks (id),
     robocoin_tx_id VARCHAR(256) NOT NULL UNIQUE,
     exchange_tx_id INT DEFAULT NULL,
     robocoin_tx_type VARCHAR(45) NOT NULL,
@@ -20,8 +26,10 @@ CREATE TABLE transactions (
 );
 
 CREATE TABLE config (
-    param_name varchar(256) not null unique,
-    param_value TEXT
+    kiosk_id VARCHAR(45) REFERENCES kiosks (id),
+    param_name varchar(256) not null,
+    param_value TEXT,
+    UNIQUE (kiosk_id, param_name)
 );
 
 CREATE TABLE sessions (

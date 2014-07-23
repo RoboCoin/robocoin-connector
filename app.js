@@ -118,6 +118,11 @@ app.post('/configuration/save-exchange', ensureAuthenticated, configuration.save
 app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 
+var kiosks = require('./routes/kiosks');
+app.get('/kiosks', ensureAuthenticated, kiosks.index);
+app.post('/kiosks/add', ensureAuthenticated, kiosks.addNewKiosk);
+app.post('/kiosks/update', ensureAuthenticated, kiosks.update);
+
 var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));
@@ -137,8 +142,6 @@ var server = http.createServer(app).listen(app.get('port'), function(){
         }
 
     }, AUTOCONNECTOR_INTERVAL);
-    jobs.runAutoconnector();
-    winston.log('Autoconnector running');
 });
 
 process.on('SIGINT', function () {

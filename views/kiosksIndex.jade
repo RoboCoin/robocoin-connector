@@ -1,0 +1,98 @@
+extends layout
+include includes/mixins
+
+block nav
+    li
+        a(href="/transactions") Transactions
+    li
+        a(href="/account-info") Account Info
+    li
+        a(href="/buy-and-sell") Buy and Sell
+    li
+        a(href="/configuration") Configuration
+    li.active
+        a(href="#") Kiosks
+    li
+        a(href="/logout") Log Out
+
+block content
+    if error
+        .alert.alert-danger #{ error }
+    h1 Kiosks
+    input(type="hidden" value="#{ csrfToken }")#_csrf
+    each kiosk in kiosks
+        form(role="form").form-inline
+            .form-group
+                input(type="hidden" value="#{ kiosk.id }").existingKioskId
+                input(type="text" value="#{ kiosk.id }").form-control.kioskId
+                input(type="text" value="#{ kiosk.name }").form-control.kioskName
+                button.btn.btn-primary.saveKioskButton Save
+
+    h2 Create a new kiosk
+    form(role="form").form-inline
+        .form-group
+            input(type="text" placeholder="Robocoin Kiosk ID").form-control#newKioskId
+            input(type="text" placeholder="New Kiosk Name").form-control#newKioskName
+        button.btn.btn-primary#addKioskButton Add
+
+block footerJs
+    script.
+        var dismissibleAlert = function (type, message) {
+            return '<div role="alert" class="alert alert-dismissible alert-' + type + '">' +
+             '<button type="button" data-dismiss="alert" class="close">' +
+              '<span aria-hidden="true">&times;</span>' +
+               '<span class="sr-only">Close</span>' +
+               '</button>' + message +
+                '</div>';
+        };
+        $(document).ready(function () {
+
+            $('#addKioskButton').on('click', function (event) {
+
+                event.preventDefault();
+                var $button = $(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/kiosks/add',
+                    data: {
+                        id: $('#newKioskId').val(),
+                        name: $('#newKioskName').val(),
+                        _csrf: $('#_csrf').val()
+                    },
+                    success: function (data) {
+                        $('.alert').remove();
+                        $button.after(dismissibleAlert('success', data));
+                    },
+                    error: function (data) {
+                        $('.alert').remove();
+                        $button.after(dismissibleAlert('danger', data.responseText));
+                    }
+                });
+            });
+
+            $('.saveKioskButton').on('click', function (event) {
+
+                event.preventDefault();
+                var $button = $(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/kiosks/update',
+                    data: {
+                        _csrf: $('#_csrf').val(),
+                        id: $button.parent().find('.kioskId').val(),
+                        name: $button.parent().find('.kioskName').val(),
+                        existingKioskId: $button.parent().find('.existingKioskId').val()
+                    },
+                    success: function (data) {
+                        $('.alert').remove();
+                        $button.parent().append(dismissibleAlert('success', data));
+                    },
+                    error: function (data) {
+                        $('.alert').remove();
+                        $button.parent().append(dismissibleAlert('danger', data.responseText))
+                    }
+                });
+            });
+        });
