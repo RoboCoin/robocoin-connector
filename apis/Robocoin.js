@@ -108,6 +108,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
         time = now - this._getRandomNumber(1, 60000);
+        var guids = ['d6d70d3a-ee5f-4ac8-b760-4e13f634ce90', '2f44a462-cf38-4442-8bc2-1464491c8959'];
 
         transactions.push({
             id: this._getRandomNumber(100, 1000000),
@@ -119,7 +120,7 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             confirmations: confirmations,
             fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             miners_fee: minersFee,
-            machine_id: this._getRandomNumber(1,2)
+            machine_id: guids[this._getRandomNumber(0, 1)]
         });
     }
 

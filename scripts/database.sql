@@ -22,7 +22,8 @@ CREATE TABLE transactions (
     robocoin_miners_fee DECIMAL(20,8) DEFAULT NULL,
     exchange_miners_fee DECIMAL(20,8) DEFAULT NULL,
     robocoin_tx_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    exchange_tx_time TIMESTAMP NULL DEFAULT NULL
+    exchange_tx_time TIMESTAMP NULL DEFAULT NULL,
+    exchange_class VARCHAR(32)
 );
 
 CREATE TABLE config (

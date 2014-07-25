@@ -66,7 +66,7 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
         var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.exchange_fiat);
 
         var convertedExchangeFiat;
-        if (exchangeCurrency != kioskCurrency) {
+        if (kioskCurrency !== null && exchangeCurrency != kioskCurrency) {
 
             convertedExchangeFiat = exchangeFiat
                 .divide(exchangeToKioskConversionRate, bigdecimal.MathContext.DECIMAL128())
@@ -88,11 +88,12 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
                 'exchange_tx_time = $5, ' +
                 'exchange_currency = $6,  ' +
                 'exchange_to_kiosk_conversion_rate = $7, ' +
-                'converted_exchange_fiat = $8 ' +
-                'WHERE robocoin_tx_id = $9',
+                'converted_exchange_fiat = $8, ' +
+                'exchange_class = $9' +
+                'WHERE robocoin_tx_id = $10',
             [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_tx_fee,
                 exchangeTx.exchange_tx_time, exchangeCurrency, exchangeToKioskConversionRate.toPlainString(),
-                convertedExchangeFiat, exchangeTx.robocoin_tx_id],
+                convertedExchangeFiat, exchangeTx.exchangeClass, exchangeTx.robocoin_tx_id],
             function (err) {
 
                 if (err) return callback('Error saving exchange transaction: ' + err);

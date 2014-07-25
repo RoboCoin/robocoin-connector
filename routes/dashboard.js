@@ -49,7 +49,7 @@ exports.summary = function (req, res) {
                     var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
                     var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
                     if (exchangeCurrency !== '' && exchangeCurrency != kioskCurrency) {
-
+                        // TODO huh?
                     }
 
                     return asyncCallback(null, rows);

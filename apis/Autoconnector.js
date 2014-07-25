@@ -146,6 +146,7 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
         }
 
         var exchange;
+        var kioskConfig;
 
         async.eachSeries(unprocessedTxs, function (unprocessedTx, asyncCallback) {
 
@@ -153,7 +154,9 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
 
                 if (err) return asyncCallback(err);
 
-                exchange = Exchange.get(config.getAllForKiosk(unprocessedTx.kiosk_id));
+                kioskConfig = config.getAllForKiosk(unprocessedTx.kiosk_id);
+                unprocessedTx.exchangeClass = kioskConfig.exchangeClass;
+                exchange = Exchange.get(kioskConfig);
 
                 switch (unprocessedTx.robocoin_tx_type) {
                     case 'send':
@@ -381,9 +384,17 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
         if (err) return callback(err);
 
+        var kioskConfig;
+
         async.each(kioskIds, function (kioskId, asyncCallback) {
-            console.log('kioskId', kioskId);
-            exchange = Exchange.get(config.getAllForKiosk(kioskId));
+
+            kioskConfig = config.getAllForKiosk(kioskId);
+
+            for (var i = 0; i < txesByKioskId[kioskId].length; i++) {
+                txesByKioskId[kioskId][i].exchangeClass = kioskConfig.exchangeClass;
+            }
+
+            exchange = Exchange.get(kioskConfig);
             self._doBatchProcess(txesByKioskId[kioskId], depositAddress, exchange, asyncCallback);
 
         }, callback);
