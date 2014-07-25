@@ -102,9 +102,9 @@ app.use(function (req, res, next) {
         if (!req.session.kioskId) {
             var KioskMapper = require('./data_mappers/KioskMapper');
             var kioskMapper = new KioskMapper();
-            kioskMapper.findOne(function (err, kioskId) {
+            kioskMapper.findOne(function (err, kiosk) {
 
-                req.session.kioskId = kioskId.id;
+                req.session.kioskId = (kiosk) ? kiosk.id : null;
                 return next();
             });
         }
