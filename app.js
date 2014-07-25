@@ -84,10 +84,11 @@ if ('development' == app.get('env')) {
 // add the config to each request
 app.use(function (req, res, next) {
 
+    console.log('getting config');
     var ConfigMapper = require('./data_mappers/ConfigMapper');
     var configMapper = new ConfigMapper();
     configMapper.findAll(function (err, config) {
-
+        console.log('got config', err);
         if (err) winston.error('Error getting config: ' + err);
 
         req.config = config;
@@ -99,16 +100,18 @@ app.use(function (req, res, next) {
 app.use(function (req, res, next) {
 
     if (req.isAuthenticated()) {
+        console.log('is authed');
         if (!req.session.kioskId) {
+            console.log('no kiosk id set in session');
             var KioskMapper = require('./data_mappers/KioskMapper');
             var kioskMapper = new KioskMapper();
             kioskMapper.findOne(function (err, kiosk) {
-
+                console.log('got kiosk:', err);
                 req.session.kioskId = (kiosk) ? kiosk.id : null;
                 return next();
             });
-        }
-    }
+        } else { console.log('kiosk id set in session'); }
+    } else { console.log('not authed'); }
 
     return next();
 });
