@@ -8,6 +8,7 @@ var async = require('async');
 var fs = require('fs');
 var KioskMapper = require('../data_mappers/KioskMapper');
 var kioskMapper = new KioskMapper();
+var periodicJobs = require('../periodicJobs');
 
 var _getExchangeConfigs = function () {
 
@@ -75,18 +76,24 @@ exports.index = function (req, res) {
 
             if (err) winston.error('Error getting kiosks: ' + err);
 
-            return res.render('configurationIndex', {
-                currentExchange: currentExchange,
-                exchangeCurrency: exchangeCurrency,
-                robocoinTestMode: robocoinTestMode,
-                bitstampTestMode: bitstampTestMode,
-                csrfToken: req.csrfToken(),
-                securityMessage: message,
-                exchangeDefs: exchangeDefs,
-                kioskCurrency: kioskCurrency,
-                exchangeToKioskConversionRate: exchangeToKioskConversionRate,
-                supportedCurrencies: supportedCurrencies,
-                kiosks: kiosks
+            _getConfigMapper().findAll(function (err, config) {
+
+                if (err) winston.error('Error getting config: ' + err);
+
+                return res.render('configurationIndex', {
+                    currentExchange: currentExchange,
+                    exchangeCurrency: exchangeCurrency,
+                    robocoinTestMode: robocoinTestMode,
+                    bitstampTestMode: bitstampTestMode,
+                    csrfToken: req.csrfToken(),
+                    securityMessage: message,
+                    exchangeDefs: exchangeDefs,
+                    kioskCurrency: kioskCurrency,
+                    exchangeToKioskConversionRate: exchangeToKioskConversionRate,
+                    supportedCurrencies: supportedCurrencies,
+                    kiosks: kiosks,
+                    autoconnectorEnabled: config.get(null, 'autoconnectorEnabled')
+                });
             });
         });
     });
@@ -163,12 +170,34 @@ exports.saveCurrencyConversion = function (req, res) {
         function (asyncCallback) {
 
             var config = Config.getInstance();
-            config.set('kioskCurrency', kioskCurrency);
-            config.set('exchangeToKioskConversionRate', conversionRate);
+            config.set(kioskId, 'kioskCurrency', kioskCurrency);
+            config.set(kioskId, 'exchangeToKioskConversionRate', conversionRate);
             _getConfigMapper().save(kioskId, config, asyncCallback);
         }
     ], function (err) {
         if (err) return res.send(err, 400);
         return res.send('Currency conversion saved');
+    });
+};
+
+exports.toggleAutoconnector = function (req, res) {
+
+    var nextState = req.body.nextState;
+    var config = Config.getInstance();
+    config.set(null, 'autoconnectorEnabled', nextState);
+
+    if (nextState == 1) {
+        periodicJobs.startInterval();
+    } else {
+        periodicJobs.stopInterval();
+    }
+
+    _getConfigMapper().save(null, config, function (err) {
+
+        if (err) return res.send(500, 'Failed to toggle autoconnector');
+
+        var message = 'Autoconnector ';
+        message += (nextState == 1) ? 'enabled' : 'disabled';
+        return res.send(message);
     });
 };

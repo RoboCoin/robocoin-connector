@@ -61,8 +61,6 @@ passport.use(new LocalStrategy(function (username, password, callback) {
 passport.serializeUser(function (user, done) { done(null, user.id); });
 passport.deserializeUser(userMapper.findById);
 
-var AUTOCONNECTOR_INTERVAL = 60000;
-
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
@@ -82,10 +80,10 @@ if ('development' == app.get('env')) {
 }
 
 // add the config to each request
+var ConfigMapper = require('./data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
 app.use(function (req, res, next) {
 
-    var ConfigMapper = require('./data_mappers/ConfigMapper');
-    var configMapper = new ConfigMapper();
     configMapper.findAll(function (err, config) {
 
         if (err) winston.error('Error getting config: ' + err);
@@ -149,6 +147,7 @@ app.get('/configuration', ensureAuthenticated, configuration.index);
 app.post('/configuration/save-exchange', ensureAuthenticated, configuration.saveExchange);
 app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
+app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
 
 var kiosks = require('./routes/kiosks');
 app.get('/kiosks', ensureAuthenticated, kiosks.index);
@@ -167,19 +166,14 @@ var server = http.createServer(app).listen(app.get('port'), function(){
     console.log('App environment: ' + app.get('env'));
 
     var jobs = require('./periodicJobs');
-    setInterval(function () {
+    configMapper.findAll(function (err, config) {
 
-        var randomNumber = (Math.random() * 10);
+        if (err) winston.error('Error getting config: ' + err);
 
-        // most of the time, run the autoconnector
-        if (randomNumber > 1) {
-            jobs.runAutoconnector();
-        } else {
-            // but sometimes, do the batch rollup
-            jobs.batchProcess();
+        if (config.get(null, 'autoconnectorEnabled') == 1) {
+            jobs.startInterval();
         }
-
-    }, AUTOCONNECTOR_INTERVAL);
+    });
 });
 
 process.on('SIGINT', function () {

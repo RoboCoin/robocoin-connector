@@ -29,7 +29,7 @@ prompt.get({
         return process.exit(1);
     }
 
-    config.set(result.name, result.value);
+    config.set(result.kioskId, result.name, result.value);
     configMapper.save(result.kioskId, config, function (err) {
 
         if (err) {

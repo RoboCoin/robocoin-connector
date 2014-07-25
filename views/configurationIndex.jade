@@ -82,6 +82,12 @@ block content
             span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
         button(disabled).btn.btn-default#currencyConversionSave Save
 
+    h1 Autoconnector
+    form(role="form")
+        - buttonText = autoconnectorEnabled == 1 ? 'Disable' : 'Enable'
+        - nextState = autoconnectorEnabled == 1 ? 0 : 1
+        button(data-next-state="#{ nextState }").btn.btn-default#autoconnectorEnable #{ buttonText }
+
     +loginModal('Save')
 
 block footerJs
@@ -214,5 +220,39 @@ block footerJs
                         }
                     });
                 });
+            });
+
+            $('#autoconnectorEnable').on('click', function (event) {
+
+                event.preventDefault();
+                $loginModal.modal('show');
+                var $autoconnectorButton = $(this);
+                var $reauthButton = $('#reauthButton');
+                var nextState = $autoconnectorButton.data('next-state');
+
+                $reauthButton.off('click').on('click', function () {
+
+                    $.ajax({
+                        url: '/configuration/toggle-autoconnector',
+                        type: 'POST',
+                        data: {
+                            _csrf: $('#_csrf').val(),
+                            nextState: nextState
+                        },
+                        success: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data, $reauthButton, 'success');
+                            $autoconnectorButton.data('next-state', (nextState == 1) ? 0 : 1);
+                            $autoconnectorButton.html((nextState == 1 ? 'Disable' : 'Enable'));
+                        },
+                        error: function (data) {
+                            $reauthButton.parent().find('.alert').remove();
+                            appendAlert(data.responseText, $reauthButton, 'danger');
+                            $autoconnectorButton.data('next-state', (nextState == 1) ? 0 : 1);
+                            $autoconnectorButton.html((nextState == 1) ? 'Disable' : 'Enable');
+                        }
+                    });
+                });
+
             });
         });
