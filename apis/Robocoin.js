@@ -11,7 +11,7 @@ var Robocoin = function (config) {
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
 
-    if (config.get('robocoin.testMode') == '1') {
+    if (config.get(null, 'robocoin.testMode') == '1') {
         this._mode = 'random';
     }
 };
@@ -26,16 +26,16 @@ Robocoin.prototype._post = function (endpoint, options, callback) {
 
     options.nonce = this._getNonce();
 
-    var hmac = crypto.createHmac('sha256', this._config.get('robocoin.secret'));
+    var hmac = crypto.createHmac('sha256', this._config.get(null, 'robocoin.secret'));
     hmac.update(JSON.stringify(options));
 
     var requestOptions = {
-        url: this._config.get('robocoin.baseUrl') + endpoint,
+        url: this._config.get(null, 'robocoin.baseUrl') + endpoint,
         form: options,
         method: 'POST',
         json: true,
         headers: {
-            'X-API-key': this._config.get('robocoin.key'),
+            'X-API-key': this._config.get(null, 'robocoin.key'),
             'X-API-signature': hmac.digest('hex')
         }
     };
@@ -118,7 +118,8 @@ Robocoin.prototype._getRandomlyGeneratedTransactions = function () {
             time: time,
             confirmations: confirmations,
             fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
-            miners_fee: minersFee
+            miners_fee: minersFee,
+            machine_id: this._getRandomNumber(1,2)
         });
     }
 
@@ -129,7 +130,7 @@ Robocoin.prototype.getTransactions = function (since, callback) {
 
     var transactions;
 
-    if (this._mode == 'random') {
+    if (true/*this._mode == 'random'*/) {
         transactions = this._getRandomlyGeneratedTransactions();
     } else if (this._mode == 'static') {
         transactions = require('../test/apis/robocoinTransactions');

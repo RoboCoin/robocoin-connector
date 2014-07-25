@@ -11,9 +11,12 @@ block nav
     li
         a(href="/configuration") Configuration
     li
+        a(href="/kiosks") Kiosks
+    li
         a(href="/logout") Logout
 
 block content
+    +kioskSelector(kiosks)
     .col-md-12
         .row
             h1 Buy and Sell
@@ -54,7 +57,7 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            var updater = new PriceUpdater('lastBuyPrice', 'lastSellPrice');
+            var updater = new PriceUpdater('lastBuyPrice', 'lastSellPrice', 'kioskSelector');
             updater.start();
 
             var _showAlert = function (message, type, $button) {
@@ -85,7 +88,8 @@ block footerJs
                         btcPrice: $('#btc' + action + 'Price').val(),
                         _csrf: $('#_csrf').val(),
                         username: $('#username').val(),
-                        password: $('#password').val()
+                        password: $('#password').val(),
+                        kioskId: $('#kioskSelector').val()
                     },
                     success: function(data) {
                         _showAlert(data, 'success', $button);
@@ -113,5 +117,9 @@ block footerJs
                 $('#reauthButton').off('click').on('click', function (event) {
                     _onTradeButtonClicked('Sell', event);
                 });
+            });
+
+            $('#kioskSelector').on('change', function () {
+                updater.update();
             });
         });

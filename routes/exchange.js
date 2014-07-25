@@ -4,24 +4,20 @@ var request = require('request');
 var Exchange = require('../apis/Exchange');
 var Robocoin = require('../apis/Robocoin');
 var async = require('async');
-var ConfigMapper = require('../data_mappers/ConfigMapper');
-var configMapper = new ConfigMapper();
 var UserMapper = require('../data_mappers/UserMapper');
 var userMapper = new UserMapper();
+var winston = require('winston');
+var ConfigMapper = require('../data_mappers/ConfigMapper');
+var configMapper = new ConfigMapper();
 
 exports.lastPrices = function (req, res) {
 
-    configMapper.findAll(function (configErr, config) {
+    var exchange = Exchange.get(req.config.getAllForKiosk(req.query.kioskId));
+    exchange.getPrices(function (err, prices) {
 
-        if (configErr) return res.json(500, { price: configErr });
+        if (err) return res.json(500, { price: err });
 
-        var exchange = Exchange.get(config);
-        exchange.getPrices(function (err, prices) {
-
-            if (err) return res.json(500, { price: err });
-
-            res.json({ buyPrice: prices.buyPrice, sellPrice: prices.sellPrice});
-        });
+        res.json({ buyPrice: prices.buyPrice, sellPrice: prices.sellPrice});
     });
 };
 
@@ -31,36 +27,33 @@ exports.buy = function (req, res) {
     var price = req.body.btcPrice;
     var username = req.body.username;
     var password = req.body.password;
+    var kioskId = req.body.kioskId;
 
-    configMapper.findAll(function (configErr, config) {
+    var exchange = Exchange.get(req.config.getAllForKiosk(kioskId));
+    async.series({
+        reauth: function (asyncCallback) {
+            userMapper.findByLogin(username, password, asyncCallback);
+        },
+        buy: function (asyncCallback) {
 
-        if (configErr) return res.send(configErr);
+            exchange.buy(amount, price, asyncCallback);
+        },
+        withdraw: function (asyncCallback) {
 
-        var exchange = Exchange.get(config);
-        async.series({
-            reauth: function (asyncCallback) {
-                userMapper.findByLogin(username, password, asyncCallback);
-            },
-            buy: function (asyncCallback) {
-                exchange.buy(amount, price, asyncCallback);
-            },
-            withdraw: function (asyncCallback) {
+            var robocoin = Robocoin.getInstance(req.config);
+            robocoin.getAccountInfo(function (err, roboResponse) {
 
-                var robocoin = Robocoin.getInstance(config);
-                robocoin.getAccountInfo(function (err, roboResponse) {
+                if (err) return asyncCallback(err);
 
-                    if (err) return asyncCallback(err);
+                exchange.withdraw(amount, roboResponse.deposit_address, asyncCallback);
+            });
+        }
+    }, function (err, asyncResponse) {
 
-                    exchange.withdraw(amount, roboResponse.deposit_address, asyncCallback);
-                });
-            }
-        }, function (err, asyncResponse) {
+        if (err) return res.send(err, 400);
 
-            if (err) return res.send(err, 400);
-
-            return res.send('Bought ' + asyncResponse.buy.xbt + ' for $' + Math.abs(asyncResponse.buy.fiat) +
-                ' with a fee of $' + asyncResponse.buy.fee);
-        });
+        return res.send('Bought ' + asyncResponse.buy.xbt + ' for $' + Math.abs(asyncResponse.buy.fiat) +
+            ' with a fee of $' + asyncResponse.buy.fee);
     });
 };
 
@@ -70,41 +63,60 @@ exports.sell = function (req, res) {
     var price = req.body.btcPrice;
     var username = req.body.username;
     var password = req.body.password;
+    var kioskId = req.body.kioskId;
 
-    configMapper.findAll(function (configErr, config) {
+    var exchange = Exchange.get(req.config.getAllForKiosk(kioskId));
+    async.series({
+        reauth: function (asyncCallback) {
+            userMapper.findByLogin(username, password, asyncCallback);
+        },
+        sell: function (asyncCallback) {
+            exchange.sell(amount, price, asyncCallback);
+        }
+    }, function (err, asyncResponse) {
 
-        if (configErr) return res.send(configErr);
+        if (err) return res.send(err, 400);
 
-        var exchange = Exchange.get(config);
-        async.series({
-            reauth: function (asyncCallback) {
-                userMapper.findByLogin(username, password, asyncCallback);
-            },
-            sell: function (asyncCallback) {
-                exchange.sell(amount, price, asyncCallback);
-            }
-        }, function (err, asyncResponse) {
-
-            if (err) return res.send(err, 400);
-
-            return res.send('Sold ' + Math.abs(asyncResponse.sell.xbt) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
-                ' with a fee of $' + asyncResponse.sell.fee);
-        });
+        return res.send('Sold ' + Math.abs(asyncResponse.sell.xbt) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
+            ' with a fee of $' + asyncResponse.sell.fee);
     });
 };
 
 exports.latestTransactions = function (req, res) {
 
-    configMapper.findAll(function (configErr, config) {
+    var exchange = Exchange.get(req.config.getAllForKiosk(req.query.kioskId));
+    exchange.userTransactions(function (err, userTransactions) {
 
-        if (configErr) return res.send(configErr);
+        if (err) return res.send(err);
 
-        var exchange = Exchange.get(config);
-        exchange.userTransactions(function (err, userTransactions) {
+        return res.send(userTransactions);
+    });
+};
 
-            if (err) return res.send(err);
+exports.accountInfo = function (req, res) {
 
-            return res.send(userTransactions);
+    var exchange = Exchange.get(req.config.getAllForKiosk(req.query.kioskId));
+    exchange.getBalance(function (err, balance) {
+
+        if (err) return res.send(400, err);
+
+        exchange.getDepositAddress(function (err, depositAddress) {
+
+            if (err) return res.send(400, err);
+
+            configMapper.findAll(function (err, config) {
+
+                if (err) return res.send(500, err);
+
+                var params = config.getAllForKiosk(req.query.kioskId);
+
+                return res.send({
+                    address: depositAddress.address,
+                    balance: balance,
+                    currency: params.exchangeCurrency,
+                    exchangeClass: params.exchangeClass
+                });
+            });
         });
     });
 };

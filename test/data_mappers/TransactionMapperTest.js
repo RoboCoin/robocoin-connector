@@ -26,6 +26,7 @@ describe('TransactionMapper', function () {
     it('saves exchange transaction info', function (done) {
 
         var exchangeTx = {};
+        exchangeTx.kiosk_id = '1';
         exchangeTx.exchange_tx_id = bitstampTxId;
         exchangeTx.exchange_fiat = 5.00;
         exchangeTx.exchange_xbt = 0.001;

@@ -40,6 +40,22 @@ KioskMapper.prototype.findAll = function (callback) {
     );
 };
 
+KioskMapper.prototype.findOne = function (callback) {
+
+    Connection.getConnection().query(
+        'SELECT id FROM kiosks LIMIT 1',
+        function (err, res) {
+
+            if (err) {
+                winston.error('Error getting a kiosk: ' + err);
+                return callback('Error getting a kiosk');
+            }
+
+            return callback(null, res.rows[0]);
+        }
+    );
+};
+
 KioskMapper.prototype.update = function (kiosk, existingId, callback) {
 
     Connection.getConnection().query(

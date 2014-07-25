@@ -1,15 +1,22 @@
 'use strict';
 
 var VaultOfSatoshi = require('../../apis/exchanges/VaultOfSatoshi');
-var config = require('../../../connectorConfig').vaultOfSatoshi;
+var configFile = require('../../../connectorConfig').vaultOfSatoshi;
 var assert = require('assert');
+var Config = require('../../lib/Config');
 
 describe('VaultOfSatoshi', function () {
 
     var vaultOfSatoshi;
 
     beforeEach(function () {
-        vaultOfSatoshi = VaultOfSatoshi.getInstance(config);
+
+        var config = Config.getInstance();
+
+        for (var param in configFile) {
+            config.set('1', 'vaultOfSatoshi.' + param, configFile[param]);
+        }
+        vaultOfSatoshi = VaultOfSatoshi.getInstance(config.getAllForKiosk('1'));
     });
 
     afterEach(function () {

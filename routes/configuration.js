@@ -6,6 +6,8 @@ var Config = require('../lib/Config');
 var UserMapper = require('../data_mappers/UserMapper');
 var async = require('async');
 var fs = require('fs');
+var KioskMapper = require('../data_mappers/KioskMapper');
+var kioskMapper = new KioskMapper();
 
 var _getExchangeConfigs = function () {
 
@@ -61,25 +63,31 @@ exports.index = function (req, res) {
             return res.send('Error getting confguration.');
         }
 
-        var currentExchange = config.get('exchangeClass');
-        var exchangeCurrency = config.get('exchangeCurrency');
-        var robocoinTestMode = config.get('robocoin.testMode');
-        var bitstampTestMode = (config.get('exchangeClass') == 'MockBitstamp');
-        var kioskCurrency = config.get('kioskCurrency');
-        var exchangeToKioskConversionRate = config.get('exchangeToKioskConversionRate') || '';
+        var currentExchange = config.get(req.session.kioskId, 'exchangeClass');
+        var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
+        var robocoinTestMode = config.get(req.session.kioskId, 'robocoin.testMode');
+        var bitstampTestMode = (config.get(req.session.kioskId, 'exchangeClass') == 'MockBitstamp');
+        var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
+        var exchangeToKioskConversionRate = config.get(req.session.kioskId, 'exchangeToKioskConversionRate') || '';
         var supportedCurrencies = ['CAD', 'USD'];
 
-        return res.render('configurationIndex', {
-            currentExchange: currentExchange,
-            exchangeCurrency: exchangeCurrency,
-            robocoinTestMode: robocoinTestMode,
-            bitstampTestMode: bitstampTestMode,
-            csrfToken: req.csrfToken(),
-            securityMessage: message,
-            exchangeDefs: exchangeDefs,
-            kioskCurrency: kioskCurrency,
-            exchangeToKioskConversionRate: exchangeToKioskConversionRate,
-            supportedCurrencies: supportedCurrencies
+        kioskMapper.findAll(function (err, kiosks) {
+
+            if (err) winston.error('Error getting kiosks: ' + err);
+
+            return res.render('configurationIndex', {
+                currentExchange: currentExchange,
+                exchangeCurrency: exchangeCurrency,
+                robocoinTestMode: robocoinTestMode,
+                bitstampTestMode: bitstampTestMode,
+                csrfToken: req.csrfToken(),
+                securityMessage: message,
+                exchangeDefs: exchangeDefs,
+                kioskCurrency: kioskCurrency,
+                exchangeToKioskConversionRate: exchangeToKioskConversionRate,
+                supportedCurrencies: supportedCurrencies,
+                kiosks: kiosks
+            });
         });
     });
 };
@@ -88,8 +96,10 @@ exports.saveExchange = function (req, res) {
 
     var username = req.body.username;
     var password = req.body.password;
+    var kioskId = req.body.kioskId;
     delete req.body.username;
     delete req.body.password;
+    delete req.body.kioskId;
     delete req.body._csrf;
 
     async.series([
@@ -100,10 +110,10 @@ exports.saveExchange = function (req, res) {
 
             var config = Config.getInstance();
             for (var configParam in req.body) {
-                config.set(configParam, req.body[configParam]);
+                config.set(kioskId, configParam, req.body[configParam]);
             }
 
-            _getConfigMapper().save(config, asyncCallback);
+            _getConfigMapper().save(kioskId, config, asyncCallback);
         }
     ], function (err) {
         if (err) return res.send(err, 400);
@@ -126,11 +136,11 @@ exports.saveRobocoin = function (req, res) {
         function (asyncCallback) {
 
             var config = Config.getInstance();
-            config.set('robocoin.key', apiKey);
-            config.set('robocoin.secret', apiSecret);
-            config.set('robocoin.testMode', testMode);
+            config.set(null, 'robocoin.key', apiKey);
+            config.set(null, 'robocoin.secret', apiSecret);
+            config.set(null, 'robocoin.testMode', testMode);
 
-            _getConfigMapper().save(config, asyncCallback);
+            _getConfigMapper().save(null, config, asyncCallback);
         }
     ], function (err) {
         if (err) return res.send(err, 400);
@@ -144,6 +154,7 @@ exports.saveCurrencyConversion = function (req, res) {
     var password = req.body.password;
     var kioskCurrency = req.body.kioskCurrency;
     var conversionRate = req.body.conversionRate;
+    var kioskId = req.body.kioskId;
 
     async.series([
         function (asyncCallback) {
@@ -154,7 +165,7 @@ exports.saveCurrencyConversion = function (req, res) {
             var config = Config.getInstance();
             config.set('kioskCurrency', kioskCurrency);
             config.set('exchangeToKioskConversionRate', conversionRate);
-            _getConfigMapper().save(config, asyncCallback);
+            _getConfigMapper().save(kioskId, config, asyncCallback);
         }
     ], function (err) {
         if (err) return res.send(err, 400);

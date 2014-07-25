@@ -18,7 +18,6 @@ ConfigMapper.prototype.findAll = function (callback) {
 
             if (err) return callback('Error getting config: ' + err);
 
-            var params = {};
             var decryptedValue;
             var aesDecipher;
             for (var i = 0; i < res.rows.length; i++) {
@@ -27,15 +26,15 @@ ConfigMapper.prototype.findAll = function (callback) {
                 decryptedValue = aesDecipher.update(res.rows[i].param_value, 'base64', 'utf8');
                 decryptedValue += aesDecipher.final('utf8');
 
-                params[res.rows[i].param_name] = decryptedValue;
+                res.rows[i].param_value = decryptedValue;
             }
 
             var returnConfig;
             if (configInstance === null) {
                 configInstance = Config.getInstance();
-                configInstance.updateParams(params);
+                configInstance.updateParams(res.rows);
             } else {
-                configInstance.updateParams(params);
+                configInstance.updateParams(res.rows);
             }
 
             return callback(null, configInstance);
@@ -43,9 +42,9 @@ ConfigMapper.prototype.findAll = function (callback) {
     );
 };
 
-ConfigMapper.prototype.save = function (config, callback) {
+ConfigMapper.prototype.save = function (kioskId, config, callback) {
 
-    var dirtyParams = config.getDirty();
+    var dirtyParams = config.getDirtyForKiosk(kioskId);
     var dirtyKeys = Object.keys(dirtyParams);
     var connection = Connection.getConnection();
     var encryptedValue;
@@ -58,18 +57,29 @@ ConfigMapper.prototype.save = function (config, callback) {
         encryptedValue = aes.update(dirtyParams[dirtyKey], 'utf8', 'base64');
         encryptedValue += aes.final('base64');
 
-        connection.query(
-            'UPDATE config SET param_value = $1 WHERE param_name = $2',
-            [encryptedValue, dirtyKey],
-            function (err, res) {
+        // eww.
+        var sql;
+        var queryParams;
+        if (kioskId === null) {
+
+            sql = 'UPDATE config SET param_value = $1 WHERE kiosk_id IS NULL AND param_name = $2';
+            queryParams = [encryptedValue, dirtyKey];
+
+        } else {
+
+            sql = 'UPDATE config SET param_value = $1 WHERE kiosk_id = $2 AND param_name = $3';
+            queryParams = [encryptedValue, kioskId, dirtyKey];
+        }
+
+        connection.query(sql, queryParams, function (err, res) {
 
                 if (err) return asyncCallback(err);
 
                 if (res.rowCount === 0) {
 
                     connection.query(
-                        'INSERT INTO config (param_name, param_value) VALUES ($1, $2)',
-                        [dirtyKey, encryptedValue],
+                        'INSERT INTO config (kiosk_id, param_name, param_value) VALUES ($1, $2, $3)',
+                        [kioskId, dirtyKey, encryptedValue],
                         asyncCallback
                     );
 

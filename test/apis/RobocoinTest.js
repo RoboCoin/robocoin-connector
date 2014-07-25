@@ -10,12 +10,28 @@ describe('Robocoin', function () {
     it('includes a nonce, key and signature with every request', function (done) {
 
         var config = Config.getInstance();
-        config.updateParams({
-            'robocoin.testMode': '1',
-            'robocoin.secret': 'gpNrX0HZii0UK4MNp2tm',
-            'robocoin.baseUrl': 'https://www.somefutureurl.net/api/0',
-            'robocoin.key': 'KmHKNmEXpWC4fzRnscic'
-        });
+        config.updateParams([
+            {
+                kiosk_id: null,
+                param_name: 'robocoin.testMode',
+                param_value: '1'
+            },
+            {
+                kiosk_id: null,
+                param_name: 'robocoin.secret',
+                param_value: 'gpNrX0HZii0UK4MNp2tm'
+            },
+            {
+                kiosk_id: null,
+                param_name: 'robocoin.baseUrl',
+                param_value: 'https://www.somefutureurl.net/api/0'
+            },
+            {
+                kiosk_id: null,
+                param_name: 'robocoin.key',
+                param_value: 'KmHKNmEXpWC4fzRnscic'
+            }
+        ]);
         Robocoin.clearInstance();
         var robocoin = Robocoin.getInstance(config);
 

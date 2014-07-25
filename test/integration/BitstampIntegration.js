@@ -1,15 +1,23 @@
 'use strict';
 
 var Bitstamp = require('../../apis/exchanges/Bitstamp');
-var config = require('../../../connectorConfig').bitstamp;
+var configFile = require('../../../connectorConfig').bitstamp;
 var assert = require('assert');
+var Config = require('../../lib/Config');
 
 describe('Bitstamp', function () {
 
     var bitstamp;
 
+
     beforeEach(function () {
-        bitstamp = Bitstamp.getInstance(config);
+
+        var config = Config.getInstance();
+
+        for (var param in configFile) {
+            config.set('1', 'bitstamp.' + param, configFile[param]);
+        }
+        bitstamp = Bitstamp.getInstance(config.getAllForKiosk('1'));
     });
 
     afterEach(function () {

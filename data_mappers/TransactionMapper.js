@@ -24,13 +24,15 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
                 robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
                 var params = [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.currency,
-                    robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee];
+                    robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee,
+                    robocoinTx.machine_id];
 
                 query(
                         'INSERT INTO transactions ' +
                         '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_currency, ' +
-                        'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee) ' +
-                        'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+                        'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee, ' +
+                        'kiosk_id) ' +
+                        'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
                     params,
                     function (err) {
 
@@ -57,9 +59,10 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
 
         if (err) return callback(err);
 
-        var exchangeCurrency = config.get('exchangeCurrency');
-        var kioskCurrency = config.get('kioskCurrency');
-        var exchangeToKioskConversionRate = new bigdecimal.BigDecimal(config.get('exchangeToKioskConversionRate') || 1);
+        var exchangeCurrency = config.get(exchangeTx.kiosk_id, 'exchangeCurrency');
+        var kioskCurrency = config.get(exchangeTx.kiosk_id, 'kioskCurrency');
+        var exchangeToKioskConversionRate =
+            new bigdecimal.BigDecimal(config.get(exchangeTx.kiosk_id, 'exchangeToKioskConversionRate') || 1);
         var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.exchange_fiat);
 
         var convertedExchangeFiat;
@@ -114,10 +117,47 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     );
 };
 
+TransactionMapper.prototype.findUnprocessedForKiosk = function(kioskId, callback) {
+
+    Connection.getConnection().query(
+        'SELECT * ' +
+        'FROM transactions ' +
+        'WHERE kiosk_id = $1' +
+            'AND (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_tx_id IS NULL) ' +
+        'ORDER BY robocoin_tx_time',
+        [kioskId],
+        function (err, res) {
+
+            if (err) return callback(err);
+
+            return callback(null, res.rows);
+        }
+    );
+};
+
 TransactionMapper.prototype.findProcessed = function (callback) {
 
     Connection.getConnection().query(
         'SELECT * FROM transactions WHERE exchange_tx_time IS NOT NULL ORDER BY exchange_tx_time DESC LIMIT 50',
+        function (err, res) {
+
+            if (err) return callback(err);
+
+            return callback(null, res.rows);
+        }
+    );
+};
+
+TransactionMapper.prototype.findProcessedForKiosk = function (kioskId, callback) {
+
+    Connection.getConnection().query(
+        'SELECT * ' +
+        'FROM transactions ' +
+        'WHERE kiosk_id = $1 ' +
+            'AND exchange_tx_time IS NOT NULL ' +
+        'ORDER BY exchange_tx_time DESC LIMIT 50',
+        [kioskId],
         function (err, res) {
 
             if (err) return callback(err);
@@ -140,10 +180,10 @@ TransactionMapper.prototype.findLastTransactionTime = function (callback) {
     );
 };
 
-TransactionMapper.prototype.buildProfitReport = function (callback) {
+TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
 
     Connection.getConnection().query(
-            'SELECT ' +
+        'SELECT ' +
             'TO_CHAR(robocoin_tx_time, \'YYYY-MM-DD HH\') date, ' +
             'robocoin_tx_type txType, ' +
             'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
@@ -153,11 +193,13 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
             'COALESCE(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinTxFee, ' +
             'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee, ' +
             'AVG(exchange_to_kiosk_conversion_rate) exchangeToKioskConversionRate ' +
-            'FROM transactions ' +
-            'WHERE exchange_tx_time IS NOT NULL ' +
+        'FROM transactions ' +
+        'WHERE exchange_tx_time IS NOT NULL ' +
             'AND robocoin_xbt > 0 ' +
-            'AND exchange_xbt > 0' +
-            'GROUP BY date, robocoin_tx_type',
+            'AND exchange_xbt > 0 ' +
+            'AND kiosk_id = $1 ' +
+        'GROUP BY date, robocoin_tx_type',
+        [kioskId],
         function (err, res) {
 
             if (err) return callback('Error getting profit report: ' + err);
@@ -191,7 +233,7 @@ TransactionMapper.prototype.buildProfitReport = function (callback) {
     );
 };
 
-TransactionMapper.prototype.buildCashFlowReport = function (callback) {
+TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
 
     Connection.getConnection().query(
         'SELECT ' +
@@ -203,8 +245,10 @@ TransactionMapper.prototype.buildCashFlowReport = function (callback) {
             'TO_CHAR(robocoin_tx_time, \'HH\') tx_hour ' +
         'FROM transactions ' +
         'WHERE robocoin_tx_time >= (NOW() - INTERVAL \'1 YEAR\') ' +
+            'AND kiosk_id = $1 ' +
         'GROUP BY tx_type, tx_month, tx_day, tx_hour, robocoin_tx_time ' +
         'ORDER BY robocoin_tx_time',
+        [kioskId],
         function (err, res) {
 
             if (err) return callback('Error getting cash flow report: ' + err);

@@ -20,13 +20,18 @@ describe('Autoconnector', function () {
         autoconnector._configMapper = new ConfigMapper();
 
         config = Config.getInstance();
-        config.updateParams({
-            robocoin: {
-                testMode: true
+        config.updateParams([
+            {
+                kiosk_id: null,
+                param_name: 'robocoin.testMode',
+                param_value: true
             },
-            exchangeClass: 'MockBitstamp'
-        });
-
+            {
+                kiosk_id: '1',
+                param_name: 'exchangeClass',
+                param_value: 'MockBitstamp'
+            }
+        ]);
     });
 
     describe('run', function () {
@@ -56,7 +61,7 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector._transactionMapper, 'save')
                 .callsArg(1);
             sinon.stub(autoconnector, '_processUnprocessedTransactions')
-                .callsArg(2);
+                .callsArg(1);
             sinon.stub(autoconnector._configMapper, 'findAll')
                 .callsArgWith(0, null, config);
 
@@ -74,11 +79,13 @@ describe('Autoconnector', function () {
 
             var unprocessedTxs = [];
             unprocessedTxs.push({
+                kiosk_id: '1',
                 robocoin_tx_type: 'send',
                 exchange_withdrawal_id: null,
                 confirmations: null
             });
             unprocessedTxs.push({
+                kiosk_id: '1',
                 robocoin_tx_type: 'forward',
                 exchange_withdrawal_id: null,
                 confirmations: 6
@@ -91,7 +98,7 @@ describe('Autoconnector', function () {
             sinon.stub(autoconnector, '_sellBtcForFiat')
                 .callsArg(2);
 
-            autoconnector._processUnprocessedTransactions({}, {}, function () {
+            autoconnector._processUnprocessedTransactions({}, function () {
 
                 assert(autoconnector._transactionMapper.findUnprocessed.called);
                 assert(autoconnector._replenishAccountBtc.called);
@@ -186,35 +193,42 @@ describe('Autoconnector', function () {
 
             var unprocessedTransactions = [];
             var t1 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'forward',
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t1);
             var t2 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'forward',
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t2);
             var t6 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'forward',
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t6);
             var t3 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'send',
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t3);
             unprocessedTransactions.push({
+                kiosk_id: '1',
                 robocoin_tx_type: 'send',
                 robocoin_xbt: 0.004
             });
             var t4 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'send',
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t4);
             var t5 = {
+                kiosk_id: '1',
                 robocoin_tx_type: 'send',
                 robocoin_xbt: 0.004
             };
@@ -236,7 +250,7 @@ describe('Autoconnector', function () {
             sinon.stub(exchange, 'getPrices')
                 .callsArgWith(0, null, { price: 650.00 });
 
-            autoconnector.batchProcess(unprocessedTransactions, '123abc', exchange,  function (err) {
+            autoconnector._doBatchProcess(unprocessedTransactions, '123abc', exchange,  function (err) {
 
                 assert(exchange.getMinimumOrders.called);
                 assert(exchange.getPrices.called);

@@ -31,15 +31,15 @@ Bitstamp.prototype._post = function (url, options, callback) {
     }
 
     var nonce = this._getNonce();
-    var hmac = crypto.createHmac('sha256', this._config.get('bitstamp.secret'));
-    hmac.update(nonce + this._config.get('bitstamp.clientId') + this._config.get('bitstamp.apiKey'));
+    var hmac = crypto.createHmac('sha256', this._config['bitstamp.secret']);
+    hmac.update(nonce + this._config['bitstamp.clientId'] + this._config['bitstamp.apiKey']);
 
-    options.key = this._config.get('bitstamp.apiKey');
+    options.key = this._config['bitstamp.apiKey'];
     options.signature = hmac.digest('hex').toUpperCase();
     options.nonce = nonce;
 
     var requestOptions = {};
-    requestOptions.url = this._config.get('bitstamp.baseUrl') + url;
+    requestOptions.url = this._config['bitstamp.baseUrl'] + url;
     requestOptions.form = options;
     requestOptions.method = 'POST';
     requestOptions.json = true;

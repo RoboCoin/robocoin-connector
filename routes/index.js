@@ -5,9 +5,21 @@ var Exchange = require('../apis/Exchange');
 var async = require('async');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
+var KioskMapper = require('../data_mappers/KioskMapper');
+var kioskMapper = new KioskMapper();
+var winston = require('winston');
 
 exports.transactions = function (req, res) {
-    res.render('transactions', { csrfToken: req.csrfToken() });
+
+    kioskMapper.findAll(function (err, kiosks) {
+
+        if (err) winston.error(err);
+
+        return res.render('transactions', {
+            csrfToken: req.csrfToken(),
+            kiosks: kiosks
+        });
+    });
 };
 
 exports.accountInfo = function (req, res) {
@@ -16,35 +28,30 @@ exports.accountInfo = function (req, res) {
 
         if (configErr) return res.send(configErr);
 
-        var exchange = Exchange.get(config);
+        var exchange = Exchange.get(config.getAllForKiosk(req.session.kioskId));
         // must be series because of the bitstamp nonce
         async.series({
             robocoinAccountInfo: function (asyncCallback) {
 
                 Robocoin.getInstance(config).getAccountInfo(asyncCallback);
-            },
-            exchangeAccountInfo: function (asyncCallback) {
-                exchange.getBalance(asyncCallback);
-            },
-            exchangeAddress: function (asyncCallback) {
-                exchange.getDepositAddress(asyncCallback);
             }
         }, function (err, asyncRes) {
 
             if (err) {
                 return res.render('accountInfo', {
                     robocoinAccount: { xbt_balance: '--' },
-                    exchangeAccount: {},
                     error: err
                 });
             }
 
-            asyncRes.exchangeAccountInfo.address = asyncRes.exchangeAddress.address;
+            kioskMapper.findAll(function (err, kiosks) {
 
-            return res.render('accountInfo', {
-                robocoinAccount: asyncRes.robocoinAccountInfo,
-                exchangeAccount: asyncRes.exchangeAccountInfo,
-                exchangeCurrency: config.get('exchangeCurrency')
+                if (err) winston.error('Error getting kiosks: ' + err);
+
+                return res.render('accountInfo', {
+                    robocoinAccount: asyncRes.robocoinAccountInfo,
+                    kiosks: kiosks
+                });
             });
         });
     });
@@ -56,11 +63,17 @@ exports.buyAndSell = function (req, res) {
 
         var exchangeCurrency = '???';
 
-        if (!err) exchangeCurrency = config.get('exchangeCurrency');
+        if (!err) exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
 
-        res.render('buyAndSell', {
-            csrfToken: req.csrfToken(),
-            exchangeCurrency: exchangeCurrency
+        kioskMapper.findAll(function (err, kiosks) {
+
+            if (err) winston.error('Error getting kiosks: ' + err);
+
+            res.render('buyAndSell', {
+                csrfToken: req.csrfToken(),
+                exchangeCurrency: exchangeCurrency,
+                kiosks: kiosks
+            });
         });
     });
 };

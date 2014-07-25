@@ -32,13 +32,12 @@ BatchProcessor.prototype.run = function (callback) {
 
                 if (err) return waterfallCallback(err);
 
-                return waterfallCallback(null, config, unprocessedTransactions, info.deposit_address);
+                return waterfallCallback(null, unprocessedTransactions, info.deposit_address);
             });
         },
-        function (config, unprocessedTransactions, depositAddress, waterfallCallback) {
+        function (unprocessedTransactions, depositAddress, waterfallCallback) {
 
-            var exchange = Exchange.get(config);
-            autoconnector.batchProcess(unprocessedTransactions, depositAddress, exchange, waterfallCallback);
+            autoconnector.batchProcess(unprocessedTransactions, depositAddress, waterfallCallback);
         }
     ], function (err) {
 

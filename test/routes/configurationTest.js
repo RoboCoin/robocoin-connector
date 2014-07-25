@@ -40,7 +40,7 @@ describe('configuration', function () {
             sinon.stub(userMapper, 'findByLogin').callsArg(2);
             configuration._userMapper = userMapper;
 
-            sinon.stub(configMapper, 'save').callsArg(1);
+            sinon.stub(configMapper, 'save').callsArg(2);
             configuration._configMapper = configMapper;
 
             var req = _getRequest();

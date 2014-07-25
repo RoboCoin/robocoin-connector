@@ -135,7 +135,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, cal
     });
 };
 
-Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, exchange, callback) {
+Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, callback) {
 
     var self = this;
 
@@ -145,18 +145,28 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ex
             return callback();
         }
 
+        var exchange;
+
         async.eachSeries(unprocessedTxs, function (unprocessedTx, asyncCallback) {
 
-            switch (unprocessedTx.robocoin_tx_type) {
-                case 'send':
-                    self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
-                    break;
-                case 'forward':
-                    self._sellBtcForFiat(unprocessedTx, exchange, asyncCallback);
-                    break;
-                default:
-                    callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
-            }
+            self._getConfigMapper().findAll(function (err, config) {
+
+                if (err) return asyncCallback(err);
+
+                exchange = Exchange.get(config.getAllForKiosk(unprocessedTx.kiosk_id));
+
+                switch (unprocessedTx.robocoin_tx_type) {
+                    case 'send':
+                        self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
+                        break;
+                    case 'forward':
+                        self._sellBtcForFiat(unprocessedTx, exchange, asyncCallback);
+                        break;
+                    default:
+                        callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
+                }
+            });
+
         }, function (err) {
 
             return callback(err);
@@ -195,12 +205,11 @@ Autoconnector.prototype.run = function (callback) {
                 if (configErr) return waterfallCallback(configErr);
 
                 var robocoin = Robocoin.getInstance(config);
-                var exchange = Exchange.get(config);
 
-                return waterfallCallback(null, lastTime, robocoin, exchange);
+                return waterfallCallback(null, lastTime, robocoin);
             });
         },
-        function (lastTime, robocoin, exchange, waterfallCallback) {
+        function (lastTime, robocoin, waterfallCallback) {
 
             robocoin.getTransactions(lastTime, function (err, transactions) {
 
@@ -218,7 +227,7 @@ Autoconnector.prototype.run = function (callback) {
 
                     if (err) return waterfallCallback(err);
 
-                    self._processUnprocessedTransactions(robocoin, exchange, waterfallCallback);
+                    self._processUnprocessedTransactions(robocoin, waterfallCallback);
                 });
             });
         }
@@ -349,7 +358,39 @@ Autoconnector.prototype._saveTransaction = function (tx, exchangeTx, callback) {
     });
 };
 
-Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, exchange, callback) {
+Autoconnector.prototype.batchProcess = function (unprocessedTransactions, depositAddress, callback) {
+
+    var txesByKioskId = {};
+    var unprocessedTx;
+    for (var i = 0; i < unprocessedTransactions.length; i++) {
+
+        unprocessedTx = unprocessedTransactions[i];
+
+        if (!txesByKioskId[unprocessedTx.kiosk_id]) {
+            txesByKioskId[unprocessedTx.kiosk_id] = [];
+        }
+
+        txesByKioskId[unprocessedTx.kiosk_id].push(unprocessedTx);
+    }
+
+    var kioskIds = Object.keys(txesByKioskId);
+    var exchange;
+    var self = this;
+
+    this._getConfigMapper().findAll(function (err, config) {
+
+        if (err) return callback(err);
+
+        async.each(kioskIds, function (kioskId, asyncCallback) {
+            console.log('kioskId', kioskId);
+            exchange = Exchange.get(config.getAllForKiosk(kioskId));
+            self._doBatchProcess(txesByKioskId[kioskId], depositAddress, exchange, asyncCallback);
+
+        }, callback);
+    });
+};
+
+Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, depositAddress, exchange, callback) {
 
     if (unprocessedTransactions.length <= 1) {
         winston.info('Only one unprocessed transaction, no need to process...');

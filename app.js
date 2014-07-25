@@ -81,6 +81,38 @@ if ('development' == app.get('env')) {
     app.use(morgan({ format: 'dev'}));
 }
 
+// add the config to each request
+app.use(function (req, res, next) {
+
+    var ConfigMapper = require('./data_mappers/ConfigMapper');
+    var configMapper = new ConfigMapper();
+    configMapper.findAll(function (err, config) {
+
+        if (err) winston.error('Error getting config: ' + err);
+
+        req.config = config;
+        return next();
+    });
+});
+
+// set a session default kiosk
+app.use(function (req, res, next) {
+
+    if (req.isAuthenticated()) {
+        if (!req.session.kioskId) {
+            var KioskMapper = require('./data_mappers/KioskMapper');
+            var kioskMapper = new KioskMapper();
+            kioskMapper.findOne(function (err, kioskId) {
+
+                req.session.kioskId = kioskId.id;
+                return next();
+            });
+        }
+    }
+
+    return next();
+});
+
 var auth = require('./routes/auth');
 app.get('/login', auth.loginIndex);
 app.post('/login',
@@ -99,6 +131,7 @@ app.get('/exchange/last-prices', ensureAuthenticated, exchange.lastPrices);
 app.post('/exchange/buy', ensureAuthenticated, exchange.buy);
 app.post('/exchange/sell', ensureAuthenticated, exchange.sell);
 app.get('/exchange/latest-transactions', ensureAuthenticated, exchange.latestTransactions);
+app.get('/exchange/account-info', ensureAuthenticated, exchange.accountInfo);
 
 var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions);

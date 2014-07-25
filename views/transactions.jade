@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li.active
@@ -10,9 +11,12 @@ block nav
     li
         a(href="/configuration") Configuration
     li
+        a(href="/kiosks") Kiosks
+    li
         a(href="/logout") Logout
 
 block content
+    +kioskSelector(kiosks)
     h1 Unprocessed Transactions
     div.table-responsive
         table.table.table-striped.table-condensed.table-bordered#unprocessedTransactions
@@ -62,40 +66,49 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            $.get(
-                '/exchange/latest-transactions',
-                function (data) {
+            var getExchangeLatestTransactions = function () {
 
-                    var rows = '';
-                    var row;
-                    var rowClass;
-                    var btcAsFloat;
+                $.ajax({
+                    url: '/exchange/latest-transactions',
+                    data: {
+                        kioskId: $('#kioskSelector').val()
+                    },
+                    success: function (data) {
 
-                    for (var i = 0; i < data.length; i++) {
+                        var rows = '';
+                        var row;
+                        var rowClass;
+                        var btcAsFloat;
 
-                        row = data[i];
-                        btcAsFloat = parseFloat(row.btc);
+                        for (var i = 0; i < data.length; i++) {
 
-                        if (btcAsFloat < 0) {
-                            rowClass = 'send';
-                        } else if (btcAsFloat > 0) {
-                            rowClass = 'receive';
+                            row = data[i];
+                            btcAsFloat = parseFloat(row.btc);
+
+                            if (btcAsFloat < 0) {
+                                rowClass = 'send';
+                            } else if (btcAsFloat > 0) {
+                                rowClass = 'receive';
+                            }
+
+                            rows += '<tr class="transactionRow ' + rowClass + '">';
+                            rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
+                            rows += '<td>' + row.type + '</td>';
+                            rows += '<td>' + (row.fiat ?  row.fiat : '') + '</td>';
+                            rows += '<td>' + row.xbt + '</td>';
+                            rows += '<td>' + row.fee + '</td>';
+                            rows += '<td>' + (new Date(row.datetime).toUTCString()) + '</td>';
+                            rows += '</tr>';
                         }
 
-                        rows += '<tr class="' + rowClass + '">';
-                        rows += '<td>' + (row.order_id ? row.order_id : '') + '</td>';
-                        rows += '<td>' + row.type + '</td>';
-                        rows += '<td>' + (row.fiat ?  row.fiat : '') + '</td>';
-                        rows += '<td>' + row.xbt + '</td>';
-                        rows += '<td>' + row.fee + '</td>';
-                        rows += '<td>' + (new Date(row.datetime).toUTCString()) + '</td>';
-                        rows += '</tr>';
-                    }
-
-                    $('#exchangeTransactions').append(rows);
-                },
-                'json'
-            );
+                        var $table = $('#exchangeTransactions');
+                        $table.find('tr.transactionRow').remove();
+                        $table.append(rows);
+                    },
+                    dataType: 'json'
+                });
+            };
+            getExchangeLatestTransactions();
 
             var writeRobocoinTable = function (data, tableId, includeCheckbox) {
 
@@ -130,48 +143,64 @@ block footerJs
                 $table.append(rows);
             };
 
-            $.ajax({
-                url: '/robocoin/unprocessed-transactions',
-                dataType: 'json',
-                success: function (data) {
-                    writeRobocoinTable(data, 'unprocessedTransactions', true);
-                }
-            });
+            var getUnprocessedTransactions = function () {
 
-            $.ajax({
-                url: '/robocoin/processed-transactions',
-                dataType: 'json',
-                success: function (data) {
-
-                    var transaction;
-                    var rows = [];
-                    var $row;
-
-                    for (var i = 0; i < data.length; i++) {
-
-                        transaction = data[i];
-
-                        $row = $('<tr></tr>')
-                            .addClass(transaction.action)
-                            .append('<td>' + transaction.robocoin_tx_id + '</td>')
-                            .append('<td>' + transaction.exchange_tx_id + '</td>')
-                            .append('<td>' + transaction.robocoin_tx_type + '</td>')
-                            .append('<td>' + transaction.robocoin_fiat + '</td>')
-                            .append('<td>' + transaction.exchange_fiat + '</td>')
-                            .append('<td>' + transaction.robocoin_xbt + '</td>')
-                            .append('<td>' + transaction.exchange_xbt + '</td>')
-                            .append('<td>' + transaction.robocoin_tx_fee + '</td>')
-                            .append('<td>' + transaction.exchange_tx_fee + '</td>')
-                            .append('<td>' + transaction.robocoin_miners_fee + '</td>')
-                            .append('<td>' + (transaction.exchange_miners_fee || 0) + '</td>')
-                            .append('<td>' + (new Date(transaction.robocoin_tx_time)).toUTCString() + '</td>')
-                            .append('<td>' + (new Date(transaction.exchange_tx_time)).toUTCString() + '</td>');
-                        rows.push($row);
+                $.ajax({
+                    url: '/robocoin/unprocessed-transactions',
+                    data: {
+                        kioskId: $('#kioskSelector').val()
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        writeRobocoinTable(data, 'unprocessedTransactions', true);
                     }
-                    console.log(rows[0]);
-                    $('#processedTransactions').append(rows);
-                }
-            });
+                });
+            };
+            getUnprocessedTransactions();
+
+            var getProcessedTransactions = function () {
+
+                $.ajax({
+                    url: '/robocoin/processed-transactions',
+                    data: {
+                        kioskId: $('#kioskSelector').val()
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+
+                        var transaction;
+                        var rows = [];
+                        var $row;
+
+                        for (var i = 0; i < data.length; i++) {
+
+                            transaction = data[i];
+
+                            $row = $('<tr class="transactionRow"></tr>')
+                                .addClass(transaction.action)
+                                .append('<td>' + transaction.robocoin_tx_id + '</td>')
+                                .append('<td>' + transaction.exchange_tx_id + '</td>')
+                                .append('<td>' + transaction.robocoin_tx_type + '</td>')
+                                .append('<td>' + transaction.robocoin_fiat + '</td>')
+                                .append('<td>' + transaction.exchange_fiat + '</td>')
+                                .append('<td>' + transaction.robocoin_xbt + '</td>')
+                                .append('<td>' + transaction.exchange_xbt + '</td>')
+                                .append('<td>' + transaction.robocoin_tx_fee + '</td>')
+                                .append('<td>' + transaction.exchange_tx_fee + '</td>')
+                                .append('<td>' + transaction.robocoin_miners_fee + '</td>')
+                                .append('<td>' + (transaction.exchange_miners_fee || 0) + '</td>')
+                                .append('<td>' + (new Date(transaction.robocoin_tx_time)).toUTCString() + '</td>')
+                                .append('<td>' + (new Date(transaction.exchange_tx_time)).toUTCString() + '</td>');
+                            rows.push($row);
+                        }
+
+                        var $table = $('#processedTransactions');
+                        $table.find('tr.transactionRow').remove();
+                        $table.append(rows);
+                    }
+                });
+            };
+            getProcessedTransactions();
 
             $('.transaction-filter button').on('click', function (event) {
 
@@ -224,5 +253,12 @@ block footerJs
                         $button.after('<div class="alert alert-danger">' + data.statusText+ '</td>');
                     }
                 });
+            });
+
+            $('#kioskSelector').on('change', function () {
+
+                getExchangeLatestTransactions();
+                getUnprocessedTransactions();
+                getProcessedTransactions();
             });
         });

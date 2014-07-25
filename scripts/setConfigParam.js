@@ -12,6 +12,9 @@ var prompt = require('prompt');
 prompt.start();
 prompt.get({
     properties: {
+        kioskId: {
+            description: 'Kiosk ID'
+        },
         name: {
             description: 'Parameter name'
         },
@@ -27,7 +30,7 @@ prompt.get({
     }
 
     config.set(result.name, result.value);
-    configMapper.save(config, function (err) {
+    configMapper.save(result.kioskId, config, function (err) {
 
         if (err) {
             console.error(err);

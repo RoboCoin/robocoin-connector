@@ -12,14 +12,30 @@ describe('Bitstamp', function () {
     beforeEach(function () {
 
         var config = Config.getInstance();
-        config.updateParams({
-            'bitstamp.baseUrl': 'https://www.bitstamp.net/api',
-            'bitstamp.clientId': '24916868473977308962',
-            'bitstamp.secret': 'ZyyuQ9bTONt1axtVdLkw',
-            'bitstamp.apiKey': 'zwr01RLxDGPxbIHEqeNn'
-        });
+        config.updateParams([
+            {
+                kiosk_id: '1',
+                param_name: 'bitstamp.baseUrl',
+                param_value: 'https://www.bitstamp.net/api'
+            },
+            {
+                kiosk_id: '1',
+                param_name: 'bitstamp.clientId',
+                param_value: '24916868473977308962'
+            },
+            {
+                kiosk_id: '1',
+                param_name: 'bitstamp.secret',
+                param_value: 'ZyyuQ9bTONt1axtVdLkw'
+            },
+            {
+                kiosk_id: '1',
+                param_name: 'bitstamp.apiKey',
+                param_value: 'zwr01RLxDGPxbIHEqeNn'
+            }
+        ]);
         Bitstamp.clearInstance();
-        bitstamp = Bitstamp.getInstance(config);
+        bitstamp = Bitstamp.getInstance(config.getAllForKiosk('1'));
 
         sinon
             .stub(bitstamp, '_request')

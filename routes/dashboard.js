@@ -5,6 +5,9 @@ var transactionMapper = new TransactionMapper();
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
 var async = require('async');
+var KioskMapper = require('../data_mappers/KioskMapper');
+var kioskMapper = new KioskMapper();
+var winston = require('winston');
 
 exports.index = function (req, res) {
 
@@ -12,11 +15,21 @@ exports.index = function (req, res) {
 
         if (err) {
             return res.render('dashboardIndex', {
-                kioskCurrency: '???'
+                kioskCurrency: '???',
+                kiosks: []
             });
         } else {
-            return res.render('dashboardIndex', {
-                kioskCurrency: config.get('kioskCurrency')
+            kioskMapper.findAll(function (err, kiosks) {
+
+                if (err) {
+                    winston.error('Error getting kiosks: ' + err);
+                    kiosks = [];
+                }
+
+                return res.render('dashboardIndex', {
+                    kioskCurrency: config.get(req.session.kioskId, 'kioskCurrency'),
+                    kiosks: kiosks
+                });
             });
         }
     });
@@ -25,15 +38,16 @@ exports.index = function (req, res) {
 exports.summary = function (req, res) {
 
     configMapper.findAll(function (err, config) {
+
         async.parallel({
             profit: function (asyncCallback) {
 
-                transactionMapper.buildProfitReport(function (err, rows) {
+                transactionMapper.buildProfitReport(req.query.kioskId, function (err, rows) {
 
                     if (err) return asyncCallback('Error getting profit report: ' + err);
 
-                    var exchangeCurrency = config.get('exchangeCurrency');
-                    var kioskCurrency = config.get('kioskCurrency');
+                    var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
+                    var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
                     if (exchangeCurrency !== '' && exchangeCurrency != kioskCurrency) {
 
                     }
@@ -43,7 +57,7 @@ exports.summary = function (req, res) {
             },
             cashFlow: function (asyncCallback) {
 
-                transactionMapper.buildCashFlowReport(function (err, rows) {
+                transactionMapper.buildCashFlowReport(req.query.kioskId, function (err, rows) {
 
                     if (err) return asyncCallback('Error getting cash flow report: ' + err);
 

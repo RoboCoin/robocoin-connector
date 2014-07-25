@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li
@@ -10,9 +11,12 @@ block nav
     li
         a(href="/configuration") Configuration
     li
+        a(href="/kiosks") Kiosks
+    li
         a(href="/logout") Logout
 
 block content
+    +kioskSelector(kiosks)
     div(style="width: 100%; height: 500px")#buyProfit
     div(style="width: 100%; height: 500px")#sellProfit
     div(style="width: 100%, height: 500px")#hourlyCash
@@ -36,6 +40,9 @@ block footerJs
 
                 var jsonData = $.ajax({
                     url: '/dashboard/summary',
+                    data: {
+                        kioskId: $('#kioskSelector').val()
+                    },
                     dataType: 'json',
                     async: false,
                     success: function (data) {
@@ -108,3 +115,7 @@ block footerJs
             _fetchChartData();
             setInterval(_fetchChartData, 60000);
         };
+
+        $('#kioskSelector').on('change', function () {
+            drawCharts();
+        });

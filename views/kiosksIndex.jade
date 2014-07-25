@@ -36,15 +36,9 @@ block content
         button.btn.btn-primary#addKioskButton Add
 
 block footerJs
+    script(src="/js/common.js")
     script.
-        var dismissibleAlert = function (type, message) {
-            return '<div role="alert" class="alert alert-dismissible alert-' + type + '">' +
-             '<button type="button" data-dismiss="alert" class="close">' +
-              '<span aria-hidden="true">&times;</span>' +
-               '<span class="sr-only">Close</span>' +
-               '</button>' + message +
-                '</div>';
-        };
+
         $(document).ready(function () {
 
             $('#addKioskButton').on('click', function (event) {

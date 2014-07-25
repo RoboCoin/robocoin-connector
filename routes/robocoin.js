@@ -29,7 +29,7 @@ exports.getTransactions = function (req, res) {
 
 exports.getUnprocessedTransactions = function (req, res) {
 
-    transactionMapper.findUnprocessed(function (err, transactions) {
+    transactionMapper.findUnprocessedForKiosk(req.query.kioskId, function (err, transactions) {
 
         if (err) return res.send(err);
 
@@ -57,7 +57,7 @@ exports.getUnprocessedTransactions = function (req, res) {
 
 exports.getProcessedTransactions = function (req, res) {
 
-    transactionMapper.findProcessed(function (err, transactions) {
+    transactionMapper.findProcessedForKiosk(req.query.kioskId, function (err, transactions) {
 
         if (err) return res.send(err);
 

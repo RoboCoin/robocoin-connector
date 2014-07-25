@@ -1,4 +1,5 @@
 extends layout
+include includes/mixins
 
 block nav
     li
@@ -9,6 +10,8 @@ block nav
         a(href="/buy-and-sell") Buy and Sell
     li
         a(href="/configuration") Configuration
+    li
+        a(href="/kiosks") Kiosks
     li
         a(href="/logout") Logout
 
@@ -25,23 +28,60 @@ block content
             td #{ robocoinAccount.deposit_address }
                 #robocoinAddress
     h1 Exchange Account Info
+    +kioskSelector(kiosks)
     table.table.table-striped.table-condensed
         tr
-            td #{ exchangeCurrency } Available
-            td #{ exchangeAccount.fiat_available }
+            td Exchange
+            td#exchangeClass --
+        tr
+            td Fiat Available
+            td#fiatAvailable --
         tr
             td BTC Available
-            td #{ exchangeAccount.btc_available } BTC
+            td#btcAvailable --
         tr
             td Deposit Address
-            td #{ exchangeAccount.address }
-                #exchangeAddress
+            td#depositAddress --
+        tr
+            td &nbsp;
+            td#exchangeAddress
 
 block footerJs
     script(src="/js/qrcode.js")
+    script(src="/js/common.js")
     script.
         $(document).ready(function () {
 
             new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.deposit_address }');
-            new QRCode(document.getElementById('exchangeAddress'), '#{ exchangeAccount.address }');
+
+            var getExchangeInfo = function () {
+
+                $.ajax({
+                    url: '/exchange/account-info',
+                    data: {
+                        kioskId: $('#kioskSelector').val()
+                    },
+                    success: function (data) {
+                        $('#fiatAvailable').html(data.balance.fiat_available + ' ' + data.currency);
+                        $('#btcAvailable').html(data.balance.btc_available + ' BTC');
+                        $('#depositAddress').html(data.address);
+                        $('#exchangeClass').html(data.exchangeClass);
+
+                        $('#exchangeAddress').empty();
+                        new QRCode(document.getElementById('exchangeAddress'), data.address);
+                        document.body.style.cursor = 'default';
+                    },
+                    error: function (data) {
+
+                        $('#kioskSelector').after(dismissibleAlert('danger', data.responseText));
+                        document.body.style.cursor = 'default';
+                    }
+                });
+            };
+            getExchangeInfo();
+
+            $('#kioskSelector').on('change', function () {
+                document.body.style.cursor = 'wait';
+                getExchangeInfo();
+            });
         });

@@ -15,10 +15,10 @@ describe('VaultOfSatoshi', function() {
         var config = Config.getInstance();
 
         for (var param in configFile) {
-            config.set('vaultOfSatoshi.' + param, configFile[param]);
+            config.set('1', 'vaultOfSatoshi.' + param, configFile[param]);
         }
 
-        vaultOfSatoshi = VaultOfSatoshi.getInstance(config);
+        vaultOfSatoshi = VaultOfSatoshi.getInstance(config.getAllForKiosk('1'));
         sinon.stub(vaultOfSatoshi, '_getNonce')
             .returns(1404234324);
     });

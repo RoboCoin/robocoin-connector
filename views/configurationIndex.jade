@@ -11,12 +11,30 @@ block nav
     li.active
         a(href="/configuration") Configuration
     li
+        a(href="/kiosks") Kiosks
+    li
         a(href="/logout") Logout
 
 block content
     if (securityMessage != '')
         .alert.alert-danger #{ securityMessage }
-    h1 Exchange
+    h1 Robocoin
+    form(role="form")
+        .form-group
+            label(for="robocoinApiKey") API Key
+            input(type="text" autocomplete="off").form-control#robocoinApiKey
+        .form-group
+            label(for="robocoinApiSecret") API Secret
+            input(type="text" autocomplete="off").form-control#robocoinApiSecret
+        .checkbox
+            label
+                input(type="checkbox" checked=robocoinTestMode==true)#robocoinTestMode
+                | Test Mode
+        button.btn.btn-default#robocoinSave Save
+
+    h1 Kiosk
+    +kioskSelector(kiosks)
+    h2 Exchange
     p You are using #{ currentExchange } trading in #{ exchangeCurrency }
     input(type="hidden" value="#{ csrfToken }")#_csrf
     form(role="form")
@@ -43,7 +61,7 @@ block content
                             option(value="#{ currency }") #{ currency }
         button.btn.btn-default#exchangeSave Save
 
-    h1 Currency Conversion
+    h2 Currency Conversion
     p Configure this if the kiosk accepts and dispenses a currency other than what the exchange trades on.
     form(role="form")
         .form-group
@@ -63,20 +81,6 @@ block content
             input(disabled value="#{ exchangeToKioskConversionRate }")#conversionRate
             span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
         button(disabled).btn.btn-default#currencyConversionSave Save
-
-    h1 Robocoin
-    form(role="form")
-        .form-group
-            label(for="robocoinApiKey") API Key
-            input(type="text" autocomplete="off").form-control#robocoinApiKey
-        .form-group
-            label(for="robocoinApiSecret") API Secret
-            input(type="text" autocomplete="off").form-control#robocoinApiSecret
-        .checkbox
-            label
-                input(type="checkbox" checked=robocoinTestMode==true)#robocoinTestMode
-                | Test Mode
-        button.btn.btn-default#robocoinSave Save
 
     +loginModal('Save')
 
@@ -116,6 +120,7 @@ block footerJs
                     data.password = $('#password').val();
                     var exchangeName = $('#exchangeName').val()
                     data.exchangeClass = (exchangeName.charAt(0).toUpperCase() + exchangeName.slice(1));
+                    data.kioskId = $('#kioskSelector').val();
 
                     $.ajax({
                         url: '/configuration/save-exchange',
@@ -196,7 +201,8 @@ block footerJs
                             username: $('#username').val(),
                             password: $('#password').val(),
                             kioskCurrency: $('#kioskCurrency').val(),
-                            conversionRate: $('#conversionRate').val()
+                            conversionRate: $('#conversionRate').val(),
+                            kioskId: $('#kioskSelector').val()
                         },
                         success: function (data) {
                             $reauthButton.parent().find('.alert').remove();

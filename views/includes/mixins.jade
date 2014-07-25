@@ -24,3 +24,8 @@ mixin loginModal(buttonText)
                 .modal-footer
                     button(type="button" data-dismiss="modal").btn.btn-default Close
                     button(type="button").btn.btn-primary#reauthButton #{ buttonText }
+
+mixin kioskSelector(kiosks)
+    select.form-control#kioskSelector
+        each kiosk in kiosks
+            option(value="#{ kiosk.id }") #{ kiosk.name }

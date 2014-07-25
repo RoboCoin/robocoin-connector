@@ -1,5 +1,7 @@
 'use strict';
 
+var winston = require('winston');
+
 exports.loginIndex = function (req, res) {
 
     var message;
@@ -16,5 +18,8 @@ exports.loginIndex = function (req, res) {
 
 exports.logout = function (req, res) {
     req.logout();
+    req.session.destroy(function (err) {
+        winston.error('Error destroying session: ' + err);
+    });
     res.redirect('/login');
 };
