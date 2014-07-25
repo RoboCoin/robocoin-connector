@@ -159,6 +159,12 @@ app.get('/kiosks', ensureAuthenticated, kiosks.index);
 app.post('/kiosks/add', ensureAuthenticated, kiosks.addNewKiosk);
 app.post('/kiosks/update', ensureAuthenticated, kiosks.update);
 
+app.use(function (err, req, res, next) {
+
+    winston.error(err);
+    res.send(500, err);
+});
+
 var server = http.createServer(app).listen(app.get('port'), function(){
 
     console.log('Express server listening on port ' + app.get('port'));
