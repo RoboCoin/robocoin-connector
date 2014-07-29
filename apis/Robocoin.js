@@ -22,7 +22,7 @@ Robocoin.prototype._getNonce = function () {
     return (new Date()).getTime();
 };
 
-Robocoin.prototype._post = function (endpoint, options, callback) {
+Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
     options.nonce = this._getNonce();
 
@@ -32,7 +32,7 @@ Robocoin.prototype._post = function (endpoint, options, callback) {
     var requestOptions = {
         url: this._config.get(null, 'robocoin.baseUrl') + endpoint,
         form: options,
-        method: 'POST',
+        method: method,
         json: true,
         headers: {
             'X-API-key': this._config.get(null, 'robocoin.key'),
@@ -44,6 +44,16 @@ Robocoin.prototype._post = function (endpoint, options, callback) {
 
         return callback(error, body);
     });
+};
+
+Robocoin.prototype._post = function (endpoint, options, callback) {
+
+    return this._doRequest(endpoint, options, 'POST', callback);
+};
+
+Robocoin.prototype._get = function (endpoint, options, callback) {
+
+    return this._doRequest(endpoint, options, 'GET', callback);
 };
 
 /**
@@ -60,6 +70,14 @@ Robocoin.prototype.getAccountInfo = function (callback) {
     callback(null, {
         xbt_balance: 5.89451,
         deposit_address: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
+    });
+};
+
+Robocoin.prototype.getMachineInfo = function (callback) {
+
+    this._get('/machine', {}, function (err, body) {
+
+        return callback(err, body);
     });
 };
 

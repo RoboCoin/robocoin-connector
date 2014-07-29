@@ -29,8 +29,13 @@ prompt.get({
         return process.exit(1);
     }
 
-    config.set(result.kioskId, result.name, result.value);
-    configMapper.save(result.kioskId, config, function (err) {
+    var kioskId = result.kioskId;
+    if (kioskId == '') {
+        kioskId = null;
+    }
+
+    config.set(kioskId, result.name, result.value);
+    configMapper.save(kioskId, config, function (err) {
 
         if (err) {
             console.error(err);

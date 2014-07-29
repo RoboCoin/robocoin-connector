@@ -38,7 +38,7 @@ app.use(session({
 app.use(csrf());
 
 // DoS mitigation
-toobusy.maxLag(250);
+toobusy.maxLag(500);
 app.use(function (req, res, next) {
     if (toobusy()) {
         res.send(503, 'The server is under heavy load and rejecting some requests.');
