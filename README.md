@@ -60,6 +60,23 @@ In production, set the NODE_ENV environment variable to "production".
 
 Set the ENCRYPTION_KEY environment variable to a secret, preferably created with scripts/getSecret
 
+Create a connectorConfig.json file one directory above the application directory. It should look like this:
+
+        {
+        	"bitstamp": {
+        		"baseUrl": "https://www.bitstamp.net/api",
+        		"clientId": "xxxxx",
+        		"apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        		"secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        	},
+            "vaultOfSatoshi": {
+                "exchangeCurrency": "USD",
+                "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "apiSecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "baseUrl": "https://api.vaultofsatoshi.com"
+            }
+        }
+
 In the directory containing package.json, run:
 
         npm install
