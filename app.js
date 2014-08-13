@@ -31,7 +31,9 @@ app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CX
 // sessions
 app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
-    store: new SessionMapper()
+    store: new SessionMapper(),
+    resave: false,
+    saveUninitialized: true
 }));
 
 // csrf protection
@@ -76,7 +78,7 @@ app.use(flash());
 if ('development' == app.get('env')) {
     app.use(errorHandler());
     app.locals.pretty = true;
-    app.use(morgan({ format: 'dev'}));
+    app.use(morgan('dev'));
 }
 
 // add the config to each request
@@ -149,11 +151,6 @@ app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.save
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
 
-var kiosks = require('./routes/kiosks');
-app.get('/kiosks', ensureAuthenticated, kiosks.index);
-app.post('/kiosks/add', ensureAuthenticated, kiosks.addNewKiosk);
-app.post('/kiosks/update', ensureAuthenticated, kiosks.update);
-
 app.use(function (err, req, res, next) {
 
     winston.error(err);
@@ -170,7 +167,7 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 
         if (err) winston.error('Error getting config: ' + err);
 
-        if (config.get(null, 'autoconnectorEnabled') == 1) {
+        if (config && config.get(null, 'autoconnectorEnabled') == 1) {
             jobs.startInterval();
         }
     });

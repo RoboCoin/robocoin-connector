@@ -35,7 +35,7 @@ requests, from the Configuration page, specify to use "Mock Bitstamp".
 Requirements:
 
 * NodeJs + npm
-* PostgreSQL
+* PostgreSQL server, client and contrib
 * mocha (for tests)
 
         npm install mocha -g
@@ -52,9 +52,16 @@ Requirements:
 
         npm install forever -g
 
-Run scripts/database.sql:
+In your development environment, add your username to the postgres group.
 
-        psql -U postgres robocoin_connector < database.sql
+In your developement environment, run as user postgres:
+
+        CREATE USER yourusername SUPERUSER;
+        CREATE DATABASE robocoin_connector WITH OWNER yourusername;
+
+Run as user postgres scripts/database.sql:
+
+        psql robocoin_connector < database.sql
 
 In production, set the NODE_ENV environment variable to "production".
 
