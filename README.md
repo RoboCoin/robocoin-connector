@@ -35,7 +35,7 @@ requests, from the Configuration page, specify to use "Mock Bitstamp".
 Requirements:
 
 * NodeJs + npm
-* PostgreSQL
+* PostgreSQL server, client and contrib
 * mocha (for tests)
 
         npm install mocha -g
@@ -52,30 +52,27 @@ Requirements:
 
         npm install forever -g
 
-Run scripts/database.sql:
+In your development environment, add your username to the postgres group.
 
-        psql -U postgres robocoin_connector < database.sql
+In your developement environment, run as user postgres:
+
+        CREATE USER yourusername WITH PASSWORD 'somepassword';
+        CREATE DATABASE robocoin_connector WITH OWNER yourusername;
+        GRANT ALL PRIVILEGES ON robocoin_connector TO yourusername;
+
+Run as user postgres scripts/database.sql:
+
+        psql robocoin_connector < database.sql
 
 In production, set the NODE_ENV environment variable to "production".
 
 Set the ENCRYPTION_KEY environment variable to a secret, preferably created with scripts/getSecret
 
-Create a connectorConfig.json file one directory above the application directory. It should look like this:
+Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost/robocoin_connector
 
-        {
-        	"bitstamp": {
-        		"baseUrl": "https://www.bitstamp.net/api",
-        		"clientId": "xxxxx",
-        		"apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        		"secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        	},
-            "vaultOfSatoshi": {
-                "exchangeCurrency": "USD",
-                "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                "apiSecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                "baseUrl": "https://api.vaultofsatoshi.com"
-            }
-        }
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
+
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
 
 In the directory containing package.json, run:
 
