@@ -7,19 +7,37 @@ var KioskMapper = function () {
 
 };
 
-KioskMapper.prototype.add = function (kiosk, callback) {
-
+KioskMapper.prototype.save = function (kiosk, callback) {
+    console.log("saving", kiosk);
     Connection.getConnection().query(
-        'INSERT INTO kiosks (id, name) VALUES ($1, $2)',
-        [kiosk.id, kiosk.name],
-        function (err) {
+        'UPDATE kiosks SET name = $1 WHERE id = $2',
+        [kiosk.name, kiosk.id],
+        function (err, res) {
 
             if (err) {
-                winston.error('Error adding kiosk: ' + err);
-                return callback('Error adding kiosk');
+                winston.error('Error updating kiosk: ' + err);
+                return callback('Error updating kiosk');
             }
 
-            return callback();
+            if (res.rowCount === 0) {
+
+                Connection.getConnection().query(
+                    'INSERT INTO kiosks (id, name) VALUES ($1, $2)',
+                    [kiosk.id, kiosk.name],
+                    function (err) {
+
+                        if (err) {
+                            winston.error('Error adding kiosk: ' + err);
+                            return callback('Error adding kiosk');
+                        }
+
+                        return callback();
+                    }
+                );
+            } else {
+
+                return callback();
+            }
         }
     );
 };
@@ -52,23 +70,6 @@ KioskMapper.prototype.findOne = function (callback) {
             }
 
             return callback(null, res.rows[0]);
-        }
-    );
-};
-
-KioskMapper.prototype.update = function (kiosk, existingId, callback) {
-
-    Connection.getConnection().query(
-        'UPDATE kiosks SET name = $1, id = $2 WHERE id = $3',
-        [kiosk.name, kiosk.id, existingId],
-        function (err) {
-
-            if (err) {
-                winston.error('Error updating kiosk: ' + err);
-                return callback('Error updating kiosk');
-            }
-
-            return callback();
         }
     );
 };

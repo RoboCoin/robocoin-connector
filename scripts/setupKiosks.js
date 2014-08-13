@@ -23,8 +23,8 @@ configMapper.findAll(function (err, config) {
 
         async.each(machines, function (machine, asyncCallback) {
 
-            kioskMapper.add({
-                id: machine.machine_id,
+            kioskMapper.save({
+                id: machine.id,
                 name: machine.name
             }, asyncCallback);
 

@@ -149,11 +149,6 @@ app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.save
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
 
-var kiosks = require('./routes/kiosks');
-app.get('/kiosks', ensureAuthenticated, kiosks.index);
-app.post('/kiosks/add', ensureAuthenticated, kiosks.addNewKiosk);
-app.post('/kiosks/update', ensureAuthenticated, kiosks.update);
-
 app.use(function (err, req, res, next) {
 
     winston.error(err);
