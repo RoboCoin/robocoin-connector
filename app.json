@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "postdeploy": ""
+    },
+    "env": {
+        "ENCRYPTION_KEY": {
+            "description": "Encryption key",
+            "generator": "secret"
+        },
+        "NODE_ENV": "production"
+    },
+    "addons": ["postgresql"]
+}

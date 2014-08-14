@@ -10,6 +10,10 @@ Two common, expected scenarios for running the connector are:
 1. Operators fork the code and host it on their own servers. Then can modify it freely.
 2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
 
+## Quick start
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 ## How it works
 
 On a buy, the user puts fiat into the kiosk. Then the bank transfers BTC from the operator's account to the user's
@@ -74,6 +78,12 @@ Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, p
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
 
+Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
+
+Run from the database command shell
+
+        INSERT INTO users (username, password_hash) values ('yourusername', 'the-hash-from-the-previous-step');
+
 In the directory containing package.json, run:
 
         npm install
@@ -83,6 +93,8 @@ Run scripts/setConfigParam.js with 'heroku run bash'
 * robocoin.baseUrl https://www.somefutureurl.net/api/0
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
+
+Open the connector dashboard in a browser and go to the Configuration page. Configure each kiosk.
 
 ## Extending
 
