@@ -10,10 +10,6 @@ Two common, expected scenarios for running the connector are:
 1. Operators fork the code and host it on their own servers. Then can modify it freely.
 2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
 
-## Quick start
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
 ## How it works
 
 On a buy, the user puts fiat into the kiosk. Then the bank transfers BTC from the operator's account to the user's
