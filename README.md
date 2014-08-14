@@ -74,6 +74,8 @@ Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, p
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
 
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
+
 Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
 
 Run from the database command shell
