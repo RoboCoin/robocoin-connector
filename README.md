@@ -82,10 +82,6 @@ Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, p
 
 Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
 
-Run from the database command shell
-
-        INSERT INTO users (username, password_hash) values ('yourusername', 'the-hash-from-the-previous-step');
-
 Run scripts/setConfigParam.js with 'heroku run bash'
 
 * robocoin.baseUrl https://www.somefutureurl.net/api/0
