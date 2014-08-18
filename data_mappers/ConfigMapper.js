@@ -7,6 +7,11 @@ var configInstance = null;
 var crypto = require('crypto');
 var encryptionKey = process.env.ENCRYPTION_KEY;
 
+if (!encryptionKey) {
+    console.error("You must set the ENCRYPTION_KEY environment variable!");
+    process.exit(1);
+}
+
 var ConfigMapper = function () {
 };
 
