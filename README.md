@@ -70,6 +70,10 @@ Set the ENCRYPTION_KEY environment variable to a secret, preferably created with
 
 Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost/robocoin_connector
 
+In the directory containing package.json, run:
+
+        npm install
+
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
@@ -81,10 +85,6 @@ Run "node scripts/addUser.js yourusername". Note the output and save the generat
 Run from the database command shell
 
         INSERT INTO users (username, password_hash) values ('yourusername', 'the-hash-from-the-previous-step');
-
-In the directory containing package.json, run:
-
-        npm install
 
 Run scripts/setConfigParam.js with 'heroku run bash'
 
