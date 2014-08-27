@@ -38,6 +38,19 @@ SessionMapper.prototype.set = function (sid, session, callback) {
     }
 };
 
+SessionMapper.prototype.destroy = function (sid, callback) {
+
+    var self = this;
+
+    if (this._locks[sid]) {
+        setTimeout(function () {
+            self.destroy(dis, callback);
+        }, 5);
+    } else {
+        this._doDestroy(sid, callback);
+    }
+};
+
 SessionMapper.prototype._doGet = function (sid, callback) {
 
     this._locks[sid] = true;
@@ -107,7 +120,7 @@ SessionMapper.prototype._doSet = function (sid, session, callback) {
     );
 };
 
-SessionMapper.prototype.destroy = function (sid, callback) {
+SessionMapper.prototype._doDestroy = function (sid, callback) {
 
     Connection.getConnection().query(
         'DELETE FROM sessions WHERE sid = $1',
@@ -115,7 +128,10 @@ SessionMapper.prototype.destroy = function (sid, callback) {
         function (err) {
 
             // log it but don't throw the error
-            if (err) winston.error('Error deleting session: ' + err);
+            if (err) {
+                winston.error('Error deleting session: ' + err);
+                return callback(err);
+            }
 
             return callback();
         }

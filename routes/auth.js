@@ -19,7 +19,7 @@ exports.loginIndex = function (req, res) {
 exports.logout = function (req, res) {
     req.logout();
     req.session.destroy(function (err) {
-        winston.error('Error destroying session: ' + err);
+        if (err) winston.error('Error destroying session: ' + err);
     });
     res.redirect('/login');
 };

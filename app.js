@@ -32,7 +32,7 @@ app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CX
 app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
     store: new SessionMapper(),
-    resave: false,
+    resave: true,
     saveUninitialized: true
 }));
 
@@ -154,8 +154,16 @@ app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configurati
 
 app.use(function (err, req, res, next) {
 
-    winston.error(err);
-    res.send(500, 'Woops! We had an unexpected problem.');
+    switch (err.code) {
+        case 'EBADCSRFTOKEN':
+            res.status(403);
+            return res.send('Session expired or form tampered with');
+            break;
+
+        default:
+            winston.error(err);
+            return res.send(500, 'Woops! We had an unexpected problem.');
+    }
 });
 
 var server = http.createServer(app).listen(app.get('port'), function(){
