@@ -43,7 +43,7 @@ app.use(csrf());
 toobusy.maxLag(500);
 app.use(function (req, res, next) {
     if (toobusy()) {
-        res.send(503, 'The server is under heavy load and rejecting some requests.');
+        res.status(503).body('The server is under heavy load and rejecting some requests.');
     } else {
         next();
     }
@@ -68,8 +68,8 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(methodOverride());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(methodOverride());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
@@ -97,7 +97,6 @@ app.use(function (req, res, next) {
 
 // set a session default kiosk
 app.use(function (req, res, next) {
-
     if (req.isAuthenticated()) {
         if (!req.session.kioskId) {
             var KioskMapper = require('./data_mappers/KioskMapper');
@@ -106,10 +105,12 @@ app.use(function (req, res, next) {
                 req.session.kioskId = (kiosk) ? kiosk.id : null;
                 return next();
             });
+        } else {
+            return next();
         }
+    } else {
+        return next();
     }
-
-    return next();
 });
 
 var auth = require('./routes/auth');
@@ -187,7 +188,6 @@ process.on('SIGTERM', function () {
 });
 
 function ensureAuthenticated (req, res, next) {
-
-    if (req.isAuthenticated()) { return next(); }
+    if (req.isAuthenticated()) return next();
     res.redirect('/login');
 };
