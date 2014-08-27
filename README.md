@@ -54,11 +54,9 @@ Requirements:
 
 In your development environment, add your username to the postgres group.
 
-In your developement environment, run as user postgres:
+In your developement environment, add a user. This step adds a user and echoes its automatically-generated password:
 
-        CREATE USER yourusername WITH PASSWORD 'somepassword';
-        CREATE DATABASE robocoin_connector WITH OWNER yourusername;
-        GRANT ALL PRIVILEGES ON robocoin_connector TO yourusername;
+        node scripts/addUser.js yourusername
 
 Run as user postgres scripts/database.sql:
 
@@ -82,9 +80,11 @@ Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, p
 
 Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
 
-Run scripts/setConfigParam.js with 'heroku run bash'
+Run 'heroku run node scripts/setConfigParam.js':
 
-* robocoin.baseUrl https://www.somefutureurl.net/api/0
+* (empty)
+* robocoin.baseUrl
+* https://www.somefuturerobocoinurl.net/api/0
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
 
