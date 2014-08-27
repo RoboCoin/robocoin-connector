@@ -6,6 +6,7 @@ var request = require('request');
 var crypto = require('crypto');
 var querystring = require('querystring');
 var url = require('url');
+var MockRobocoin = require('./MockRobocoin');
 
 var Robocoin = function (config) {
 
@@ -141,14 +142,23 @@ Robocoin.prototype.getTransactions = function (since, callback) {
     callback(null, transactions);
 };
 
+Robocoin.prototype.isMock = function () {
+    return false;
+};
+
 var robocoin = null;
 
 module.exports = {
     getInstance: function (config) {
 
-        if (robocoin === null) {
-            // TODO check for test mode and return either tester or real API
-            robocoin = new Robocoin(config);
+        if (config.get(null, 'robocoin.testMode') == '0') {
+            if (robocoin === null || robocoin.isMock()) {
+                robocoin = new Robocoin(config);
+            }
+        } else {
+            if (robocoin === null || !robocoin.isMock()) {
+                robocoin = new MockRobocoin();
+            }
         }
 
         return robocoin;
