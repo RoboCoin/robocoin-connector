@@ -185,7 +185,7 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
 
     Connection.getConnection().query(
         'SELECT ' +
-            'TO_CHAR(robocoin_tx_time, \'YYYY-MM-DD HH\') date, ' +
+            'TO_CHAR(robocoin_tx_time, \'YYYY-MM\') date, ' +
             'robocoin_tx_type txType, ' +
             'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
             'COALESCE(SUM(converted_exchange_fiat), 0) exchangeFiat, ' +
