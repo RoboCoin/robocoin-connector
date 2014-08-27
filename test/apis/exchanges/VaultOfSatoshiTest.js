@@ -3,7 +3,7 @@
 var VaultOfSatoshi = require('../../../apis/exchanges/VaultOfSatoshi');
 var sinon = require('sinon');
 var assert = require('assert');
-var configFile = require('../../../../connectorConfig').vaultOfSatoshi;
+//var configFile = require('../../../../connectorConfig').vaultOfSatoshi;
 var Config = require('../../../lib/Config');
 
 describe('VaultOfSatoshi', function() {
@@ -13,10 +13,13 @@ describe('VaultOfSatoshi', function() {
     beforeEach(function () {
 
         var config = Config.getInstance();
+        config.set('1', 'vaultOfSatoshi.apiSecret', 'whatever');
+        config.set('1', 'vaultOfSatoshi.baseUrl', 'https://api.vaultofsatoshi.com');
+        config.set('1', 'vaultOfSatoshi.apiKey', '0f04e90b19ef0437596d76287ce289583219efcc6c4403ecc9f644fd92a654c8');
 
-        for (var param in configFile) {
+        /*for (var param in configFile) {
             config.set('1', 'vaultOfSatoshi.' + param, configFile[param]);
-        }
+        }*/
 
         vaultOfSatoshi = VaultOfSatoshi.getInstance(config.getAllForKiosk('1'));
         sinon.stub(vaultOfSatoshi, '_getNonce')
@@ -40,7 +43,7 @@ describe('VaultOfSatoshi', function() {
                 method: 'POST',
                 headers: {
                     'Api-Key': '0f04e90b19ef0437596d76287ce289583219efcc6c4403ecc9f644fd92a654c8',
-                    'Api-Sign': 'YjliMGZjZDNhMDllNWI0YmM3MDU4ZDU3OTYxOTczNTM0NTUyMzQ4ODNhYTQyOWJlZTMxMDRjMjhjM2RhZGY4YmJiYzkwMDRmYjA0ZWY4NmE5ZTNjM2FmMTVlZTZhMWYwOTlmODJmNmQ2OTg4ZjIwMzQxODgzZWU3MTgwN2ZhMTI='
+                    'Api-Sign': 'YjA5MGJmZGUyNDcxNWQ3YzdhYzMzYzZjNmE0ODcyN2VhZDhjZmRlOWY0MTU0NTBmZTM3MzM5OGMzNjRjYTBiNDk5Y2M1ZGEzMDNkNTZmMDliMzYxZWZiZDQ5MTYzOWYzNGIwODE3MTRkZWVlZDAyZWE5MjJmMWMzNjdjMjc2NTk='
                 },
                 form: {
                     nonce: 1404234324
