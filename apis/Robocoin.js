@@ -128,8 +128,7 @@ Robocoin.prototype.getAccountInfo = function (callback) {
 
 Robocoin.prototype.getMachineInfo = function (callback) {
 
-    this._get('/machine', {}, function (err, body) {
-        console.log(body);
+    this._get('/connector/machine', {}, function (err, body) {
         return callback(err, body);
     });
 };
