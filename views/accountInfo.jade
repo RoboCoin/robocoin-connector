@@ -23,7 +23,7 @@ block content
             td #{ robocoinAccount.xbt_balance } BTC
         tr
             td Deposit Address
-            td #{ robocoinAccount.deposit_address }
+            td #{ robocoinAccount.depositAddress }
                 #robocoinAddress
     h1 Exchange Account Info
     +kioskSelector(kiosks)
@@ -50,7 +50,7 @@ block footerJs
     script.
         $(document).ready(function () {
 
-            new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.deposit_address }');
+            new QRCode(document.getElementById('robocoinAddress'), '#{ robocoinAccount.depositAddress }');
 
             var getExchangeInfo = function () {
 

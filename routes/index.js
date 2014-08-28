@@ -32,7 +32,6 @@ exports.accountInfo = function (req, res) {
         // must be series because of the bitstamp nonce
         async.series({
             robocoinAccountInfo: function (asyncCallback) {
-
                 Robocoin.getInstance(config).getAccountInfo(asyncCallback);
             }
         }, function (err, asyncRes) {
@@ -40,7 +39,8 @@ exports.accountInfo = function (req, res) {
             if (err) {
                 return res.render('accountInfo', {
                     robocoinAccount: { xbt_balance: '--' },
-                    error: err
+                    error: err,
+                    kiosks: []
                 });
             }
 

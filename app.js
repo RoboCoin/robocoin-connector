@@ -162,7 +162,7 @@ app.use(function (err, req, res, next) {
 
         default:
             winston.error(err);
-            return res.send(500, 'Woops! We had an unexpected problem.');
+            return res.status(500).send('Woops! We had an unexpected problem.');
     }
 });
 

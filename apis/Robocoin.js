@@ -121,9 +121,8 @@ Robocoin.prototype._get = function (endpoint, options, callback) {
 
 Robocoin.prototype.getAccountInfo = function (callback) {
 
-    callback(null, {
-        xbt_balance: 5.89451,
-        deposit_address: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
+    this._get('/account/info', {}, function (err, body) {
+        return callback(err, body);
     });
 };
 
