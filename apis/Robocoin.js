@@ -93,11 +93,18 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
     var requestOptions = {
         url: baseUrl + endpoint,
-        form: options,
         method: method,
         json: true,
         headers: headers
     };
+
+    if (Object.keys(options).length > 0) {
+        if (method == 'GET') {
+            requestOptions.qs = options;
+        } else if (method == 'POST') {
+            requestOptions.form = options;
+        }
+    }
 
     this._request(requestOptions, function (error, response, body) {
 
@@ -135,9 +142,9 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 
 Robocoin.prototype.getTransactions = function (since, callback) {
 
-    var transactions = [];
-
-    callback(null, transactions);
+    this._get('/account/activity', { since: since }, function (err, body) {
+        return callback(err, body);
+    });
 };
 
 Robocoin.prototype.isMock = function () {
