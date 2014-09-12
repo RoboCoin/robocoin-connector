@@ -83,7 +83,6 @@ Buttercoin.prototype.sell = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 Buttercoin.prototype.withdraw = function (amount, address, callback) {
-    console.log("address", address);
     var txn = {
         currency: 'BTC',
         amount: amount.toString(),
