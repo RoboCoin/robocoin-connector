@@ -16,23 +16,24 @@ Buttercoin.prototype.getBalance = function (callback) {
 
 
 Buttercoin.prototype.getDepositAddress = function (callback) {
-    this._client.getBalances(function (err, address) {
+    this._client.getDepositAddress(function (err, address) {
         if (err) return callback('Buttercoin get address err: ' + err);
         return callback(null, { address: address });
     });
 };
 
 Buttercoin.prototype._order = function(type, amount, price, callback) {
-    var order = {
+    var self = this;
+    var details = {
         instrument: 'BTC_USD',
         side: type,
         orderType: "limit",
         quantity: amount.toString(),
         price: price.toString()
     };
-    this._client.createOrder(order, function (err, url) {
+    this._client.createOrder(details, function (err, response) {
         if (err) return callback('Buttercoin ' + type + ' err: ' + err);
-        this._client.getOrderByUrl(url, function (err, order) {
+        self._client.getOrderByUrl(response.url, function (err, order) {
             if (err) return callback('Buttercoin ' + type + ' get order err: ' + err);
             // loop through events to get order created datetime
             var createdTime;
@@ -41,7 +42,7 @@ Buttercoin.prototype._order = function(type, amount, price, callback) {
                     createdTime = order.events[i].eventDate;
                     break;
                 }
-            });
+            }
             return callback(null, {
                 datetime: Date.parse(createdTime),
                 id: order.orderId,
@@ -72,7 +73,7 @@ Buttercoin.prototype.buy = function (amount, price, callback) {
  * @param callback callback(err, order)
  */
 Buttercoin.prototype.sell = function (amount, price, callback) {
-   this._order('sell', amount, price, callback);
+    this._order('sell', amount, price, callback);
 };
 
 /**
@@ -82,14 +83,37 @@ Buttercoin.prototype.sell = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 Buttercoin.prototype.withdraw = function (amount, address, callback) {
-   var txn = {
+    console.log("address", address);
+    var txn = {
         currency: 'BTC',
         amount: amount.toString(),
         destination: address
-   };
-   this._client.sendBitcoin(txn, function (err, msg) {
+    };
+    this._client.sendBitcoin(txn, function (err, msg) {
         return callback(err);
-   };
+    });
+};
+
+Buttercoin.prototype.userTransactions = function (callback) {
+    this._client.getOrders(function (err, orders) {
+        if (err) return callback('Buttercoin get transactions err: ' + err);
+        var transactions = [];
+        var order;
+        for (var i=0; i < orders.length; i++) {
+            order = orders[i];
+            transactions.push({
+                id: order.orderId,
+                datetime: Date.parse(order.events[0].eventDate),
+                type: order.side,
+                fiat: order.price,
+                xbt: order.quantity,
+                fee: 0,
+                order_id: order.orderId
+            });
+        }
+
+        return callback(null, transactions);
+    });
 };
 
 Buttercoin.prototype.getPrices = function (callback) {

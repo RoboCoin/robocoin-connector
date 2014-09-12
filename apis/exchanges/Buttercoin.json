@@ -1,9 +1,7 @@
 {
     "label": "Buttercoin",
-    "nonConfigurables": {
-        "environment": { "label": "Environment", "value": "production" }
-    },
     "configurables": {
+        "environment": { "label": "Environment" },
         "apiKey": { "label": "API Key" },
         "apiSecret": { "label": "API Secret" }
     },
