@@ -18,9 +18,11 @@ var passport = require('passport');
 var UserMapper = require('./data_mappers/UserMapper');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
+var compression = require('compression');
 
 var app = express();
 
+app.use(compression());
 app.enable('trust proxy');
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
