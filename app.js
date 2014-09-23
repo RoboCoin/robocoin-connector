@@ -21,10 +21,23 @@ var flash = require('connect-flash');
 
 var app = express();
 
-app.set('trust proxy', true);
+app.enable('trust proxy');
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+var cookie = {
+    httpOnly: true
+};
+// development only
+if ('development' == app.get('env')) {
+    app.use(errorHandler());
+    app.locals.pretty = true;
+    app.use(morgan('dev'));
+    cookie.secure = false;
+} else {
+    cookie.secure = true;
+}
 
 // cookies
 app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa'));
@@ -33,7 +46,8 @@ app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
     store: new SessionMapper(),
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: cookie
 }));
 
 // csrf protection
@@ -73,13 +87,6 @@ app.use(methodOverride());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-
-// development only
-if ('development' == app.get('env')) {
-    app.use(errorHandler());
-    app.locals.pretty = true;
-    app.use(morgan('dev'));
-}
 
 // add the config to each request
 var ConfigMapper = require('./data_mappers/ConfigMapper');
