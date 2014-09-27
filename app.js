@@ -19,11 +19,13 @@ var UserMapper = require('./data_mappers/UserMapper');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
 var compression = require('compression');
+var expressEnforcesSsl = require('express-enforces-ssl');
 
 var app = express();
 
 app.use(compression());
 app.enable('trust proxy');
+app.use(expressEnforcesSsl());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -66,7 +68,11 @@ app.use(function (req, res, next) {
 });
 
 // HSTS
-app.use(helmet.hsts({ maxAge: 7776000000 })); // ninety days
+app.use(helmet.hsts({
+    maxAge: 7776000000,
+    includeSubdomains: true,
+    force: true
+})); // ninety days
 
 // logins
 var userMapper = new UserMapper();
@@ -175,7 +181,7 @@ app.use(function (err, req, res, next) {
     }
 });
 
-var server = http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app).listen(app.get('port'), function() {
 
     console.log('Express server listening on port ' + app.get('port'));
     console.log('App environment: ' + app.get('env'));

@@ -30,7 +30,7 @@ check the "Test Mode" box.
 To run the connector with a mock version of the Bitstamp API, which simply echoes calls instead of sending HTTP
 requests, from the Configuration page, specify to use "Mock Bitstamp".
 
-## Installation
+## Installation (for developers)
 
 Requirements:
 
@@ -64,7 +64,7 @@ Run as user postgres scripts/database.sql:
 
 In production, set the NODE_ENV environment variable to "production".
 
-Set the ENCRYPTION_KEY environment variable to a secret, preferably created with scripts/getSecret
+Set the ENCRYPTION_KEY environment variable to a secret, preferably created with "openssl rand -hex 8"
 
 Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost/robocoin_connector
 
@@ -72,21 +72,15 @@ In the directory containing package.json, run:
 
         npm install
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin secret.
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
 
 Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
 
-Run 'heroku run node scripts/setConfigParam.js':
-
-* (empty)
-* robocoin.baseUrl
-* https://www.somefuturerobocoinurl.net/api/0
-
-When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
+When everything's installed, run "supervisor app.js" in a developement environment, or "forever app.js" in production.
 
 Open the connector dashboard in a browser and go to the Configuration page. Configure each kiosk.
 
