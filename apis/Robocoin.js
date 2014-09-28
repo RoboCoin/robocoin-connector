@@ -128,8 +128,8 @@ Robocoin.prototype._get = function (endpoint, options, callback) {
 
 Robocoin.prototype.getAccountInfo = function (callback) {
 
-    this._get('/account', {}, function (err, body) {
-        return callback(err, body);
+    this._get('/account', {}, function (err, response, body) {
+        return callback(err, response);
     });
 };
 
