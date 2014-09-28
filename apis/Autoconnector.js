@@ -233,6 +233,7 @@ Autoconnector.prototype.run = function (callback) {
                 if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
                 if (transactions.length === 0) {
+                    winston.info('No transactions to process on this round.');
                     return waterfallCallback();
                 }
 
