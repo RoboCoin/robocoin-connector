@@ -81,8 +81,7 @@ describe('Autoconnector', function () {
             unprocessedTxs.push({
                 kiosk_id: '1',
                 robocoin_tx_type: 'send',
-                exchange_withdrawal_id: null,
-                confirmations: null
+                exchange_withdrawal_id: null
             });
             unprocessedTxs.push({
                 kiosk_id: '1',
@@ -359,7 +358,6 @@ describe('Autoconnector', function () {
                 robocoin_fiat: 5.20,
                 robocoin_xbt: 0.008,
                 robocoin_tx_fee: 0.0008,
-                robocoin_miners_fee:0.00005,
                 robocoin_tx_time: 1402697232
             };
             var exchangeOrder = {
@@ -384,7 +382,6 @@ describe('Autoconnector', function () {
                     robocoin_fiat: 5.2,
                     robocoin_xbt: 0.008,
                     robocoin_tx_fee: 0.0008,
-                    robocoin_miners_fee: 0.00005,
                     robocoin_tx_time: 1402697232,
                     exchange_tx_id: 234,
                     exchange_fiat: '5.00',

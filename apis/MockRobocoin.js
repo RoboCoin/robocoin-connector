@@ -12,16 +12,15 @@ MockRobocoin.prototype._getTimestamp = function () {
 MockRobocoin.prototype.getAccountInfo = function (callback) {
 
     callback(null, {
-        xbt_balance: 5.89451,
-        deposit_address: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
+        depositAddress: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
     });
 };
 
 MockRobocoin.prototype.getMachineInfo = function (callback) {
 
     callback(null, [
-        { id: '680ec3d2-cc5a-4d8b-b1b0-3aa4dfc98e23', name: 'Bribe'},
-        { id: '5ae35439-663a-497c-a28d-b1c82312ea52', name: 'Bellows'}
+        { kioskId: '680ec3d2-cc5a-4d8b-b1b0-3aa4dfc98e23', name: 'Bribe'},
+        { kioskId: '5ae35439-663a-497c-a28d-b1c82312ea52', name: 'Bellows'}
     ]);
 };
 
@@ -40,7 +39,6 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
     var time;
     var rate;
     var action;
-    var confirmations;
     var fee;
     var markup = new bigdecimal.BigDecimal(1.05);
     var minersFee;
@@ -54,8 +52,6 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
         // BTC price, between $615 and $625
         rate = new bigdecimal.BigDecimal(this._getRandomNumber(619, 621));
 
-        confirmations = null;
-
         if (action == 'send') {
 
             xbt = fiat.divide(rate.multiply(markup), bigdecimal.MathContext.DECIMAL128());
@@ -63,7 +59,6 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         } else if (action === 'forward') {
 
-            confirmations = this._getRandomNumber(0, 12);
             xbt = fiat.divide(rate, bigdecimal.MathContext.DECIMAL128()).multiply(markup);
             minersFee = 0.00001;
         }
@@ -73,16 +68,14 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
         var guids = ['680ec3d2-cc5a-4d8b-b1b0-3aa4dfc98e23', '5ae35439-663a-497c-a28d-b1c82312ea52'];
 
         transactions.push({
-            id: this._getRandomNumber(100, 1000000),
-            action: action,
+            transactionId: this._getRandomNumber(100, 1000000),
+            type: action,
             fiat: fiat.setScale(2, bigdecimal.RoundingMode.DOWN()).toPlainString(),
-            currency: "USD",
+            currencyType: "USD",
             xbt: xbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
             time: time,
-            confirmations: confirmations,
             fee: fee.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString(),
-            miners_fee: minersFee,
-            machine_id: guids[this._getRandomNumber(0, 1)]
+            machineId: guids[this._getRandomNumber(0, 1)]
         });
     }
 

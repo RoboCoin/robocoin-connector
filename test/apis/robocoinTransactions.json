@@ -5,7 +5,6 @@
         "fiat": "6.00",
         "xbt": "-0.00930000",
         "time": 1402125627000,
-        "confirmations": null,
         "fee": "0.000093"
     },
     {
@@ -14,7 +13,6 @@
         "fiat": "5.20",
         "xbt": "0.00800000",
         "time": 1402121184000,
-        "confirmations": null,
         "fee": "0.00008"
     },
     {
@@ -23,7 +21,6 @@
         "fiat": "5.20",
         "xbt": "-0.00800000",
         "time": 1402120904000,
-        "confirmations": null,
         "fee": "0.00008"
     },
     {
@@ -32,7 +29,6 @@
         "fiat": "5.20",
         "xbt": "-0.00800000",
         "time": 1402120820000,
-        "confirmations": null,
         "fee": "0.00008"
     },
     {
@@ -41,7 +37,6 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401642025001,
-        "confirmations": null,
         "fee": "0.0000485"
     },
     {
@@ -50,7 +45,6 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401616826000,
-        "confirmations": null,
         "robocoinFee": "0.0000485",
         "miners_fee": "0.0001"
     },
@@ -60,7 +54,6 @@
         "fiat": "5.20",
         "xbt": "-0.00485000",
         "time": 1401585386000,
-        "confirmations": null,
         "robocoinFee": "0.0000485",
         "miners_fee": "0.0001"
     },
@@ -70,7 +63,6 @@
         "fiat": "5.20",
         "xbt": "-0.01190000",
         "time": 1401526228000,
-        "confirmations": null,
         "robocoinFee": "0.000119",
         "miners_fee": "0.0001"
     },
@@ -80,7 +72,6 @@
         "fiat": "5.20",
         "xbt": "-0.01190000",
         "time": 1401527500000,
-        "confirmations": null,
         "robocoinFee": "0.000119",
         "miners_fee": "0.0001"
     },
@@ -90,7 +81,6 @@
         "fiat": "5.20",
         "xbt": "0.01104711",
         "time": 1401527500000,
-        "confirmations": null,
         "robocoinFee": "0.00011047",
         "miners_fee": "0.0001"
     },
@@ -100,7 +90,6 @@
         "fiat": null,
         "xbt": "1.08421000",
         "time": 1401529500000,
-        "confirmations": 5,
         "robocoinFee": "0.0108421",
         "miners_fee": "0.0001"
     }

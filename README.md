@@ -19,7 +19,7 @@ the sold BTC.
 
 On a sell, the user sends an amount of BTC from their account to the operator's account. The kiosk dispenses fiat.
 Robocoin automatically sends this BTC amount from the operator's account to their exchange. We also monitor how many
-confirmations are on that transaction and this info is in the API. When the connector sees enough confirmations,
+confirmations are on that transaction. When the connector sees enough confirmations,
 it executes a sell for that amount on the exchange.
 
 ### Test mode
@@ -54,10 +54,6 @@ Requirements:
 
 In your development environment, add your username to the postgres group.
 
-In your developement environment, add a user. This step adds a user and echoes its automatically-generated password:
-
-        node scripts/addUser.js yourusername
-
 Run as user postgres scripts/database.sql:
 
         psql robocoin_connector < database.sql
@@ -71,6 +67,10 @@ Set the DATABASE_URL environment variable to something like postgres://yourusern
 In the directory containing package.json, run:
 
         npm install
+
+In your developement environment, add a user. This step adds a user and echoes its automatically-generated password:
+
+        node scripts/addUser.js yourusername
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin secret.
 

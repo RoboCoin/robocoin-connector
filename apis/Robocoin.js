@@ -128,21 +128,21 @@ Robocoin.prototype._get = function (endpoint, options, callback) {
 
 Robocoin.prototype.getAccountInfo = function (callback) {
 
-    this._get('/account/info', {}, function (err, body) {
+    this._get('/account', {}, function (err, body) {
         return callback(err, body);
     });
 };
 
 Robocoin.prototype.getMachineInfo = function (callback) {
 
-    this._get('/connector/machine', {}, function (err, body) {
+    this._get('/machine', {}, function (err, response, body) {
         return callback(err, body);
     });
 };
 
 Robocoin.prototype.getTransactions = function (since, callback) {
 
-    this._get('/account/activity', { since: since }, function (err, body) {
+    this._get('/account/activity', { since: since }, function (err, response, body) {
         return callback(err, body);
     });
 };

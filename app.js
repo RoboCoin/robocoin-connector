@@ -25,7 +25,6 @@ var app = express();
 
 app.use(compression());
 app.enable('trust proxy');
-app.use(expressEnforcesSsl());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -35,12 +34,15 @@ var cookie = {
 };
 // development only
 if ('development' == app.get('env')) {
+    console.log('not forcing SSL');
     app.use(errorHandler());
     app.locals.pretty = true;
     app.use(morgan('dev'));
     cookie.secure = false;
 } else {
+    console.log('forcing SSL');
     cookie.secure = true;
+    app.use(expressEnforcesSsl());
 }
 
 // cookies

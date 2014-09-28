@@ -8,8 +8,9 @@ var bigdecimal = require('bigdecimal');
 var Exchange = require('./Exchange');
 var winston = require('winston');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
+var Blockchain = require('./Blockchain');
 
-var MARKET_PAD = 0.01;
+var MARKET_PAD = 0.05;
 
 var Autoconnector = function () {
 
@@ -69,7 +70,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
             // do the withdrawal
             exchange.withdraw(
                 Math.abs(unprocessedTx.robocoin_xbt),
-                accountInfo.deposit_address,
+                accountInfo.depositAddress,
                 asyncCallback
             );
         },
@@ -105,33 +106,46 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, cal
 
     var self = this;
 
-    async.waterfall([
-        function (asyncCallback) {
+    var blockchain = new Blockchain();
+    blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
-            exchange.getPrices(asyncCallback);
-        },
-        function (prices, asyncCallback) {
+        if (confirmations < 6) {
 
-            var price = new bigdecimal.BigDecimal(prices.sellPrice);
-            price = price.multiply(
-                new bigdecimal.BigDecimal(1 - MARKET_PAD))
-                .setScale(2, bigdecimal.RoundingMode.DOWN());
+            console.log('Confirmations at ' + confirmations + ', skipping');
+            return callback();
 
-            exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
-        },
-        function (sellOrder, asyncCallback) {
+        } else {
 
-            unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
+            console.log('got six or more confirmations, processing...');
+            async.waterfall([
+                function (asyncCallback) {
 
-            winston.info('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
-            self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
+                    exchange.getPrices(asyncCallback);
+                },
+                function (prices, asyncCallback) {
+
+                    var price = new bigdecimal.BigDecimal(prices.sellPrice);
+                    price = price.multiply(
+                        new bigdecimal.BigDecimal(1 - MARKET_PAD))
+                        .setScale(2, bigdecimal.RoundingMode.DOWN());
+
+                    exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+                },
+                function (sellOrder, asyncCallback) {
+
+                    unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
+
+                    winston.info('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
+                    self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
+                }
+            ], function (err) {
+
+                if (err) winston.error(err);
+
+                // never pass the error so it'll attempt to process the next unprocessed transaction
+                return callback();
+            });
         }
-    ], function (err) {
-
-        if (err) winston.error(err);
-
-        // never pass the error so it'll attempt to process the next unprocessed transaction
-        return callback();
     });
 };
 
@@ -159,10 +173,10 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
                 exchange = Exchange.get(kioskConfig);
 
                 switch (unprocessedTx.robocoin_tx_type) {
-                    case 'send':
+                    case 'ATM_PURCHASE':
                         self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
                         break;
-                    case 'forward':
+                    case 'ATM_SELL':
                         self._sellBtcForFiat(unprocessedTx, exchange, asyncCallback);
                         break;
                     default:

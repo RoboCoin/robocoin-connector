@@ -10,41 +10,23 @@ var TransactionMapper = function () {
 
 TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
-    var query = Connection.getConnection().query;
+    robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
-    query(
-        'UPDATE transactions SET confirmations = $1 WHERE robocoin_tx_id = $2',
-        [robocoinTx.confirmations, robocoinTx.id],
-        function (err, res) {
+    var params = [robocoinTx.transactionId, robocoinTx.type, robocoinTx.fiat, robocoinTx.currencyType,
+        robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.fee, robocoinTx.machineId,
+        robocoinTx.transactionHash];
 
-            if (err) return callback('Error updating confirmations: ' + err);
+    Connection.getConnection().query(
+            'INSERT INTO transactions ' +
+            '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_currency, ' +
+            'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_tx_fee, kiosk_id, tx_hash) ' +
+            'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+        params,
+        function (err) {
 
-            if (res.rowCount === 0) {
+            if (err) return callback('Error saving transaction: ' + err);
 
-                robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
-
-                var params = [robocoinTx.id, robocoinTx.action, robocoinTx.fiat, robocoinTx.currency,
-                    robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.miners_fee, robocoinTx.fee,
-                    robocoinTx.machine_id];
-
-                query(
-                        'INSERT INTO transactions ' +
-                        '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_currency, ' +
-                        'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_miners_fee, robocoin_tx_fee, ' +
-                        'kiosk_id) ' +
-                        'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
-                    params,
-                    function (err) {
-
-                        if (err) return callback('Error saving transaction: ' + err);
-
-                        return callback();
-                    }
-                );
-            } else {
-
-                return callback();
-            }
+            return callback();
         }
     );
 };
@@ -113,6 +95,9 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
             'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
         'ORDER BY robocoin_tx_time',
         function (err, res) {
+            if (!res) {
+                return callback(null, []);
+            }
             return callback(err, res.rows);
         }
     );
@@ -189,7 +174,6 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
             'robocoin_tx_type txType, ' +
             'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
             'COALESCE(SUM(converted_exchange_fiat), 0) exchangeFiat, ' +
-            'COALESCE(SUM(robocoin_miners_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinMinersFee, ' +
             'COALESCE(SUM(exchange_miners_fee * (ABS(converted_exchange_fiat) / ABS(exchange_xbt))), 0) exchangeMinersFee, ' +
             'COALESCE(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinTxFee, ' +
             'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee, ' +

@@ -45,7 +45,7 @@ exports.buy = function (req, res) {
 
                 if (err) return asyncCallback(err);
 
-                exchange.withdraw(amount, roboResponse.deposit_address, asyncCallback);
+                exchange.withdraw(amount, roboResponse.depositAddress, asyncCallback);
             });
         }
     }, function (err, asyncResponse) {

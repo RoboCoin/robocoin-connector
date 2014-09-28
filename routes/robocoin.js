@@ -46,7 +46,6 @@ exports.getUnprocessedTransactions = function (req, res) {
                 fiat: transaction.robocoin_fiat,
                 xbt: transaction.robocoin_xbt,
                 fee: transaction.robocoin_tx_fee,
-                confirmations: transaction.confirmations,
                 time: transaction.robocoin_tx_time
             });
         }
