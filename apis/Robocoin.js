@@ -143,6 +143,23 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 Robocoin.prototype.getTransactions = function (since, callback) {
 
     this._get('/account/activity', { since: since }, function (err, response) {
+
+        var xbt;
+        var fiat;
+
+        for (var i = 0; i < response.length; i++) {
+
+            xbt = new bigdecimal.BigDecimal(response[i].xbt);
+            xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
+                .setScale(8, bigdecimal.RoundingMode.DOWN());
+            response[i].xbt = xbt.toPlainString();
+
+            fiat = new bigdecimal.BigDecimal(response[i].fiat);
+            fiat = fiat.divide(new bigdecimal.BigDecimal(Math.pow(10, 5)), bigdecimal.MathContext.DECIMAL128())
+                .setScale(5, bigdecimal.RoundingMode.DOWN());
+            response[i].fiat = fiat.toPlainString();
+        }
+
         return callback(err, response);
     });
 };
