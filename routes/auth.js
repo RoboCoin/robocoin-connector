@@ -21,5 +21,6 @@ exports.logout = function (req, res) {
     req.session.destroy(function (err) {
         if (err) winston.error('Error destroying session: ' + err);
     });
+    res.clearCookie('connect.sid');
     res.redirect('/login');
 };
