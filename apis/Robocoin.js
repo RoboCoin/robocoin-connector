@@ -142,7 +142,7 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 
 Robocoin.prototype.getTransactions = function (since, callback) {
 
-    this._get('/account/activity', { since: since }, function (err, response, body) {
+    this._get('/account/activity', { since: since }, function (err, response) {
         return callback(err, response);
     });
 };

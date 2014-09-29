@@ -13,14 +13,13 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
     robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
     var params = [robocoinTx.transactionId, robocoinTx.type, robocoinTx.fiat, robocoinTx.currencyType,
-        robocoinTx.xbt, robocoinTx.confirmations, robocoinTx.time, robocoinTx.fee, robocoinTx.machineId,
-        robocoinTx.transactionHash];
+        robocoinTx.xbt, robocoinTx.time, robocoinTx.fee, robocoinTx.machineId, robocoinTx.transactionHash];
 
     Connection.getConnection().query(
             'INSERT INTO transactions ' +
             '(robocoin_tx_id, robocoin_tx_type, robocoin_fiat, robocoin_currency, ' +
-            'robocoin_xbt, confirmations, robocoin_tx_time, robocoin_tx_fee, kiosk_id, tx_hash) ' +
-            'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+            'robocoin_xbt, robocoin_tx_time, robocoin_tx_fee, kiosk_id, tx_hash) ' +
+            'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
         params,
         function (err) {
 
