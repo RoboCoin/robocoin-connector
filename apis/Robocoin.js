@@ -112,6 +112,10 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
         if (response.statusCode != 200) return callback(body);
 
+        console.log('error', error);
+        console.log('response', response);
+        console.log('body', body);
+
         return callback(error, body);
     });
 };
@@ -136,9 +140,6 @@ Robocoin.prototype.getAccountInfo = function (callback) {
 Robocoin.prototype.getMachineInfo = function (callback) {
 
     this._get('/machine', {}, function (err, response, body) {
-        console.log("err:", err);
-        console.log("response:", response);
-        console.log("body:", body);
         return callback(err, response);
     });
 };
