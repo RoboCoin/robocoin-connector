@@ -136,6 +136,9 @@ Robocoin.prototype.getAccountInfo = function (callback) {
 Robocoin.prototype.getMachineInfo = function (callback) {
 
     this._get('/machine', {}, function (err, response, body) {
+        console.log("err:", err);
+        console.log("response:", response);
+        console.log("body:", body);
         return callback(err, response);
     });
 };
