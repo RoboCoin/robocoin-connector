@@ -91,8 +91,8 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     Connection.getConnection().query(
         'SELECT * ' +
         'FROM transactions ' +
-        'WHERE (robocoin_tx_type = ? AND exchange_tx_time IS NULL) ' +
-            'OR (robocoin_tx_type = ? AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
+        'WHERE (robocoin_tx_type = $1 AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = $2 AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
         'ORDER BY robocoin_tx_time',
         [RobocoinTxTypes.SEND, RobocoinTxTypes.RECV],
         function (err, res) {
@@ -110,10 +110,10 @@ TransactionMapper.prototype.findUnprocessedForKiosk = function(kioskId, callback
         'SELECT * ' +
         'FROM transactions ' +
         'WHERE kiosk_id = $1' +
-            'AND (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
-            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_tx_id IS NULL) ' +
+            'AND (robocoin_tx_type = $2 AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = $3 AND confirmations >= 6 AND exchange_tx_id IS NULL) ' +
         'ORDER BY robocoin_tx_time',
-        [kioskId],
+        [kioskId, RobocoinTxTypes.SEND, RobocoinTxTypes.RECV],
         function (err, res) {
 
             if (err) return callback(err);
