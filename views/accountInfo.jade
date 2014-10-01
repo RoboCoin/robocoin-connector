@@ -74,6 +74,7 @@ block footerJs
                 });
             };
             getExchangeInfo();
+            setInterval(getExchangeInfo, 60000);
 
             $('#kioskSelector').on('change', function () {
                 document.body.style.cursor = 'wait';
