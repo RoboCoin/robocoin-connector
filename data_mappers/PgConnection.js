@@ -27,7 +27,7 @@ var connection = {
 
                 callback(null, result);
             });
-            winston.info('SQL: ', query);
+            console.log('SQL: ', query.text, query.values);
         });
     }
 };
