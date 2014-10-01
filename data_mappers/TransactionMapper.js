@@ -4,12 +4,14 @@ var ConfigMapper = require('./ConfigMapper');
 var configMapper = new ConfigMapper();
 var Connection = require('./PgConnection');
 var bigdecimal = require('bigdecimal');
+var winston = require('winston');
 
 var TransactionMapper = function () {
 };
 
 TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
+    winston.info('saving:');winston.info(robocoinTx);
     robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
     var params = [robocoinTx.transactionId, robocoinTx.type, robocoinTx.fiat, robocoinTx.currencyType,

@@ -237,6 +237,7 @@ Autoconnector.prototype.run = function (callback) {
                     return waterfallCallback();
                 }
 
+                winston.info('transactions from the API');winston.info(transactions);
                 async.eachSeries(transactions, function (transaction, asyncCallback) {
 
                     self._getTransactionMapper().save(transaction, asyncCallback);
