@@ -236,7 +236,7 @@ Autoconnector.prototype.run = function (callback) {
 
                 if (transactions.length === 0) {
                     winston.info('No transactions to process on this round.');
-                    return waterfallCallback();
+                    return waterfallCallback(null, robocoin);
                 }
 
                 async.eachSeries(transactions, function (transaction, asyncCallback) {
