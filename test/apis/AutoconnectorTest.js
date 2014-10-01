@@ -8,6 +8,7 @@ var ConfigMapper = require('../../data_mappers/ConfigMapper');
 var sinon = require('sinon');
 var Bitstamp = require('../../apis/exchanges/Bitstamp');
 var Config = require('../../lib/Config');
+var RobocoinTxTypes = require('../../lib/RobocoinTxTypes');
 
 describe('Autoconnector', function () {
 
@@ -48,7 +49,7 @@ describe('Autoconnector', function () {
 
             var robocoinTransaction = {
                 transactionId: '123',
-                action: 'send',
+                action: RobocoinTxTypes.SEND,
                 fiat: '650.00',
                 xbt: '1.00000000',
                 time: 1401527500000
@@ -80,18 +81,19 @@ describe('Autoconnector', function () {
             var unprocessedTxs = [];
             unprocessedTxs.push({
                 kiosk_id: '1',
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 exchange_withdrawal_id: null
             });
             unprocessedTxs.push({
                 kiosk_id: '1',
-                robocoin_tx_type: 'forward',
-                exchange_withdrawal_id: null,
-                confirmations: 6
+                robocoin_tx_type: RobocoinTxTypes.RECV,
+                exchange_withdrawal_id: null
             });
 
             sinon.stub(autoconnector._transactionMapper, 'findUnprocessed')
                 .callsArgWith(0, null, unprocessedTxs);
+            sinon.stub(autoconnector._configMapper, 'findAll')
+                .callsArgWith(0, null, config);
             sinon.stub(autoconnector, '_replenishAccountBtc')
                 .callsArg(3);
             sinon.stub(autoconnector, '_sellBtcForFiat')
@@ -130,17 +132,19 @@ describe('Autoconnector', function () {
                 .callsArgWith(2, null);
             sinon.stub(exchange, 'getMinimumOrders')
                 .callsArgWith(0, null, { minimumBuy: 0.01, minimumSell: 0.01 });
+            sinon.stub(autoconnector._configMapper, 'findAll')
+                .callsArgWith(0, null, config);
 
             var robocoin = {
                 getAccountInfo: function () {}
             };
             sinon.stub(robocoin, 'getAccountInfo')
-                .callsArgWith(0, null, { deposit_address: 'address' });
+                .callsArgWith(0, null, { depositAddress: 'address' });
 
             autoconnector._replenishAccountBtc(unprocessedTx, robocoin, exchange, function (err) {
 
                 assert(exchange.getPrices.called);
-                assert(exchange.buy.calledWith(0.01, '656.50'));
+                assert(exchange.buy.calledWith(0.01, '682.50'));
                 assert(robocoin.getAccountInfo.called);
                 assert(exchange.withdraw.calledWith(0.01, 'address'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
@@ -170,7 +174,7 @@ describe('Autoconnector', function () {
             autoconnector._sellBtcForFiat(unprocessedTx, exchange, function (err) {
 
                 assert(exchange.getPrices.called);
-                assert(exchange.sell.calledWith(0.01, '643.49'));
+                assert(exchange.sell.calledWith(0.01, '617.49'));
                 assert(autoconnector._transactionMapper.saveExchangeTransaction.called);
 
                 done(err);
@@ -193,42 +197,42 @@ describe('Autoconnector', function () {
             var unprocessedTransactions = [];
             var t1 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'forward',
+                robocoin_tx_type: RobocoinTxTypes.RECV,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t1);
             var t2 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'forward',
+                robocoin_tx_type: RobocoinTxTypes.RECV,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t2);
             var t6 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'forward',
+                robocoin_tx_type: RobocoinTxTypes.RECV,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t6);
             var t3 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t3);
             unprocessedTransactions.push({
                 kiosk_id: '1',
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             });
             var t4 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t4);
             var t5 = {
                 kiosk_id: '1',
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             };
             unprocessedTransactions.push(t5);
@@ -278,12 +282,12 @@ describe('Autoconnector', function () {
             autoconnector._lastBuyPrice = 650.00;
             var buys = [];
             var t1 = {
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             };
             buys.push(t1);
             var t2 = {
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_xbt: 0.004
             };
             buys.push(t2);
@@ -299,7 +303,7 @@ describe('Autoconnector', function () {
 
             autoconnector._batchBuy(0.008, buys, 'abc123', exchange, function (err) {
 
-                assert(exchange.buy.calledWith(0.008, '656.50'));
+                assert(exchange.buy.calledWith(0.008, '682.50'));
                 assert(exchange.withdraw.calledWith(0.008, 'abc123'));
                 assert(autoconnector._saveTransaction.called);
 
@@ -325,12 +329,12 @@ describe('Autoconnector', function () {
             autoconnector._lastSellPrice = 650.00;
             var sells = [];
             var t1 = {
-                robocoin_tx_type: 'forward',
+                robocoin_tx_type: RobocoinTxTypes.RECV,
                 robocoin_xbt: 0.004
             };
             sells.push(t1);
             var t2 = {
-                robocoin_tx_type: 'forward',
+                robocoin_tx_type: RobocoinTxTypes.RECV,
                 robocoin_xbt: 0.004
             };
             sells.push(t2);
@@ -343,7 +347,7 @@ describe('Autoconnector', function () {
 
             autoconnector._batchSell(0.008, sells, exchange, function (err) {
 
-                assert(exchange.sell.calledWith(0.008, '643.49'));
+                assert(exchange.sell.calledWith(0.008, '617.49'));
                 assert(autoconnector._saveTransaction.called);
 
                 done(err);
@@ -354,7 +358,7 @@ describe('Autoconnector', function () {
 
             var unprocessedTransaction = {
                 robocoin_tx_id: 123,
-                robocoin_tx_type: 'send',
+                robocoin_tx_type: RobocoinTxTypes.SEND,
                 robocoin_fiat: 5.20,
                 robocoin_xbt: 0.008,
                 robocoin_tx_fee: 0.0008,
@@ -378,7 +382,7 @@ describe('Autoconnector', function () {
 
                 var mergedTransaction = {
                     robocoin_tx_id: 123,
-                    robocoin_tx_type: 'send',
+                    robocoin_tx_type: RobocoinTxTypes.SEND,
                     robocoin_fiat: 5.2,
                     robocoin_xbt: 0.008,
                     robocoin_tx_fee: 0.0008,

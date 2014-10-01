@@ -1,8 +1,22 @@
 'use strict';
 
 var bigdecimal = require('bigdecimal');
+var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
 var MockRobocoin = function () {
+    this._request = function (options, callback) {};
+};
+
+MockRobocoin.prototype._doRequest = function (endpoint, options, method, callback) {
+    this._request(options, callback);
+};
+
+MockRobocoin.prototype._post = function (endpoints, options, callback) {
+    return this._doRequest(endpoints, options, 'POST', callback);
+};
+
+MockRobocoin.prototype._get = function (endpoints, options, callback) {
+    return this._doRequest(endpoints, options, 'GET', callback);
 };
 
 MockRobocoin.prototype._getTimestamp = function () {
@@ -32,7 +46,7 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
     var numberOfTransactions = this._getRandomNumber(0, 2);
     var transactions = [];
-    var actions = ['send', 'forward'];
+    var actions = [RobocoinTxTypes.SEND, RobocoinTxTypes.RECV];
     var now = (new Date()).getTime();
     var fiat;
     var xbt;

@@ -13,6 +13,7 @@ var Robocoin = function (config) {
 
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
+    this._request = request;
 };
 
 Robocoin.prototype._request = request;

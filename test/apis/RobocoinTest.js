@@ -14,7 +14,7 @@ describe('Robocoin', function () {
             {
                 kiosk_id: null,
                 param_name: 'robocoin.testMode',
-                param_value: '1'
+                param_value: '0'
             },
             {
                 kiosk_id: null,

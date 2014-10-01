@@ -37,7 +37,6 @@ Bitstamp.prototype._post = function (url, options, callback) {
     options.key = this._config['bitstamp.apiKey'];
     options.signature = hmac.digest('hex').toUpperCase();
     options.nonce = nonce;
-    console.log(options);
 
     var requestOptions = {};
     requestOptions.url = this._config['bitstamp.baseUrl'] + url;

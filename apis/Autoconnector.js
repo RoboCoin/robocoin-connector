@@ -9,6 +9,7 @@ var Exchange = require('./Exchange');
 var winston = require('winston');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var Blockchain = require('./Blockchain');
+var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
 var MARKET_PAD = 0.05;
 
@@ -173,10 +174,10 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
                 exchange = Exchange.get(kioskConfig);
 
                 switch (unprocessedTx.robocoin_tx_type) {
-                    case 'ATM_PURCHASE':
+                    case RobocoinTxTypes.SEND:
                         self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
                         break;
-                    case 'ATM_SELL':
+                    case RobocoinTxTypes.RECV:
                         self._sellBtcForFiat(unprocessedTx, exchange, asyncCallback);
                         break;
                     default:
@@ -461,12 +462,12 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
 
                 async.eachSeries(unprocessedTransactions, function (tx, eachSeriesCallback) {
 
-                    if (tx.robocoin_tx_type == 'send') {
+                    if (tx.robocoin_tx_type == RobocoinTxTypes.SEND) {
 
                         aggregateBuy = aggregateBuy.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
                         aggregatedBuys.push(tx);
 
-                    } else if (tx.robocoin_tx_type == 'forward') {
+                    } else if (tx.robocoin_tx_type == RobocoinTxTypes.RECV) {
 
                         aggregateSell = aggregateSell.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
                         aggregatedSells.push(tx);

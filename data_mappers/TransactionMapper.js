@@ -4,6 +4,7 @@ var ConfigMapper = require('./ConfigMapper');
 var configMapper = new ConfigMapper();
 var Connection = require('./PgConnection');
 var bigdecimal = require('bigdecimal');
+var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
 var TransactionMapper = function () {
 };
@@ -90,9 +91,10 @@ TransactionMapper.prototype.findUnprocessed = function (callback) {
     Connection.getConnection().query(
         'SELECT * ' +
         'FROM transactions ' +
-        'WHERE (robocoin_tx_type = \'send\' AND exchange_tx_time IS NULL) ' +
-            'OR (robocoin_tx_type = \'forward\' AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
+        'WHERE (robocoin_tx_type = ? AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = ? AND confirmations >= 6 AND exchange_tx_id IS NULL)' +
         'ORDER BY robocoin_tx_time',
+        [RobocoinTxTypes.SEND, RobocoinTxTypes.RECV],
         function (err, res) {
             if (!res) {
                 return callback(null, []);
@@ -197,12 +199,12 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
                 row = res.rows[i];
 
                 // if it's a sell...
-                if (row.txtype == 'forward') {
+                if (row.txtype == RobocoinTxTypes.RECV) {
 
                     sells[row.date] = [row.date, row.exchangefiat - row.robocoinfiat, parseFloat(row.robocointxfee),
                         parseFloat(row.exchangetxfee), parseFloat(row.robocoinminersfee)];
 
-                } else if (row.txtype == 'send') { // or if it's a buy...
+                } else if (row.txtype == RobocoinTxTypes.SEND) { // or if it's a buy...
 
                     buys[row.date] = [row.date, row.robocoinfiat - row.exchangefiat, parseFloat(row.robocointxfee),
                         parseFloat(row.exchangetxfee), parseFloat(row.exchangeminersfee)];
