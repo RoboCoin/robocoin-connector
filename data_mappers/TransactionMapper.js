@@ -11,7 +11,10 @@ var TransactionMapper = function () {
 
 TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
-    winston.info('saving:');winston.info(robocoinTx);
+    winston.info('saving:');
+    winston.info('-----');
+    winston.info(robocoinTx);
+    winston.info('=====');
     robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
     var params = [robocoinTx.transactionId, robocoinTx.type, robocoinTx.fiat, robocoinTx.currencyType,
