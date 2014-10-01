@@ -156,6 +156,11 @@ Robocoin.prototype.getTransactions = function (since, callback) {
         var xbt;
         var fiat;
 
+        if (typeof response === 'undefined') {
+            winston.warn('account activity response is undefined');
+            response = [];
+        }
+
         for (var i = 0; i < response.length; i++) {
 
             xbt = new bigdecimal.BigDecimal(response[i].xbt);
