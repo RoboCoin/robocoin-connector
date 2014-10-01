@@ -245,11 +245,13 @@ Autoconnector.prototype.run = function (callback) {
 
                 }, function (err) {
 
-                    if (err) return waterfallCallback(err);
-
-                    self._processUnprocessedTransactions(robocoin, waterfallCallback);
+                    return waterfallCallback(err, robocoin);
                 });
             });
+        },
+        function (robocoin, waterfallCallback) {
+
+            self._processUnprocessedTransactions(robocoin, waterfallCallback);
         }
     ], function (err) {
 
