@@ -150,7 +150,6 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 
 Robocoin.prototype.getTransactions = function (since, callback) {
 
-    winston.info('getting transactions since: ' + since);
     this._get('/account/activity', { since: since }, function (err, response) {
 
         var xbt;
