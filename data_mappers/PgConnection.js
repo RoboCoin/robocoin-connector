@@ -27,7 +27,6 @@ var connection = {
 
                 callback(null, result);
             });
-            console.log('SQL: ', query.text, query.values);
         });
     }
 };
