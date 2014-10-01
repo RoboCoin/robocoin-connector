@@ -217,6 +217,7 @@ Autoconnector.prototype.run = function (callback) {
         },
         function (lastTime, waterfallCallback) {
 
+
             self._getConfigMapper().findAll(function (configErr, config) {
 
                 if (configErr) return waterfallCallback(configErr);
@@ -228,7 +229,7 @@ Autoconnector.prototype.run = function (callback) {
         },
         function (lastTime, robocoin, waterfallCallback) {
 
-            robocoin.getTransactions((new Date(lastTime)).getTime(), function (err, transactions) {
+            robocoin.getTransactions((new Date(lastTime)).getTime() + 1000, function (err, transactions) {
 
                 if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
