@@ -110,6 +110,11 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, cal
     var blockchain = new Blockchain();
     blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
+        if (err) {
+            return callback('Error getting confirmations: ' + err);
+        }
+
+        console.log('confirmations: ' + confirmations);
         if (confirmations < 6) {
 
             console.log('Confirmations at ' + confirmations + ', skipping');
