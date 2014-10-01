@@ -2,9 +2,12 @@
 
 var pg = require('pg');
 var connectionString = process.env.DATABASE_URL;
+var winston = require('winston');
 
 var connection = {
     query: function (sql, params, callback) {
+
+        var query;
 
         // make params optional
         if (typeof params === 'function') {
@@ -16,7 +19,7 @@ var connection = {
 
             if (err) return callback('Error connecting to DB:' + err);
 
-            client.query(sql, params, function (err, result) {
+            query = client.query(sql, params, function (err, result) {
 
                 done();
 
@@ -24,6 +27,7 @@ var connection = {
 
                 callback(null, result);
             });
+            winston.info('SQL: ', query);
         });
     }
 };
