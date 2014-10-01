@@ -15,6 +15,7 @@ Blockchain.prototype.getConfirmationsForTransaction = function (transactionHash,
         },
         function (err, response, body) {
 
+            console.log('response from blockr:', err, response, body);
             if (body.code == 200 && body.status == 'success' && body.data) {
 
                 return callback(null, body.data.confirmations);
