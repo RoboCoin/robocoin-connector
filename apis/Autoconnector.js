@@ -103,56 +103,70 @@ Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedT
     return unprocessedTx;
 };
 
-Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, callback) {
+Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, robocoin, callback) {
 
     var self = this;
 
-    var blockchain = new Blockchain();
-    blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
+    async.series([
+        function (seriesCallback) {
+            robocoin.getHashFor(unprocessedTx.tx_hash, function (err, hash) {
+                if (err) return seriesCallback(err);
+                unprocessedTx.tx_hash = hash;
+                return seriesCallback();
+            });
+        },
+        function (seriesCallback) {
 
-        if (err) {
-            return callback('Error getting confirmations: ' + err);
-        }
+            var blockchain = new Blockchain();
+            blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
-        console.log('confirmations: ' + confirmations);
-        if (confirmations < 6) {
-
-            console.log('Confirmations at ' + confirmations + ', skipping');
-            return callback();
-
-        } else {
-
-            console.log('got six or more confirmations, processing...');
-            async.waterfall([
-                function (asyncCallback) {
-
-                    exchange.getPrices(asyncCallback);
-                },
-                function (prices, asyncCallback) {
-
-                    var price = new bigdecimal.BigDecimal(prices.sellPrice);
-                    price = price.multiply(
-                        new bigdecimal.BigDecimal(1 - MARKET_PAD))
-                        .setScale(2, bigdecimal.RoundingMode.DOWN());
-
-                    exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
-                },
-                function (sellOrder, asyncCallback) {
-
-                    unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
-
-                    winston.info('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
-                    self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
+                if (err) {
+                    return seriesCallback('Error getting confirmations: ' + err);
                 }
-            ], function (err) {
 
-                if (err) winston.error(err);
+                winston.info('confirmations: ' + confirmations);
+                // TODO get this from the exchange class, e.g. exchange.getDepositConfirmationsRequired or whatever
+                // also, maybe make that call async, i.e. e.blah(callback), in case it's ever not a constant
+                if (confirmations < 6) {
 
-                // never pass the error so it'll attempt to process the next unprocessed transaction
-                return callback();
+                    winston.info('Confirmations at ' + confirmations + ', skipping');
+                    return seriesCallback();
+
+                } else {
+
+                    winston.info('got enough confirmations, processing...');
+                    async.waterfall([
+                        function (asyncCallback) {
+
+                            exchange.getPrices(asyncCallback);
+                        },
+                        function (prices, asyncCallback) {
+
+                            var price = new bigdecimal.BigDecimal(prices.sellPrice);
+                            price = price.multiply(
+                                new bigdecimal.BigDecimal(1 - MARKET_PAD))
+                                .setScale(2, bigdecimal.RoundingMode.DOWN());
+
+                            exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+                        },
+                        function (sellOrder, asyncCallback) {
+
+                            unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, sellOrder);
+
+                            winston.info('sold ' + unprocessedTx.exchange_xbt + ' BTC for $' + unprocessedTx.exchange_fiat);
+                            self._getTransactionMapper().saveExchangeTransaction(unprocessedTx, asyncCallback);
+                        }
+                    ], function (err) {
+
+                        if (err) winston.error(err);
+
+                        // never pass the error so it'll attempt to process the next unprocessed transaction
+                        return seriesCallback();
+                    });
+                }
             });
         }
-    });
+    ], callback);
 };
 
 Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, callback) {
@@ -183,7 +197,7 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
                         self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
                         break;
                     case RobocoinTxTypes.RECV:
-                        self._sellBtcForFiat(unprocessedTx, exchange, asyncCallback);
+                        self._sellBtcForFiat(unprocessedTx, exchange, robocoin, asyncCallback);
                         break;
                     default:
                         callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
