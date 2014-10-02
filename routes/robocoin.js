@@ -63,3 +63,21 @@ exports.getProcessedTransactions = function (req, res) {
         return res.send(transactions);
     });
 };
+
+exports.getTransactionHash = function (req, res) {
+
+    configMapper.findAll(function (configErr, config) {
+
+        if (configErr) {
+            winston.error('Error finding config: ' + configErr);
+            return res.json(500, {});
+        }
+
+        Robocoin.getInstance(config).getHashFor(req.query.robocoinTxId, function (err, hash) {
+
+            if (err) return res.json(500, {});
+
+            return res.json(hash);
+        });
+    });
+};

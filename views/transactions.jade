@@ -14,6 +14,19 @@ block nav
         a(href="/logout") Logout
 
 block content
+    fieldset
+        legend View a transaction hash
+        .form-group
+            label(for="robocoinTxId") Robocoin Transaction ID
+            input(type="text").form-control#robocoinTxId
+        button.btn.btn-default#transactionHashButton Submit
+    table.table#transactionHashTable.hidden
+        tr
+            th Status
+            td#transactionStatus --
+        tr
+            th Hash
+            td#transactionHash --
     +kioskSelector(kiosks)
     h1 Unprocessed Transactions
     div.table-responsive
@@ -245,7 +258,7 @@ block footerJs
                     error: function (data) {
 
                         $('.alert').remove();
-                        $button.after('<div class="alert alert-danger">' + data.statusText+ '</td>');
+                        $button.after('<div class="alert alert-danger">' + data.statusText+ '</div>');
                     }
                 });
             });
@@ -255,5 +268,32 @@ block footerJs
                 getExchangeLatestTransactions();
                 getUnprocessedTransactions();
                 getProcessedTransactions();
+            });
+
+            $('#transactionHashButton').on('click', function () {
+
+                var $transactionHashTable = $('#transactionHashTable');
+                $transactionHashTable.removeClass('hidden').addClass('show');
+                var $button = $(this);
+
+                $.ajax({
+                    url: '/robocoin/transaction-hash',
+                    data: {
+                        robocoinTxId: $('#robocoinTxId').val(),
+                        _csrf: $('#_csrf').val()
+                    },
+                    type: 'GET',
+                    success: function (data) {
+
+                        $('.alert').remove();
+                        $('#transactionStatus').html(data.status);
+                        $('#transactionHash').html(data.hash);
+                    },
+                    error: function (data) {
+
+                        $('.alert').remove();
+                        $button.after('<div class="alert alert-danger">' + (data.responseText || 'Error!') + '</div>');
+                    }
+                });
             });
         });

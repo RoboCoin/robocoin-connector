@@ -178,6 +178,18 @@ Robocoin.prototype.getTransactions = function (since, callback) {
     });
 };
 
+Robocoin.prototype.getHashFor = function (robocoinTxId, callback) {
+
+    this._get('/transaction-hash', { robocoinTxId: robocoinTxId }, function (err, hash) {
+
+        if (err) {
+            return callback('Error getting transaction hash: ' + err);
+        }
+
+        return callback(null, hash);
+    });
+};
+
 Robocoin.prototype.isMock = function () {
     return false;
 };
