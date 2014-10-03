@@ -167,13 +167,6 @@ Robocoin.prototype.getTransactions = function (since, callback) {
             xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
                 .setScale(8, bigdecimal.RoundingMode.DOWN());
             response[i].xbt = xbt.toPlainString();
-
-            console.log('before converting: ', response[i].fiat);
-            fiat = new bigdecimal.BigDecimal(response[i].fiat);
-            fiat = fiat.divide(new bigdecimal.BigDecimal(Math.pow(10, 5)), bigdecimal.MathContext.DECIMAL128())
-                .setScale(5, bigdecimal.RoundingMode.DOWN());
-            response[i].fiat = fiat.toPlainString();
-            console.log('after converting: ', response[i].fiat);
         }
 
         return callback(err, response);
