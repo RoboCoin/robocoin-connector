@@ -108,7 +108,6 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
         }
     }
 
-    winston.info(requestOptions);
     this._request(requestOptions, function (error, response, body) {
 
         if (error) return callback('Error calling Robocoin: ' + error);
@@ -181,12 +180,14 @@ Robocoin.prototype.getTransactions = function (since, callback) {
 
 Robocoin.prototype.getHashFor = function (robocoinTxId, callback) {
 
+    winston.info('Getting hash for ' + robocoinTxId);
     this._get('/transaction-hash', { robocoinTxId: robocoinTxId }, function (err, hash) {
 
         if (err) {
             return callback('Error getting transaction hash: ' + err);
         }
 
+        winston.info('hash returned is ' + hash);
         return callback(null, hash);
     });
 };
