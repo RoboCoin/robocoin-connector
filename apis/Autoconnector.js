@@ -121,7 +121,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
             blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
                 if (err) {
-                    winsont.error('Error getting confirmations: ' + err);
+                    winston.error('Error getting confirmations: ' + err);
                     // log the error but continue processing
                     return seriesCallback();
                 }
