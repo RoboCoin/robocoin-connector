@@ -187,7 +187,7 @@ Robocoin.prototype.getHashFor = function (robocoinTxId, callback) {
             return callback('Error getting transaction hash: ' + err);
         }
 
-        winston.info('hash returned is ' + hash);
+        winston.info('hash returned is ', hash);
         return callback(null, hash);
     });
 };
