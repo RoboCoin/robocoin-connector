@@ -118,6 +118,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
         function (seriesCallback) {
 
             var blockchain = new Blockchain();
+            winston.info('unprocessedTx:');winston.info(unprocessedTx);
             blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
                 if (err) {
