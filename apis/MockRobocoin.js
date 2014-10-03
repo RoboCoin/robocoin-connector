@@ -102,7 +102,7 @@ MockRobocoin.prototype.getTransactions = function (since, callback) {
 
 MockRobocoin.prototype.getHashFor = function (robocoinTxId, callback) {
 
-    return callback(null, '98a4df56a1df98a41d65f1a98df1a56d1f98a1df56a1df9a1df');
+    return callback(null, { status: 'SENT', hash: '98a4df56a1df98a41d65f1a98df1a56d1f98a1df56a1df9a1df' });
 };
 
 MockRobocoin.prototype.isMock = function () {
