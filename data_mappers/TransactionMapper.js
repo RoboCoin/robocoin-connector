@@ -202,12 +202,12 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
                 if (row.txtype == RobocoinTxTypes.RECV) {
 
                     sells[row.date] = [row.date, row.exchangefiat - row.robocoinfiat, parseFloat(row.robocointxfee),
-                        parseFloat(row.exchangetxfee), parseFloat(row.robocoinminersfee)];
+                        parseFloat(row.exchangetxfee)];
 
                 } else if (row.txtype == RobocoinTxTypes.SEND) { // or if it's a buy...
 
                     buys[row.date] = [row.date, row.robocoinfiat - row.exchangefiat, parseFloat(row.robocointxfee),
-                        parseFloat(row.exchangetxfee), parseFloat(row.exchangeminersfee)];
+                        parseFloat(row.exchangetxfee)];
                 }
             }
 
