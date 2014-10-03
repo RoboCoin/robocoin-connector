@@ -66,12 +66,12 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
         // BTC price, between $615 and $625
         rate = new bigdecimal.BigDecimal(this._getRandomNumber(619, 621));
 
-        if (action == 'send') {
+        if (action == RobocoinTxTypes.SEND) {
 
             xbt = fiat.divide(rate.multiply(markup), bigdecimal.MathContext.DECIMAL128());
             minersFee = 0.00005;
 
-        } else if (action === 'forward') {
+        } else if (action === RobocoinTxTypes.RECV) {
 
             xbt = fiat.divide(rate, bigdecimal.MathContext.DECIMAL128()).multiply(markup);
             minersFee = 0.00001;

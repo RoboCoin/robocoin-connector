@@ -128,7 +128,6 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
                     return seriesCallback();
                 }
 
-                winston.info('confirmations: ' + confirmations);
                 // TODO get this from the exchange class, e.g. exchange.getDepositConfirmationsRequired or whatever
                 // also, maybe make that call async, i.e. e.blah(callback), in case it's ever not a constant
                 if (confirmations < 6) {
@@ -138,7 +137,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
 
                 } else {
 
-                    winston.info('got enough confirmations, processing...');
+                    winston.info('got ' + confirmations + ' confirmations, processing...');
                     async.waterfall([
                         function (asyncCallback) {
 
