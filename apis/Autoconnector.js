@@ -109,7 +109,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
 
     async.series([
         function (seriesCallback) {
-            robocoin.getHashFor(unprocessedTx.tx_hash, function (err, hash) {
+            robocoin.getHashFor(unprocessedTx.transactionId, function (err, hash) {
                 if (err) return seriesCallback(err);
                 unprocessedTx.tx_hash = hash;
                 return seriesCallback();
