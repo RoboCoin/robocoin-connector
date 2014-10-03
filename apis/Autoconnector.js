@@ -69,6 +69,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         function (accountInfo, asyncCallback) {
 
             // do the withdrawal
+            winston.info('withdrawing ' + Math.abs(unprocessedTx.robocoin_xbt) + ' XBT to ' + accountInfo.depositAddress);
             exchange.withdraw(
                 Math.abs(unprocessedTx.robocoin_xbt),
                 accountInfo.depositAddress,
@@ -77,6 +78,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         },
         function (asyncCallback) {
 
+            winston.info('done withdrawing');
             // merge the exchange with the robocoin transaction and save it
             unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, buyOrder);
 
