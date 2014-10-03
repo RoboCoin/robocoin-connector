@@ -224,8 +224,8 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
     Connection.getConnection().query(
         'SELECT ' +
             'SUM(robocoin_fiat) fiat, ' +
-            'CASE WHEN robocoin_tx_type = \'send\' THEN \'cash in\' ' +
-                'WHEN robocoin_tx_type = \'forward\' THEN \'cash out\' ELSE robocoin_tx_type END tx_type, ' +
+            'CASE WHEN robocoin_tx_type = \'OPERATOR_SEND\' THEN \'cash in\' ' +
+                'WHEN robocoin_tx_type = \'OPERATOR_RECV\' THEN \'cash out\' ELSE robocoin_tx_type END tx_type, ' +
             'TO_CHAR(robocoin_tx_time, \'MM\') tx_month, ' +
             'TO_CHAR(robocoin_tx_time, \'D\') tx_day, ' +
             'TO_CHAR(robocoin_tx_time, \'HH\') tx_hour ' +
