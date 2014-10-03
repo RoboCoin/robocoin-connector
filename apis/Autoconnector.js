@@ -108,6 +108,7 @@ Autoconnector.prototype._mergeExchangeWithUnprocessedTx = function (unprocessedT
 Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, robocoin, callback) {
 
     var self = this;
+    var config;
 
     async.series([
         function (seriesCallback) {
@@ -119,7 +120,15 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
         },
         function (seriesCallback) {
 
-            var blockchain = new Blockchain();
+            self._getConfigMapper().findAll(function (err, foundConfig) {
+                if (err) return seriesCallback(err);
+                config = foundConfig;
+                return seriesCallback();
+            });
+        },
+        function (seriesCallback) {
+
+            var blockchain = Blockchain.getInstance(config);
             blockchain.getConfirmationsForTransaction(unprocessedTx.tx_hash, function (err, confirmations) {
 
                 if (err) {

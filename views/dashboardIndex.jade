@@ -46,7 +46,7 @@ block footerJs
                     success: function (data) {
 
                         var buyProfit = data.profit.buys;
-                        buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
+                        buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee']);
                         var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
                         buyProfitChart.draw(buyProfitData, {
                             title: 'Buy Profit',
@@ -59,7 +59,7 @@ block footerJs
                         });
 
                         var sellProfit = data.profit.sells;
-                        sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee', 'Miner\'s Fee']);
+                        sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee']);
                         var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
                         sellProfitChart.draw(sellProfitData, {
                             title: 'Sell Profit',

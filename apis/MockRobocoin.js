@@ -33,8 +33,8 @@ MockRobocoin.prototype.getAccountInfo = function (callback) {
 MockRobocoin.prototype.getMachineInfo = function (callback) {
 
     callback(null, [
-        { kioskId: '680ec3d2-cc5a-4d8b-b1b0-3aa4dfc98e23', name: 'Bribe'},
-        { kioskId: '5ae35439-663a-497c-a28d-b1c82312ea52', name: 'Bellows'}
+        { kioskId: '0c0e0761-42cd-4090-95a9-fa8165a86c4b', name: 'Bribe'},
+        { kioskId: '3109eed4-d2c9-48bc-8f93-d6143e77a632', name: 'Bellows'}
     ]);
 };
 
@@ -79,7 +79,7 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
         time = now - this._getRandomNumber(1, 60000);
-        var guids = ['680ec3d2-cc5a-4d8b-b1b0-3aa4dfc98e23', '5ae35439-663a-497c-a28d-b1c82312ea52'];
+        var guids = ['0c0e0761-42cd-4090-95a9-fa8165a86c4b', '3109eed4-d2c9-48bc-8f93-d6143e77a632'];
 
         transactions.push({
             transactionId: this._getRandomNumber(100, 1000000),
@@ -98,6 +98,11 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
 MockRobocoin.prototype.getTransactions = function (since, callback) {
     callback(null, this._getRandomlyGeneratedTransactions());
+};
+
+MockRobocoin.prototype.getHashFor = function (robocoinTxId, callback) {
+
+    return callback(null, '98a4df56a1df98a41d65f1a98df1a56d1f98a1df56a1df9a1df');
 };
 
 MockRobocoin.prototype.isMock = function () {

@@ -1,6 +1,8 @@
 'use strict';
 
+var config = require('../lib/Config');
 var request = require('request');
+var MockBlockchain = require('./MockBlockchain');
 
 var Blockchain = function () {
 
@@ -27,4 +29,28 @@ Blockchain.prototype.getConfirmationsForTransaction = function (transactionHash,
     );
 };
 
-module.exports = Blockchain;
+Blockchain.prototype.isMock = function () {
+    return false;
+};
+
+var blockchain = null;
+
+module.exports = {
+    getInstance: function (config) {
+
+        if (config.get(null, 'robocoin.testMode') == '0') {
+            if (blockchain === null || blockchain.isMock()) {
+                blockchain = new Blockchain();
+            }
+        } else {
+            if (blockchain === null || !blockchain.isMock()) {
+                blockchain = new MockBlockchain();
+            }
+        }
+
+        return blockchain;
+    },
+    clearInstance: function () {
+        blockchain = null;
+    }
+};
