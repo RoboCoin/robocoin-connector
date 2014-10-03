@@ -13,6 +13,7 @@ TransactionMapper.prototype.save = function (robocoinTx, callback) {
 
     robocoinTx.time = (new Date(robocoinTx.time)).toUTCString();
 
+    console.log('saving: ', robocoinTx);
     var params = [robocoinTx.transactionId, robocoinTx.type, robocoinTx.fiat, robocoinTx.currencyType,
         robocoinTx.xbt, robocoinTx.time, robocoinTx.fee, robocoinTx.machineId, robocoinTx.transactionHash];
 
