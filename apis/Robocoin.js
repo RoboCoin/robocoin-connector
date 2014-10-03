@@ -180,14 +180,12 @@ Robocoin.prototype.getTransactions = function (since, callback) {
 
 Robocoin.prototype.getHashFor = function (robocoinTxId, callback) {
 
-    winston.info('Getting hash for ' + robocoinTxId);
     this._get('/transaction-hash', { robocoinTxId: robocoinTxId }, function (err, hash) {
 
         if (err) {
             return callback('Error getting transaction hash: ' + err);
         }
 
-        winston.info('hash returned is ', hash);
         return callback(null, hash);
     });
 };

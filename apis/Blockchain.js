@@ -9,7 +9,6 @@ var Blockchain = function () {
 
 Blockchain.prototype.getConfirmationsForTransaction = function (transactionHash, callback) {
 
-    console.log('getting blockchain info from', 'http://btc.blockr.io/api/v1/tx/info/' + transactionHash);
     this._request({
             url: 'http://btc.blockr.io/api/v1/tx/info/' + transactionHash,
             json: true
