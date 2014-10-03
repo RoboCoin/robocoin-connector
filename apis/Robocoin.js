@@ -108,6 +108,7 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
         }
     }
 
+    winston.info(requestOptions);
     this._request(requestOptions, function (error, response, body) {
 
         if (error) return callback('Error calling Robocoin: ' + error);
