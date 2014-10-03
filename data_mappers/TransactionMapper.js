@@ -173,11 +173,11 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
         'SELECT ' +
             'TO_CHAR(robocoin_tx_time, \'YYYY-MM\') date, ' +
             'robocoin_tx_type txType, ' +
-            'COALESCE(SUM(robocoin_fiat), 0) robocoinFiat, ' +
-            'COALESCE(SUM(converted_exchange_fiat), 0) exchangeFiat, ' +
-            'COALESCE(SUM(exchange_miners_fee * (ABS(converted_exchange_fiat) / ABS(exchange_xbt))), 0) exchangeMinersFee, ' +
-            'COALESCE(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 0) robocoinTxFee, ' +
-            'COALESCE(SUM(exchange_tx_fee), 0) exchangeTxFee, ' +
+            'COALESCE(ROUND(SUM(robocoin_fiat), 3), 0) robocoinFiat, ' +
+            'COALESCE(ROUND(SUM(converted_exchange_fiat), 3), 0) exchangeFiat, ' +
+            'COALESCE(ROUND(SUM(exchange_miners_fee * (ABS(converted_exchange_fiat) / ABS(exchange_xbt))), 3), 0) exchangeMinersFee, ' +
+            'COALESCE(ROUND(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 3), 0) robocoinTxFee, ' +
+            'COALESCE(ROUND(SUM(exchange_tx_fee), 3), 0) exchangeTxFee, ' +
             'AVG(exchange_to_kiosk_conversion_rate) exchangeToKioskConversionRate ' +
         'FROM transactions ' +
         'WHERE exchange_tx_time IS NOT NULL ' +
