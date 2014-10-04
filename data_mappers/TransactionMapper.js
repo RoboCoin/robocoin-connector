@@ -184,7 +184,8 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
             'AND robocoin_xbt > 0 ' +
             'AND exchange_xbt > 0 ' +
             'AND kiosk_id = $1 ' +
-        'GROUP BY date, robocoin_tx_type',
+        'GROUP BY date, robocoin_tx_type ' +
+        'ORDER BY date DESC',
         [kioskId],
         function (err, res) {
 
