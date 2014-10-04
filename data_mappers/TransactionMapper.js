@@ -229,7 +229,7 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
                 'WHEN robocoin_tx_type = \'OPERATOR_RECV\' THEN \'cash out\' ELSE robocoin_tx_type END tx_type, ' +
             'TO_CHAR(robocoin_tx_time, \'MM\') tx_month, ' +
             'TO_CHAR(robocoin_tx_time, \'D\') tx_day, ' +
-            'TO_CHAR(robocoin_tx_time, \'HH\') tx_hour ' +
+            'TO_CHAR(robocoin_tx_time, \'HH24\') tx_hour ' +
         'FROM transactions ' +
         'WHERE robocoin_tx_time >= (NOW() - INTERVAL \'1 YEAR\') ' +
             'AND kiosk_id = $1 ' +
