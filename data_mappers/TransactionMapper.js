@@ -185,7 +185,7 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
             'AND exchange_xbt > 0 ' +
             'AND kiosk_id = $1 ' +
         'GROUP BY date, robocoin_tx_type ' +
-        'ORDER BY date DESC',
+        'ORDER BY date',
         [kioskId],
         function (err, res) {
 
@@ -234,7 +234,7 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
         'WHERE robocoin_tx_time >= (NOW() - INTERVAL \'1 YEAR\') ' +
             'AND kiosk_id = $1 ' +
         'GROUP BY tx_type, tx_month, tx_day, tx_hour, robocoin_tx_time ' +
-        'ORDER BY robocoin_tx_time DESC',
+        'ORDER BY robocoin_tx_time',
         [kioskId],
         function (err, res) {
 
@@ -274,7 +274,7 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
                     monthly[row.tx_month][2] += parseFloat(row.fiat);
                 }
             }
-            
+
             return callback(null, {
                 hourly: sortReport(hourly),
                 daily: sortReport(daily),
