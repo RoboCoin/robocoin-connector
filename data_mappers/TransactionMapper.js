@@ -274,18 +274,22 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
                     monthly[row.tx_month][2] += parseFloat(row.fiat);
                 }
             }
-
-            hourly = Object.keys(hourly).map(function (key) { return hourly[key] });
-            daily = Object.keys(daily).map(function (key) { return daily[key] });
-            monthly = Object.keys(monthly).map(function (key) { return monthly[key] });
-
+            
             return callback(null, {
-                hourly: hourly,
-                daily: daily,
-                monthly: monthly
+                hourly: sortReport(hourly),
+                daily: sortReport(daily),
+                monthly: sortReport(monthly)
             });
         }
     );
+};
+
+function sortReport(report) {
+
+    var keys = Object.keys(report);
+    keys.sort();
+    keys.reverse();
+    return keys.map(function (key) { return report[key]; });
 };
 
 TransactionMapper.prototype.findAllByIds = function (ids, callback) {
