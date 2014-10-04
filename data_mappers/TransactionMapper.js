@@ -288,7 +288,6 @@ function sortReport(report) {
 
     var keys = Object.keys(report);
     keys.sort();
-    keys.reverse();
     return keys.map(function (key) { return report[key]; });
 };
 
