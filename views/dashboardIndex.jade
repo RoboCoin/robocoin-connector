@@ -7,8 +7,6 @@ block nav
     li
         a(href="/account-info") Account info
     li
-        a(href="/buy-and-sell") Buy and Sell
-    li
         a(href="/configuration") Configuration
     li
         a(href="/logout") Logout
@@ -46,7 +44,7 @@ block footerJs
                     success: function (data) {
 
                         var buyProfit = data.profit.buys;
-                        buyProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee']);
+                        buyProfit.unshift(['Date', 'Fee Revenue', 'Robocoin Fee', 'Exchange Fee']);
                         var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
                         buyProfitChart.draw(buyProfitData, {
                             title: 'Buy Profit',
@@ -59,7 +57,7 @@ block footerJs
                         });
 
                         var sellProfit = data.profit.sells;
-                        sellProfit.unshift(['Date', 'Revenue', 'Robocoin Fee', 'Exchange Fee']);
+                        sellProfit.unshift(['Date', 'Fee Revenue', 'Robocoin Fee', 'Exchange Fee']);
                         var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
                         sellProfitChart.draw(sellProfitData, {
                             title: 'Sell Profit',

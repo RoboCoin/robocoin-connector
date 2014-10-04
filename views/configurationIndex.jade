@@ -6,8 +6,6 @@ block nav
         a(href="/transactions") Transactions
     li
         a(href="/account-info") Account info
-    li
-        a(href="/buy-and-sell") Buy and Sell
     li.active
         a(href="/configuration") Configuration
     li
@@ -16,20 +14,6 @@ block nav
 block content
     if (securityMessage != '')
         .alert.alert-danger #{ securityMessage }
-    h1 Robocoin
-    form(role="form")
-        .form-group
-            label(for="robocoinApiKey") API Key
-            input(type="text" autocomplete="off").form-control#robocoinApiKey
-        .form-group
-            label(for="robocoinApiSecret") API Secret
-            input(type="text" autocomplete="off").form-control#robocoinApiSecret
-        .checkbox
-            label
-                input(type="checkbox" checked=robocoinTestMode==true)#robocoinTestMode
-                | Test Mode
-        button.btn.btn-default#robocoinSave Save
-
     h1 Kiosk
     +kioskSelector(kiosks)
     h2 Exchange
@@ -85,6 +69,16 @@ block content
         - buttonText = autoconnectorEnabled == 1 ? 'Disable' : 'Enable'
         - nextState = autoconnectorEnabled == 1 ? 0 : 1
         button(data-next-state="#{ nextState }").btn.btn-default#autoconnectorEnable #{ buttonText }
+
+    h1 Robocoin
+    form(role="form")
+        .form-group
+            label(for="robocoinApiKey") API Key
+            input(type="text" autocomplete="off").form-control#robocoinApiKey
+        .form-group
+            label(for="robocoinApiSecret") API Secret
+            input(type="text" autocomplete="off").form-control#robocoinApiSecret
+        button.btn.btn-default#robocoinSave Save
 
     +loginModal('Save')
 
