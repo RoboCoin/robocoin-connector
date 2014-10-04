@@ -78,7 +78,6 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         },
         function (asyncCallback) {
 
-            winston.info('done withdrawing');
             // merge the exchange with the robocoin transaction and save it
             unprocessedTx = self._mergeExchangeWithUnprocessedTx(unprocessedTx, buyOrder);
 
@@ -266,7 +265,6 @@ Autoconnector.prototype.run = function (callback) {
                 if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
                 if (transactions.length === 0) {
-                    winston.info('No transactions to process on this round.');
                     return waterfallCallback(null, robocoin);
                 }
 

@@ -44,8 +44,6 @@ BatchProcessor.prototype.run = function (callback) {
         if (err) return console.log('Error in batch processing: ' + err);
 
         if (callback) return callback();
-
-        return console.log('Done batch processing');
     });
 };
 
