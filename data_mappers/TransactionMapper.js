@@ -233,8 +233,8 @@ TransactionMapper.prototype.buildCashFlowReport = function (kioskId, callback) {
         'FROM transactions ' +
         'WHERE robocoin_tx_time >= (NOW() - INTERVAL \'1 YEAR\') ' +
             'AND kiosk_id = $1 ' +
-        'GROUP BY tx_type, tx_month, tx_day, tx_hour, robocoin_tx_time ' +
-        'ORDER BY robocoin_tx_time',
+        'GROUP BY tx_type, tx_month, tx_day, tx_hour ' +
+        'ORDER BY robocoin_tx_time DESC',
         [kioskId],
         function (err, res) {
 
