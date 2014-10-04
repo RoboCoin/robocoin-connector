@@ -12,19 +12,6 @@ block nav
         a(href="/logout") Logout
 
 block content
-    fieldset
-        legend View a transaction hash
-        .form-group
-            label(for="robocoinTxId") Robocoin Transaction ID
-            input(type="text").form-control#robocoinTxId
-        button.btn.btn-default#transactionHashButton Submit
-    table.table#transactionHashTable.hidden
-        tr
-            th Status
-            td#transactionStatus --
-        tr
-            th Hash
-            td#transactionHash --
     +kioskSelector(kiosks)
     h1 Unprocessed Transactions
     div.table-responsive
@@ -37,9 +24,6 @@ block content
                 th Robocoin Fee
                 th Robocoin Miner's Fee
                 th Time
-                th Manual transaction
-    input(type="hidden" value="#{csrfToken}")#_csrf
-    button#processButton.btn.btn-default Process
 
     h1 Processed Transactions
     div.table-responsive
@@ -57,17 +41,6 @@ block content
                 th Exchange Miner's Fee
                 th RC TX Time
                 th Exchange TX Time
-
-    h1 Exchange Transactions
-    div.table-responsive
-        table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
-            tr
-                th Order ID
-                th Type
-                th Fiat
-                th XBT
-                th Transaction Fee
-                th Time
 
 block footerJs
     script.
@@ -117,7 +90,7 @@ block footerJs
             };
             getExchangeLatestTransactions();
 
-            var writeRobocoinTable = function (data, tableId, includeCheckbox) {
+            var writeRobocoinTable = function (data, tableId) {
 
                 var transaction;
                 var rows = [];
@@ -137,10 +110,6 @@ block footerJs
                         .append('<td>' + (transaction.fee ? transaction.fee : '') + '</td>')
                         .append('<td>' + (transaction.miners_fee ? transaction.miners_fee : '') + '</td>')
                         .append('<td>' + (new Date(transaction.time)).toUTCString() + '</td>');
-
-                        if (includeCheckbox) {
-                            $row.append('<td><input type="checkbox" data-transaction-id="' + transaction.id + '"></td>');
-                        }
                     rows.push($row);
                 }
 
@@ -158,7 +127,7 @@ block footerJs
                     },
                     dataType: 'json',
                     success: function (data) {
-                        writeRobocoinTable(data, 'unprocessedTransactions', true);
+                        writeRobocoinTable(data, 'unprocessedTransactions');
                     }
                 });
             };
