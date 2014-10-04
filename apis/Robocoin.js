@@ -8,6 +8,7 @@ var querystring = require('querystring');
 var url = require('url');
 var MockRobocoin = require('./MockRobocoin');
 var winston = require('winston');
+var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
 var Robocoin = function (config) {
 
@@ -161,15 +162,22 @@ Robocoin.prototype.getTransactions = function (since, callback) {
             response = [];
         }
 
-        for (var i = 0; i < response.length; i++) {
+        var connectorTransactions = [];
 
-            xbt = new bigdecimal.BigDecimal(response[i].xbt);
-            xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
-                .setScale(8, bigdecimal.RoundingMode.DOWN());
-            response[i].xbt = xbt.toPlainString();
+        for (var i = 0; i < response.length; i++) {
+            if (response[i].type == RobocoinTxTypes.SEND
+                || (response[i].type == RobocoinTxTypes.RECV && response[i].isForwarded)) {
+
+                xbt = new bigdecimal.BigDecimal(response[i].xbt);
+                xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
+                    .setScale(8, bigdecimal.RoundingMode.DOWN());
+                response[i].xbt = xbt.toPlainString();
+
+                connectorTransactions.push(response[i]);
+            }
         }
 
-        return callback(err, response);
+        return callback(err, connectorTransactions);
     });
 };
 
