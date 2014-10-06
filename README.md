@@ -7,7 +7,7 @@ possible for operators.
 
 Two common, expected scenarios for running the connector are:
 
-1. Operators fork the code and host it on their own servers. Then can modify it freely.
+1. Operators fork the code and host it on their own servers. Then they can modify it freely.
 2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
 
 ## How it works
@@ -23,9 +23,6 @@ confirmations are on that transaction. When the connector sees enough confirmati
 it executes a sell for that amount on the exchange.
 
 ### Test mode
-
-To run the connector with randomly-generated Robocoin test data, from the Configuration page, specify your API keys and
-check the "Test Mode" box.
 
 To run the connector with a mock version of the Bitstamp API, which simply echoes calls instead of sending HTTP
 requests, from the Configuration page, specify to use "Mock Bitstamp".
@@ -68,17 +65,15 @@ In the directory containing package.json, run:
 
         npm install
 
-In your developement environment, add a user. This step adds a user and echoes its automatically-generated password:
+In your developement environment, add a user. Note the automatically-generated password:
 
         node scripts/addUser.js yourusername
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin secret.
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin key.
 
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
-
-Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://api.robocoin.com/v0/connector".
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "forever app.js" in production.
 
