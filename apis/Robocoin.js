@@ -165,6 +165,7 @@ Robocoin.prototype.getTransactions = function (since, callback) {
         var connectorTransactions = [];
 
         for (var i = 0; i < response.length; i++) {
+            winston.info('isForwarded: ' + response[i].isForwarded);
             if (response[i].type == RobocoinTxTypes.SEND
                 || (response[i].type == RobocoinTxTypes.RECV && response[i].isForwarded)) {
 
