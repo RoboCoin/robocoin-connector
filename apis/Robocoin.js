@@ -151,7 +151,7 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 };
 
 Robocoin.prototype.getTransactions = function (since, callback) {
-
+    
     this._get('/account/activity', { since: since }, function (err, response) {
 
         var xbt;
@@ -165,10 +165,8 @@ Robocoin.prototype.getTransactions = function (since, callback) {
         var connectorTransactions = [];
 
         for (var i = 0; i < response.length; i++) {
-            winston.info('isForwarded: ' + response[i].isForwarded);
-            winston.info('type: ' + response[i].type);
             if (response[i].type == RobocoinTxTypes.SEND
-                || (response[i].type == RobocoinTxTypes.RECV && response[i].isForwarded)) {
+                || (response[i].type == RobocoinTxTypes.RECV && response[i].forwarded)) {
 
                 xbt = new bigdecimal.BigDecimal(response[i].xbt);
                 xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
