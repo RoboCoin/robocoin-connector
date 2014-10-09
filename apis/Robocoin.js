@@ -151,7 +151,7 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 };
 
 Robocoin.prototype.getTransactions = function (since, callback) {
-    
+
     this._get('/account/activity', { since: since }, function (err, response) {
 
         var xbt;
@@ -174,6 +174,8 @@ Robocoin.prototype.getTransactions = function (since, callback) {
                 response[i].xbt = xbt.toPlainString();
 
                 connectorTransactions.push(response[i]);
+            } else {
+                console.log('not recording transaction:', response[i]);
             }
         }
 
