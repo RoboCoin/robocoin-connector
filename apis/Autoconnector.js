@@ -209,7 +209,11 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
                 unprocessedTx.exchangeClass = kioskConfig.exchangeClass;
                 exchange = Exchange.get(kioskConfig);
 
-                exchange.getMinimumOrders(function (minimums) {
+                exchange.getMinimumOrders(function (err, minimums) {
+
+                    if (err) {
+                        return asyncCallback('Error getting minimum orders: ' + err);
+                    }
 
                     switch (unprocessedTx.robocoin_tx_type) {
                         case RobocoinTxTypes.SEND:
