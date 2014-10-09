@@ -465,6 +465,10 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
             kioskConfig = config.getAllForKiosk(kioskId);
 
+            if (kioskConfig.length == 0) {
+                return asyncCallback();
+            }
+
             for (var i = 0; i < txesByKioskId[kioskId].length; i++) {
                 txesByKioskId[kioskId][i].exchangeClass = kioskConfig.exchangeClass;
             }
