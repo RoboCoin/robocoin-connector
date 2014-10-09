@@ -200,19 +200,42 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
                 if (err) return asyncCallback(err);
 
                 kioskConfig = config.getAllForKiosk(unprocessedTx.kiosk_id);
+
+                // if this transaction was at a kiosk that's not configured, skip it for now
+                if (kioskConfig.length == 0) {
+                    return asyncCallback();
+                }
+
                 unprocessedTx.exchangeClass = kioskConfig.exchangeClass;
                 exchange = Exchange.get(kioskConfig);
 
-                switch (unprocessedTx.robocoin_tx_type) {
-                    case RobocoinTxTypes.SEND:
-                        self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
-                        break;
-                    case RobocoinTxTypes.RECV:
-                        self._sellBtcForFiat(unprocessedTx, exchange, robocoin, asyncCallback);
-                        break;
-                    default:
-                        callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
-                }
+                exchange.getMinimumOrders(function (minimums) {
+
+                    switch (unprocessedTx.robocoin_tx_type) {
+                        case RobocoinTxTypes.SEND:
+
+                            if (unprocessedTx.robocoin_xbt >= minimums.minimumBuy) {
+                                self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
+                            } else {
+                                return asyncCallback();
+                            }
+
+                            break;
+
+                        case RobocoinTxTypes.RECV:
+
+                            if (unprocessedTx.robocoin_xbt >= minimums.minimumSell) {
+                                self._sellBtcForFiat(unprocessedTx, exchange, robocoin, asyncCallback);
+                            } else {
+                                return asyncCallback();
+                            }
+
+                            break;
+
+                        default:
+                            callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
+                    }
+                });
             });
 
         }, function (err) {

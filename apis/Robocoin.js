@@ -174,8 +174,6 @@ Robocoin.prototype.getTransactions = function (since, callback) {
                 response[i].xbt = xbt.toPlainString();
 
                 connectorTransactions.push(response[i]);
-            } else {
-                console.log('not recording transaction:', response[i]);
             }
         }
 
