@@ -112,8 +112,8 @@ TransactionMapper.prototype.findUnprocessedForKiosk = function(kioskId, callback
         'SELECT * ' +
         'FROM transactions ' +
         'WHERE kiosk_id = $1' +
-            'AND (robocoin_tx_type = $2 AND exchange_tx_time IS NULL) ' +
-            'OR (robocoin_tx_type = $3 AND exchange_tx_id IS NULL) ' +
+            'AND ((robocoin_tx_type = $2 AND exchange_tx_time IS NULL) ' +
+            'OR (robocoin_tx_type = $3 AND exchange_tx_id IS NULL)) ' +
         'ORDER BY robocoin_tx_time',
         [kioskId, RobocoinTxTypes.SEND, RobocoinTxTypes.RECV],
         function (err, res) {
