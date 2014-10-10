@@ -11,7 +11,7 @@ var ConfigMapper = require('../data_mappers/ConfigMapper');
 var Blockchain = require('./Blockchain');
 var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
-var MARKET_PAD = 0.05;
+var MARKET_PAD = 0.1;
 
 var Autoconnector = function () {
 
