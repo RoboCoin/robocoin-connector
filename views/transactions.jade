@@ -42,6 +42,14 @@ block content
                 th RC TX Time
                 th Exchange TX Time
 
+    h4 Import Robocoin Transactions
+    form(role="form")
+        .form-group
+            label(for="sinceDate") Since
+            input(type="date").form-control#sinceDate
+        button(type="button").btn.btn-default#importButton Import
+        input(type="hidden" value="#{ csrfToken }")#_csrf
+
 block footerJs
     script.
         $(document).ready(function () {
@@ -194,41 +202,6 @@ block footerJs
                 });
             });
 
-            $('#processButton').on('click', function () {
-
-                var $button = $(this);
-                var ordersToProcess = [];
-                var checkedBoxes = $('#unprocessedTransactions input:checked');
-                var checkedBox;
-                for (var i = 0; i < checkedBoxes.length; i++) {
-
-                    ordersToProcess.push(checkedBoxes.eq(i).data('transaction-id'));
-                }
-
-                $.ajax({
-                    url: '/batch-process',
-                    data: {
-                        orders: ordersToProcess.join(','),
-                        _csrf: $('#_csrf').val()
-                    },
-                    type: 'POST',
-                    success: function (data) {
-
-                        $('.alert').remove();
-                        $button.after('<div class="alert alert-success">' + data.message + '</td>');
-                        var $unprocessedTransactionsTable = $('#unprocessedTransactions');
-                        for (var i = 0; i < data.transactions.length; i++) {
-                            $unprocessedTransactionsTable.find('tr[data-tx-id="' + data.transactions[i] + '"]').remove();
-                        }
-                    },
-                    error: function (data) {
-
-                        $('.alert').remove();
-                        $button.after('<div class="alert alert-danger">' + data.statusText+ '</div>');
-                    }
-                });
-            });
-
             $('#kioskSelector').on('change', function () {
 
                 getExchangeLatestTransactions();
@@ -259,6 +232,28 @@ block footerJs
 
                         $('.alert').remove();
                         $button.after('<div class="alert alert-danger">' + (data.responseText || 'Error!') + '</div>');
+                    }
+                });
+            });
+
+            $('#importButton').on('click', function () {
+
+                var $button = $(this);
+
+                $.ajax({
+                    url: '/robocoin/import-transactions',
+                    type: 'POST',
+                    data: {
+                        sinceDate: $('#sinceDate').val(),
+                        _csrf: $('#_csrf').val()
+                    },
+                    success: function (data) {
+                        $('.alert').remove();
+                        $button.after('<div class="alert alert-success">' + (data || 'Success!') + '</div>');
+                    },
+                    error: function (data) {
+                        $('.alert').remove();
+                        $button.after('<div class="alert alert-danger">' + (data.err || 'Error!') + '</div>');
                     }
                 });
             });

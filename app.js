@@ -155,6 +155,7 @@ app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions
 app.get('/robocoin/unprocessed-transactions', ensureAuthenticated, robocoin.getUnprocessedTransactions);
 app.get('/robocoin/processed-transactions', ensureAuthenticated, robocoin.getProcessedTransactions);
 app.get('/robocoin/transaction-hash', ensureAuthenticated, robocoin.getTransactionHash);
+app.post('/robocoin/import-transactions', ensureAuthenticated, robocoin.importTransactions);
 
 var dashboard = require('./routes/dashboard');
 app.get('/', ensureAuthenticated, dashboard.index);
