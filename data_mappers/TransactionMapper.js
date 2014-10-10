@@ -174,17 +174,15 @@ TransactionMapper.prototype.buildProfitReport = function (kioskId, callback) {
     Connection.getConnection().query(
         'SELECT ' +
             'TO_CHAR(robocoin_tx_time, \'YYYY-MM\') date, ' +
-            'robocoin_tx_type txType, ' +
+            'robocoin_tx_type AS txType, ' +
             'COALESCE(ROUND(SUM(robocoin_fiat), 3), 0) robocoinFiat, ' +
-            'COALESCE(ROUND(SUM(converted_exchange_fiat), 3), 0) exchangeFiat, ' +
+            'COALESCE(ROUND(SUM(ABS(converted_exchange_fiat)), 3), 0) exchangeFiat, ' +
             'COALESCE(ROUND(SUM(exchange_miners_fee * (ABS(converted_exchange_fiat) / ABS(exchange_xbt))), 3), 0) exchangeMinersFee, ' +
             'COALESCE(ROUND(SUM(robocoin_tx_fee * (robocoin_fiat / robocoin_xbt)), 3), 0) robocoinTxFee, ' +
             'COALESCE(ROUND(SUM(exchange_tx_fee), 3), 0) exchangeTxFee, ' +
             'AVG(exchange_to_kiosk_conversion_rate) exchangeToKioskConversionRate ' +
         'FROM transactions ' +
         'WHERE exchange_tx_time IS NOT NULL ' +
-            'AND robocoin_xbt > 0 ' +
-            'AND exchange_xbt > 0 ' +
             'AND kiosk_id = $1 ' +
         'GROUP BY date, robocoin_tx_type ' +
         'ORDER BY date',
