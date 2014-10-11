@@ -98,7 +98,7 @@ exports.accountInfo = function (req, res) {
     var exchange = Exchange.get(req.config.getAllForKiosk(req.query.kioskId));
     exchange.getBalance(function (err, balance) {
 
-        if (err) return res.send(400, err);
+        if (err) return res.status(400).send(err);
 
         exchange.getDepositAddress(function (err, depositAddress) {
 

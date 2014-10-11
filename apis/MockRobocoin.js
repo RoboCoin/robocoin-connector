@@ -33,8 +33,8 @@ MockRobocoin.prototype.getAccountInfo = function (callback) {
 MockRobocoin.prototype.getMachineInfo = function (callback) {
 
     callback(null, [
-        { kioskId: '0c0e0761-42cd-4090-95a9-fa8165a86c4b', name: 'Bribe'},
-        { kioskId: '3109eed4-d2c9-48bc-8f93-d6143e77a632', name: 'Bellows'}
+        { id: '0c0e0761-42cd-4090-95a9-fa8165a86c4b', name: 'Bribe'},
+        { id: '3109eed4-d2c9-48bc-8f93-d6143e77a632', name: 'Bellows'}
     ]);
 };
 

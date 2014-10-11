@@ -14,73 +14,88 @@ block nav
 block content
     if (securityMessage != '')
         .alert.alert-danger #{ securityMessage }
-    h1 Kiosk
-    +kioskSelector(kiosks)
-    h2 Exchange
-    p You are using #{ currentExchange } trading in #{ exchangeCurrency }
-    input(type="hidden" value="#{ csrfToken }")#_csrf
-    form(role="form")
-        .form-group
-            label(for="exchangeName") Use
-            select.form-control#exchangeName
-                option
-                each exchange, name in exchangeDefs
-                    option(value="#{ name }") #{ exchange.label }
-        - each exchange, name in exchangeDefs
-            div(id="#{ name }Controls").exchangeControls.hidden
-                - each nonConfigurable, paramName in exchange.nonConfigurables
+    script.
+        var configuredKiosks = !{ configuredKiosks };
+    p.lead This page is write-only. For security purposes, the Connector doesn't display your configuration information.
+    fieldset
+        legend Kiosk
+        +kioskSelector(kiosks)
+        span#kioskIsConfigured.label
+        h4 Exchange
+        p You are using #{ currentExchange } trading in #{ exchangeCurrency }
+        input(type="hidden" value="#{ csrfToken }")#_csrf
+        form(role="form")
+            .form-group
+                label(for="exchangeName") Use
+                select.form-control#exchangeName
+                    option
+                    each exchange, name in exchangeDefs
+                        option(value="#{ name }") #{ exchange.label }
+            - each exchange, name in exchangeDefs
+                div(id="#{ name }Controls").exchangeControls.hidden
+                    - each nonConfigurable, paramName in exchange.nonConfigurables
+                        .form-group
+                            label(for="#{ name }_#{ paramName }") #{ nonConfigurable.label }
+                            input(type="text" disabled value="#{ nonConfigurable.value }" id="#{ name }_#{ paramName }").form-control
+                    - each configurable, paramName in exchange.configurables
+                        .form-group
+                            label(for="#{ name }_#{ paramName }") #{ configurable.label }
+                            input(type="text" autocomplete="off" id="#{ name }_#{ paramName }").form-control
                     .form-group
-                        label(for="#{ name }_#{ paramName }") #{ nonConfigurable.label }
-                        input(type="text" disabled value="#{ nonConfigurable.value }" id="#{ name }_#{ paramName }").form-control
-                - each configurable, paramName in exchange.configurables
-                    .form-group
-                        label(for="#{ name }_#{ paramName }") #{ configurable.label }
-                        input(type="text" autocomplete="off" id="#{ name }_#{ paramName }").form-control
-                .form-group
-                    label(for="currency") Currency
-                    select.form-control.currencyControl
-                        - each currency in exchange.currencies
-                            option(value="#{ currency }") #{ currency }
-        button.btn.btn-default#exchangeSave Save
+                        label(for="currency") Currency
+                        select.form-control.currencyControl
+                            - each currency in exchange.currencies
+                                option(value="#{ currency }") #{ currency }
+            button.btn.btn-default#exchangeSave Save
 
-    h2 Currency Conversion
-    p Configure this if the kiosk accepts and dispenses a currency other than what the exchange trades on.
-    form(role="form")
-        .form-group
-            label(for="exchangeCurrency") Exchange Currency
-            input(type="text" disabled value="#{ exchangeCurrency }").form-control#exchangeCurrency
-        .form-group
-            label(for="kioskCurrency") Kiosk Currency
-            select.form-control#kioskCurrency
-                option
-                each supportedCurrency in supportedCurrencies
-                    option(value="#{ supportedCurrency }" selected=kioskCurrency===supportedCurrency) #{ supportedCurrency }
-        .form-group
-            label(style="display:block;") Rate
-            span 1&nbsp;
-            span #{ exchangeCurrency }
-            span &nbsp;=
-            input(disabled value="#{ exchangeToKioskConversionRate }")#conversionRate
-            span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
-        button(disabled).btn.btn-default#currencyConversionSave Save
+        h4 Currency Conversion
+        p Configure this if the kiosk accepts and dispenses a currency other than what the exchange trades on.
+        form(role="form")
+            .form-group
+                label(for="exchangeCurrency") Exchange Currency
+                input(type="text" disabled value="#{ exchangeCurrency }").form-control#exchangeCurrency
+            .form-group
+                label(for="kioskCurrency") Kiosk Currency
+                select.form-control#kioskCurrency
+                    option
+                    each supportedCurrency in supportedCurrencies
+                        option(value="#{ supportedCurrency }" selected=kioskCurrency===supportedCurrency) #{ supportedCurrency }
+            .form-group
+                label(style="display:block;") Rate
+                span 1&nbsp;
+                span #{ exchangeCurrency }
+                span &nbsp;=
+                input(disabled value="#{ exchangeToKioskConversionRate }")#conversionRate
+                span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
+            button(disabled).btn.btn-default#currencyConversionSave Save
 
-    h1 Autoconnector
-    form(role="form")
-        - buttonText = autoconnectorEnabled == 1 ? 'Disable' : 'Enable'
-        - nextState = autoconnectorEnabled == 1 ? 0 : 1
-        button(data-next-state="#{ nextState }").btn.btn-default#autoconnectorEnable #{ buttonText }
+    fieldset
+        legend Autoconnector
+        if autoconnectorEnabled == 1
+            span.label.label-success Autoconnector is enabled
+        else
+            span.label.label-warning Autoconnector is disabled
+        form(role="form")
+            - buttonText = autoconnectorEnabled == 1 ? 'Disable' : 'Enable'
+            - nextState = autoconnectorEnabled == 1 ? 0 : 1
+            button(data-next-state="#{ nextState }").btn.btn-default#autoconnectorEnable #{ buttonText }
 
-    h1 Robocoin
-    form(role="form")
-        .form-group
-            label(for="robocoinApiKey") API Key
-            input(type="text" autocomplete="off").form-control#robocoinApiKey
-        .form-group
-            label(for="robocoinApiSecret") API Secret
-            input(type="text" autocomplete="off").form-control#robocoinApiSecret
-        button.btn.btn-default#robocoinSave Save
+    fieldset
+        legend Robocoin
+        if robocoinConfigured
+            span.label.label-success Robocoin is configured
+        else
+            span.label.label-warning Robocoin is not configured
+        form(role="form")
+            .form-group
+                label(for="robocoinApiKey") API Key
+                input(type="text" autocomplete="off").form-control#robocoinApiKey
+            .form-group
+                label(for="robocoinApiSecret") API Secret
+                input(type="text" autocomplete="off").form-control#robocoinApiSecret
+            button.btn.btn-default#robocoinSave Save
 
-    +loginModal('Save')
+        +loginModal('Save')
 
 block footerJs
     script.
@@ -170,9 +185,38 @@ block footerJs
 
             $('#exchangeName').on('change', function () {
 
+                var $kioskSelector = $(this);
+
                 $('.exchangeControls').removeClass('show').addClass('hidden');
                 $('#' + $(this).val() + 'Controls').removeClass('hidden').addClass('show');
             });
+
+            var isConfigured = function (kioskId) {
+                return (configuredKiosks.indexOf(kioskId) > -1);
+            };
+
+            var showKioskConfigLabel = function () {
+
+                 var $kioskSelector = $('#kioskSelector');
+                 var $kioskIsConfigured = $('#kioskIsConfigured');
+                 if (isConfigured($kioskSelector.val())) {
+                    $kioskIsConfigured
+                        .addClass('label-success')
+                        .removeClass('label-warning')
+                        .text('This kiosk\'s exchange is configured');
+                 } else {
+                    $kioskIsConfigured
+                        .addClass('label-warning')
+                        .removeClass('label-success')
+                        .text('This kiosk\'s exchange is NOT configured');
+                 }
+            };
+
+            $('#kioskSelector').on('change', function () {
+                 showKioskConfigLabel();
+            });
+
+            showKioskConfigLabel();
 
             $('#kioskCurrency').on('change', function () {
 

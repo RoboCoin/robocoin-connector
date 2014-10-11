@@ -80,6 +80,13 @@ exports.index = function (req, res) {
 
                 if (err) winston.error('Error getting config: ' + err);
 
+                var configuredKiosks = [];
+                for (var i = 0; i < kiosks.length; i++) {
+                    if (Object.keys(config.getAllForKiosk(kiosks[i].id)).length > 0) {
+                        configuredKiosks.push(kiosks[i].id);
+                    }
+                }
+                
                 return res.render('configurationIndex', {
                     currentExchange: currentExchange,
                     exchangeCurrency: exchangeCurrency,
@@ -92,7 +99,9 @@ exports.index = function (req, res) {
                     exchangeToKioskConversionRate: exchangeToKioskConversionRate,
                     supportedCurrencies: supportedCurrencies,
                     kiosks: kiosks,
-                    autoconnectorEnabled: config.get(null, 'autoconnectorEnabled')
+                    autoconnectorEnabled: config.get(null, 'autoconnectorEnabled'),
+                    robocoinConfigured: (config.get(null, 'robocoin.key') && config.get(null, 'robocoin.secret')),
+                    configuredKiosks: JSON.stringify(configuredKiosks)
                 });
             });
         });
