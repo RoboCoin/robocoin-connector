@@ -136,9 +136,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
                     return seriesCallback();
                 }
 
-                // TODO get this from the exchange class, e.g. exchange.getDepositConfirmationsRequired or whatever
-                // also, maybe make that call async, i.e. e.blah(callback), in case it's ever not a constant
-                if (confirmations < 6) {
+                if (confirmations < exchange.getRequiredConfirmations()) {
 
                     winston.info('Confirmations at ' + confirmations + ', skipping');
                     return seriesCallback();

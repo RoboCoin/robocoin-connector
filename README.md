@@ -109,6 +109,8 @@ The methods you must implement in this class are:
         getMinimumOrders(callback) : callback(err, { minimumBuy, minimumSell })
 
         getWithdrawMinersFee() : returns float
+        
+        getRequiredConfirmations() : return int
 
 In order for the exchange to be configurable from the Configuration page, you'll need to place a JSON file with the
 same name and in the same directory as the exchange class. This file must contain a valid JSON object, with a property

@@ -79,7 +79,7 @@ MockRobocoin.prototype._getRandomlyGeneratedTransactions = function () {
 
         fee = xbt.multiply(new bigdecimal.BigDecimal(0.01));
         time = now - this._getRandomNumber(1, 60000);
-        var guids = ['2f44a462-cf38-4442-8bc2-1464491c8959', 'd6d70d3a-ee5f-4ac8-b760-4e13f634ce90'];
+        var guids = ['0c0e0761-42cd-4090-95a9-fa8165a86c4b', '3109eed4-d2c9-48bc-8f93-d6143e77a632'];
 
         transactions.push({
             transactionId: this._getRandomNumber(100, 1000000),

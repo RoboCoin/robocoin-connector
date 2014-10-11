@@ -101,6 +101,10 @@ MockBitstamp.prototype.getPrices = function (callback) {
     });
 };
 
+MockBitstamp.prototype.getRequiredConfirmations = function () {
+    return 6;
+};
+
 var mockBitstamp = null;
 
 module.exports = {
