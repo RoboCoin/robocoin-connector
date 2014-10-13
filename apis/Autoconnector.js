@@ -140,12 +140,10 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
 
                 if (confirmations < exchange.getRequiredConfirmations()) {
 
-                    winston.info('Confirmations at ' + confirmations + ', skipping');
                     return seriesCallback();
 
                 } else {
 
-                    winston.info('got ' + confirmations + ' confirmations, processing...');
                     async.waterfall([
                         function (asyncCallback) {
 
