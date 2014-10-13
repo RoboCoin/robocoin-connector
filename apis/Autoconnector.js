@@ -42,7 +42,11 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
 
     var self = this;
     var buyOrder;
-    var amountToBuy = Math.abs(unprocessedTx.robocoin_xbt - unprocessedTx.exchange_xbt);
+    var robocoinXbtAsBigDecimal = new bigdecimal.BigDecimal(Math.abs(unprocessedTx.robocoin_xbt));
+    var exchangeXbtAsBigDecimal = new bigdecimal.BigDecimal(Math.abs(unprocessedTx.exchange_xbt || 0));
+    var amountToBuy = robocoinXbtAsBigDecimal.subtract(exchangeXbtAsBigDecimal)
+        .setScale(8, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
 
     async.waterfall([
         function (asyncCallback) {
@@ -109,7 +113,11 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
 
     var self = this;
     var config;
-    var amountToSell = Math.abs(unprocessedTx.robocoin_xbt - unprocessedTx.exchange_xbt);
+    var robocoinXbtAsBigDecimal = new bigdecimal.BigDecimal(Math.abs(unprocessedTx.robocoin_xbt));
+    var exchangeXbtAsBigDecimal = new bigdecimal.BigDecimal(Math.abs(unprocessedTx.exchange_xbt || 0));
+    var amountToSell = robocoinXbtAsBigDecimal.subtract(exchangeXbtAsBigDecimal)
+        .setScale(8, bigdecimal.RoundingMode.DOWN())
+        .toPlainString();
 
     async.series([
         function (seriesCallback) {
@@ -211,13 +219,15 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
                 }
 
                 // in case there are partially filled orders
-                var xbtAmountToProcess = (transaction.robocoin_xbt - transaction.exchange_xbt);
+                var robocoinXbtAsBigDecimal = new bigdecimal.BigDecimal(transaction.robocoin_xbt);
+                var exchangeXbtAsBigDecimal = new bigdecimal.BigDecimal(transaction.exchange_xbt || 0);
+                var xbtAmountToProcess = robocoinXbtAsBigDecimal.subtract(exchangeXbtAsBigDecimal);
                 // TODO handle the case when it's a partial, but the remainder is below minimum tx
 
                 switch (transaction.robocoin_tx_type) {
                     case RobocoinTxTypes.SEND:
 
-                        if (xbtAmountToProcess >= minimums.minimumBuy) {
+                        if (xbtAmountToProcess.compareTo(new bigdecimal.BigDecimal(minimums.minimumBuy)) == 1) {
                             self._replenishAccountBtc(transaction, robocoin, exchange, asyncCallback);
                         } else {
                             return asyncCallback();
@@ -227,7 +237,7 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
 
                     case RobocoinTxTypes.RECV:
 
-                        if (xbtAmountToProcess >= minimums.minimumSell) {
+                        if (xbtAmountToProcess.compareTo(new bigdecimal.BigDecimal(minimums.minimumSell)) == 1) {
                             self._sellBtcForFiat(transaction, exchange, robocoin, asyncCallback);
                         } else {
                             return asyncCallback();
