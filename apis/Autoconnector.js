@@ -42,6 +42,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
 
     var self = this;
     var buyOrder;
+    var amountToBuy = Math.abs(unprocessedTx.robocoin_xbt - unprocessedTx.exchange_xbt);
 
     async.waterfall([
         function (asyncCallback) {
@@ -58,7 +59,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
                 price.multiply(
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
-            exchange.buy(Math.abs(unprocessedTx.robocoin_xbt), price.toPlainString(), asyncCallback);
+            exchange.buy(amountToBuy, price.toPlainString(), asyncCallback);
         },
         function (fetchedBuyOrder, asyncCallback) {
 
@@ -69,9 +70,9 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         function (accountInfo, asyncCallback) {
 
             // do the withdrawal
-            winston.info('withdrawing ' + Math.abs(unprocessedTx.robocoin_xbt) + ' XBT to ' + accountInfo.depositAddress);
+            winston.info('withdrawing ' + amountToBuy + ' XBT to ' + accountInfo.depositAddress);
             exchange.withdraw(
-                Math.abs(unprocessedTx.robocoin_xbt),
+                amountToBuy,
                 accountInfo.depositAddress,
                 asyncCallback
             );
@@ -108,6 +109,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
 
     var self = this;
     var config;
+    var amountToSell = Math.abs(unprocessedTx.robocoin_xbt - unprocessedTx.exchange_xbt);
 
     async.series([
         function (seriesCallback) {
@@ -156,7 +158,7 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
                                 new bigdecimal.BigDecimal(1 - MARKET_PAD))
                                 .setScale(2, bigdecimal.RoundingMode.DOWN());
 
-                            exchange.sell(unprocessedTx.robocoin_xbt, price.toPlainString(), asyncCallback);
+                            exchange.sell(amountToSell, price.toPlainString(), asyncCallback);
                         },
                         function (sellOrder, asyncCallback) {
 
@@ -178,72 +180,81 @@ Autoconnector.prototype._sellBtcForFiat = function (unprocessedTx, exchange, rob
     ], callback);
 };
 
+Autoconnector.prototype.processTransactions = function (transactions, robocoin, callback) {
+
+    if (transactions.length === 0) {
+        return callback();
+    }
+
+    var exchange;
+    var kioskConfig;
+    var self = this;
+
+    async.eachSeries(transactions, function (transaction, asyncCallback) {
+
+        self._getConfigMapper().findAll(function (err, config) {
+
+            if (err) return asyncCallback(err);
+
+            kioskConfig = config.getAllForKiosk(transaction.kiosk_id);
+
+            // if this transaction was at a kiosk that's not configured, skip it for now
+            if (kioskConfig.length == 0) {
+                return asyncCallback();
+            }
+
+            transaction.exchangeClass = kioskConfig.exchangeClass;
+            exchange = Exchange.get(kioskConfig);
+
+            exchange.getMinimumOrders(function (err, minimums) {
+
+                if (err) {
+                    return asyncCallback('Error getting minimum orders: ' + err);
+                }
+
+                // in case there are partially filled orders
+                var xbtAmountToProcess = (transaction.robocoin_xbt - transaction.exchange_xbt);
+                // TODO handle the case when it's a partial, but the remainder is below minimum tx
+
+                switch (transaction.robocoin_tx_type) {
+                    case RobocoinTxTypes.SEND:
+
+                        if (xbtAmountToProcess >= minimums.minimumBuy) {
+                            self._replenishAccountBtc(transaction, robocoin, exchange, asyncCallback);
+                        } else {
+                            return asyncCallback();
+                        }
+
+                        break;
+
+                    case RobocoinTxTypes.RECV:
+
+                        if (xbtAmountToProcess >= minimums.minimumSell) {
+                            self._sellBtcForFiat(transaction, exchange, robocoin, asyncCallback);
+                        } else {
+                            return asyncCallback();
+                        }
+
+                        break;
+
+                    default:
+                        callback('Unrecognized transaction type: ' + transaction.robocoin_tx_type);
+                }
+            });
+        });
+
+    }, function (err) {
+
+        return callback(err);
+    });
+};
+
 Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, callback) {
 
     var self = this;
 
     this._getTransactionMapper().findUnprocessed(function (err, unprocessedTxs) {
-
-        if (unprocessedTxs.length === 0) {
-            return callback();
-        }
-
-        var exchange;
-        var kioskConfig;
-
-        async.eachSeries(unprocessedTxs, function (unprocessedTx, asyncCallback) {
-
-            self._getConfigMapper().findAll(function (err, config) {
-
-                if (err) return asyncCallback(err);
-
-                kioskConfig = config.getAllForKiosk(unprocessedTx.kiosk_id);
-
-                // if this transaction was at a kiosk that's not configured, skip it for now
-                if (kioskConfig.length == 0) {
-                    return asyncCallback();
-                }
-
-                unprocessedTx.exchangeClass = kioskConfig.exchangeClass;
-                exchange = Exchange.get(kioskConfig);
-
-                exchange.getMinimumOrders(function (err, minimums) {
-
-                    if (err) {
-                        return asyncCallback('Error getting minimum orders: ' + err);
-                    }
-
-                    switch (unprocessedTx.robocoin_tx_type) {
-                        case RobocoinTxTypes.SEND:
-
-                            if (unprocessedTx.robocoin_xbt >= minimums.minimumBuy) {
-                                self._replenishAccountBtc(unprocessedTx, robocoin, exchange, asyncCallback);
-                            } else {
-                                return asyncCallback();
-                            }
-
-                            break;
-
-                        case RobocoinTxTypes.RECV:
-
-                            if (unprocessedTx.robocoin_xbt >= minimums.minimumSell) {
-                                self._sellBtcForFiat(unprocessedTx, exchange, robocoin, asyncCallback);
-                            } else {
-                                return asyncCallback();
-                            }
-
-                            break;
-
-                        default:
-                            callback('Unrecognized transaction type: ' + unprocessedTx.robocoin_tx_type);
-                    }
-                });
-            });
-
-        }, function (err) {
-
-            return callback(err);
-        });
+        self.processTransactions(unprocessedTxs, robocoin, callback);
     });
 };
 

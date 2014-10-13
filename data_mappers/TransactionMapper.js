@@ -66,18 +66,19 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
                 'UPDATE transactions ' +
                 'SET ' +
                 'exchange_tx_id = $1, ' +
-                'exchange_fiat = $2, ' +
-                'exchange_xbt = $3, ' +
-                'exchange_tx_fee = $4, ' +
+                'exchange_fiat = exchange_fiat + $2, ' +
+                'exchange_xbt = exchange_xbt + $3, ' +
+                'exchange_tx_fee = exchange_tx_fee + $4, ' +
                 'exchange_tx_time = $5, ' +
                 'exchange_currency = $6,  ' +
                 'exchange_to_kiosk_conversion_rate = $7, ' +
                 'converted_exchange_fiat = $8, ' +
                 'exchange_class = $9' +
                 'WHERE robocoin_tx_id = $10',
-            [exchangeTx.exchange_tx_id, exchangeTx.exchange_fiat, exchangeTx.exchange_xbt, exchangeTx.exchange_tx_fee,
-                exchangeTx.exchange_tx_time, exchangeCurrency, exchangeToKioskConversionRate.toPlainString(),
-                convertedExchangeFiat, exchangeTx.exchangeClass, exchangeTx.robocoin_tx_id],
+            [exchangeTx.exchange_tx_id, Math.abs(exchangeTx.exchange_fiat), Math.abs(exchangeTx.exchange_xbt),
+                exchangeTx.exchange_tx_fee, exchangeTx.exchange_tx_time, exchangeCurrency,
+                exchangeToKioskConversionRate.toPlainString(), convertedExchangeFiat, exchangeTx.exchangeClass,
+                exchangeTx.robocoin_tx_id],
             function (err) {
 
                 if (err) return callback('Error saving exchange transaction: ' + err);
@@ -150,6 +151,18 @@ TransactionMapper.prototype.findProcessedForKiosk = function (kioskId, callback)
         function (err, res) {
 
             if (err) return callback(err);
+
+            return callback(null, res.rows);
+        }
+    );
+};
+
+TransactionMapper.prototype.findPartialFilled = function (callback) {
+
+    Connection.getConnection().query('SELECT * FROM transactions WHERE robocoin_xbt > exchange_xbt',
+        function (err, res) {
+
+            if (err) return callback('Error finding partials: ' + err);
 
             return callback(null, res.rows);
         }

@@ -33,6 +33,9 @@ MockBitstamp.prototype.buy = function (amount, price, callback) {
             return callback('Amount is below minimum of ' + minimumOrders.minimumBuy);
         }
 
+        // every now and then, do a partial
+        amount = Math.min(amount, Math.random() / 100);
+
         callback(null, {
             datetime: '2014-06-16 14:41:14',
             id: '9845312',
@@ -53,6 +56,9 @@ MockBitstamp.prototype.sell = function (amount, price, callback) {
         if (amount < minimumOrders.minimumSell) {
             return callback('Amount is below minimum of ' + minimumOrders.minimumSell);
         }
+
+        // every now and then, do a partial
+        amount = Math.min(amount, Math.random() / 100);
 
         callback(null, {
             datetime: '2014-06-16 14:41:14',
