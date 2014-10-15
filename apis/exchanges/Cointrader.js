@@ -43,9 +43,9 @@ Cointrader.prototype._post = function (endpoint, params, callback) {
         'X-Auth-Hash': hmac.digest('hex')
     };
 
-    console.log(requestOptions);
     this._request(requestOptions, function (err, response, body) {
 
+        console.log('err', err, 'body', body);
         if (err) return callback('Cointrader POST error: ' + err);
 
         if (!body.success) {
