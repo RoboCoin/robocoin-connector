@@ -122,7 +122,7 @@ Cointrader.prototype._doTrade = function (tradeType, amount, price, callback) {
                     }
                 }
 
-                return doWhilstCallback();
+                return setTimeout(function () { doWhilstCallback(); }, 1000);
             });
         }, function () {
 
