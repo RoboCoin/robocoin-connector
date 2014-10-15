@@ -46,7 +46,7 @@ Cointrader.prototype._post = function (endpoint, params, callback) {
     console.log('requesting: ' + requestOptions.url);
     this._request(requestOptions, function (err, response, body) {
 
-        console.log('err', err, 'body', body);
+        console.log('err', err);
         if (err) return callback('Cointrader POST error: ' + err);
 
         if (!body.success) {
@@ -117,7 +117,9 @@ Cointrader.prototype._doTrade = function (tradeType, amount, price, callback) {
                 if (err) return doWhilstCallback(err);
 
                 for (var i = 0; i < transactions.length; i++) {
+                    console.log('comparing to ' + transactions[i].order_id);
                     if (transactions[i].order_id == tradeResponse.id) {
+                        console.log('match');
                         order = transactions[i];
                         break;
                     }
