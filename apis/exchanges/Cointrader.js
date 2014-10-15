@@ -117,8 +117,8 @@ Cointrader.prototype._doTrade = function (tradeType, amount, price, callback) {
                 if (err) return doWhilstCallback(err);
 
                 for (var i = 0; i < transactions.length; i++) {
-                    console.log('comparing to ' + transactions[i].order_id);
-                    if (transactions[i].order_id == tradeResponse.id) {
+                    console.log('comparing to ' + transactions[i].id);
+                    if (transactions[i].id == tradeResponse.id) {
                         console.log('match');
                         order = transactions[i];
                         break;
