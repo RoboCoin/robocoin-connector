@@ -1,7 +1,7 @@
 {
     "label": "Cointrader",
     "nonConfigurables": {
-        "baseUrl": { "label": "Base URL", "value": "https://sandbox.cointrader.net/api3" }
+        "baseUrl": { "label": "Base URL", "value": "https://www.cointrader.net/api3" }
     },
     "configurables": {
         "publicKey": { "label":"Public Key" },
