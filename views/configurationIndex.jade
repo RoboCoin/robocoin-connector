@@ -16,13 +16,13 @@ block content
         .alert.alert-danger #{ securityMessage }
     script.
         var configuredKiosks = !{ configuredKiosks };
+        var exchangeCurrencies = !{ exchangeCurrencies };
     p.lead This page is write-only. For security purposes, the Connector doesn't display your configuration information.
     fieldset
         legend Kiosk
         +kioskSelector(kiosks)
         span#kioskIsConfigured.label
         h4 Exchange
-        p You are using #{ currentExchange } trading in #{ exchangeCurrency }
         input(type="hidden" value="#{ csrfToken }")#_csrf
         form(role="form")
             .form-group
@@ -63,9 +63,9 @@ block content
             .form-group
                 label(style="display:block;") Rate
                 span 1&nbsp;
-                span #{ exchangeCurrency }
+                span#exchangeCurrencyText #{ exchangeCurrency }
                 span &nbsp;=
-                input(disabled value="#{ exchangeToKioskConversionRate }")#conversionRate
+                input(value="#{ exchangeToKioskConversionRate }")#conversionRate
                 span#kioskCurrencySpan &nbsp;#{ kioskCurrency }
             button(disabled).btn.btn-default#currencyConversionSave Save
 
@@ -88,6 +88,7 @@ block content
             span.label.label-warning Robocoin is not configured
         form(role="form")
             .form-group
+                label(for="robocoinApiKey") API Key
                 label(for="robocoinApiKey") API Key
                 input(type="text" autocomplete="off").form-control#robocoinApiKey
             .form-group
@@ -166,7 +167,6 @@ block footerJs
                         data: {
                             apiKey: $('#robocoinApiKey').val(),
                             apiSecret: $('#robocoinApiSecret').val(),
-                            testMode: $('#robocoinTestMode').is(':checked'),
                             _csrf: $('#_csrf').val(),
                             username: $('#username').val(),
                             password: $('#password').val()
@@ -204,6 +204,8 @@ block footerJs
                         .addClass('label-success')
                         .removeClass('label-warning')
                         .text('This kiosk\'s exchange is configured');
+                    $('#exchangeCurrency').val(exchangeCurrencies[$kioskSelector.val()].param_value);
+                    $('#exchangeCurrencyText').text($('#exchangeCurrency').val());
                  } else {
                     $kioskIsConfigured
                         .addClass('label-warning')

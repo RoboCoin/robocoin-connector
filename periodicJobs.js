@@ -43,6 +43,7 @@ exports.startInterval = function () {
         } else {
             // and sometimes fill partials
             /*console.log('filling partials...');
+            ACCOUNT FOR EXISTING EXCHANGE XBT BEING IN NEGATIVES (PROBABLY A SQL FIX)
             partialFiller.run(function (err) {
                 if (err) console.error('Partial filling error: ' + err);
             });*/

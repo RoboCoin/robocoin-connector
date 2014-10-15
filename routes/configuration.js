@@ -64,13 +64,13 @@ exports.index = function (req, res) {
             return res.send('Error getting confguration.');
         }
 
-        var currentExchange = config.get(req.session.kioskId, 'exchangeClass');
-        var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
         var robocoinTestMode = config.get(req.session.kioskId, 'robocoin.testMode');
         var bitstampTestMode = (config.get(req.session.kioskId, 'exchangeClass') == 'MockBitstamp');
         var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
         var exchangeToKioskConversionRate = config.get(req.session.kioskId, 'exchangeToKioskConversionRate') || '';
+        var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
         var supportedCurrencies = ['CAD', 'USD'];
+        var exchangeCurrencies = config.getAllByParameterName('exchangeCurrency');
 
         kioskMapper.findAll(function (err, kiosks) {
 
@@ -86,16 +86,14 @@ exports.index = function (req, res) {
                         configuredKiosks.push(kiosks[i].id);
                     }
                 }
-                
+
                 return res.render('configurationIndex', {
-                    currentExchange: currentExchange,
-                    exchangeCurrency: exchangeCurrency,
-                    robocoinTestMode: robocoinTestMode,
-                    bitstampTestMode: bitstampTestMode,
                     csrfToken: req.csrfToken(),
                     securityMessage: message,
                     exchangeDefs: exchangeDefs,
                     kioskCurrency: kioskCurrency,
+                    exchangeCurrency: exchangeCurrency,
+                    exchangeCurrencies: JSON.stringify(exchangeCurrencies),
                     exchangeToKioskConversionRate: exchangeToKioskConversionRate,
                     supportedCurrencies: supportedCurrencies,
                     kiosks: kiosks,

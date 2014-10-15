@@ -66,9 +66,9 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
                 'UPDATE transactions ' +
                 'SET ' +
                 'exchange_tx_id = $1, ' +
-                'exchange_fiat = exchange_fiat + $2, ' +
-                'exchange_xbt = exchange_xbt + $3, ' +
-                'exchange_tx_fee = exchange_tx_fee + $4, ' +
+                'exchange_fiat = COALESCE(exchange_fiat, 0) + $2, ' +
+                'exchange_xbt = COALESCE(exchange_xbt, 0) + $3, ' +
+                'exchange_tx_fee = COALESCE(exchange_tx_fee, 0) + $4, ' +
                 'exchange_tx_time = $5, ' +
                 'exchange_currency = $6,  ' +
                 'exchange_to_kiosk_conversion_rate = $7, ' +

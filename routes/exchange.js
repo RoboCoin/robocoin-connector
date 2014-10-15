@@ -15,7 +15,7 @@ exports.lastPrices = function (req, res) {
     var exchange = Exchange.get(req.config.getAllForKiosk(req.query.kioskId));
     exchange.getPrices(function (err, prices) {
 
-        if (err) return res.json(500, { price: err });
+        if (err) return res.status(500).json({ price: err });
 
         res.json({ buyPrice: prices.buyPrice, sellPrice: prices.sellPrice});
     });
@@ -50,7 +50,7 @@ exports.buy = function (req, res) {
         }
     }, function (err, asyncResponse) {
 
-        if (err) return res.send(err, 400);
+        if (err) return res.status(400).send(err);
 
         return res.send('Bought ' + asyncResponse.buy.xbt + ' for $' + Math.abs(asyncResponse.buy.fiat) +
             ' with a fee of $' + asyncResponse.buy.fee);

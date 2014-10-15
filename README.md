@@ -107,8 +107,6 @@ The methods you must implement in this class are:
         getPrices(callback) : callback(err, { buyPrice, sellPrice })
 
         getMinimumOrders(callback) : callback(err, { minimumBuy, minimumSell })
-
-        getWithdrawMinersFee() : returns float
         
         getRequiredConfirmations() : return int
 
