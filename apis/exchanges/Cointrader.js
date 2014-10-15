@@ -107,7 +107,6 @@ Cointrader.prototype._doTrade = function (tradeType, amount, price, callback) {
 
     this._post('/order/BTCUSD/' + tradeType, { total_quantity: amount, price: price }, function (err, tradeResponse) {
 
-        console.log('looking for trade ID: ' + tradeResponse.id);
         if (err) return callback('Error on ' + tradeType + ': ' + err);
 
         async.doWhilst(function (doWhilstCallback) {
@@ -117,9 +116,7 @@ Cointrader.prototype._doTrade = function (tradeType, amount, price, callback) {
                 if (err) return doWhilstCallback(err);
 
                 for (var i = 0; i < transactions.length; i++) {
-                    console.log('comparing to ' + transactions[i].id);
                     if (transactions[i].id == tradeResponse.id) {
-                        console.log('match');
                         order = transactions[i];
                         break;
                     }
