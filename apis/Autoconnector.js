@@ -262,7 +262,6 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
     var self = this;
 
     this._getTransactionMapper().findUnprocessed(function (err, unprocessedTxs) {
-        console.log('# unprocessed to process: ' + unprocessedTxs.length);
         self.processTransactions(unprocessedTxs, robocoin, callback);
     });
 };
