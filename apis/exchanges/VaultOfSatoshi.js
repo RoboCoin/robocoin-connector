@@ -271,6 +271,10 @@ VaultOfSatoshi.prototype.getMinimumOrders = function (callback) {
     return callback(null, { minimumBuy: 0.01, minimumSell: 0.01 });
 };
 
+VaultOfSatoshi.prototype.getRequiredConfirmations = function () {
+    return 6;
+};
+
 var vaultOfSatoshi = null;
 
 module.exports = {

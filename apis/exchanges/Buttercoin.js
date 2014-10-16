@@ -94,10 +94,12 @@ Buttercoin.prototype.withdraw = function (amount, address, callback) {
 };
 
 Buttercoin.prototype.userTransactions = function (callback) {
-    this._client.getOrders(function (err, orders) {
+    this._client.getOrders(query, function (err, orders) {
+        console.log("err", err);
         if (err) return callback('Buttercoin get transactions err: ' + err);
         var transactions = [];
         var order;
+        console.log("orders.length", orders.length);
         for (var i=0; i < orders.length; i++) {
             order = orders[i];
             transactions.push({

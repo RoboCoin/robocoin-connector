@@ -32,7 +32,7 @@ exports.index = function (req, res) {
 
                 if (err) return asyncCallback(err);
 
-                return asyncCallback(null, transactions, info.deposit_address, config);
+                return asyncCallback(null, transactions, info.depositAddress, config);
             });
         },
         function (transactions, depositAddress, config, asyncCallback) {

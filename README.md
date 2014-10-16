@@ -7,7 +7,7 @@ possible for operators.
 
 Two common, expected scenarios for running the connector are:
 
-1. Operators fork the code and host it on their own servers. Then can modify it freely.
+1. Operators fork the code and host it on their own servers. Then they can modify it freely.
 2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
 
 ## How it works
@@ -19,18 +19,15 @@ the sold BTC.
 
 On a sell, the user sends an amount of BTC from their account to the operator's account. The kiosk dispenses fiat.
 Robocoin automatically sends this BTC amount from the operator's account to their exchange. We also monitor how many
-confirmations are on that transaction and this info is in the API. When the connector sees enough confirmations,
+confirmations are on that transaction. When the connector sees enough confirmations,
 it executes a sell for that amount on the exchange.
 
 ### Test mode
 
-To run the connector with randomly-generated Robocoin test data, from the Configuration page, specify your API keys and
-check the "Test Mode" box.
-
 To run the connector with a mock version of the Bitstamp API, which simply echoes calls instead of sending HTTP
 requests, from the Configuration page, specify to use "Mock Bitstamp".
 
-## Installation
+## Installation (for developers)
 
 Requirements:
 
@@ -54,17 +51,13 @@ Requirements:
 
 In your development environment, add your username to the postgres group.
 
-In your developement environment, add a user. This step adds a user and echoes its automatically-generated password:
-
-        node scripts/addUser.js yourusername
-
 Run as user postgres scripts/database.sql:
 
         psql robocoin_connector < database.sql
 
 In production, set the NODE_ENV environment variable to "production".
 
-Set the ENCRYPTION_KEY environment variable to a secret, preferably created with scripts/getSecret
+Set the ENCRYPTION_KEY environment variable to a secret, preferably created with "openssl rand -hex 8"
 
 Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost/robocoin_connector
 
@@ -72,21 +65,17 @@ In the directory containing package.json, run:
 
         npm install
 
+In your developement environment, add a user. Note the automatically-generated password:
+
+        node scripts/addUser.js yourusername
+
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin key.
+
 Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://api.robocoin.com/v0/connector".
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://notsureyet.robocoin.com/api/0".
-
-Run "node scripts/addUser.js yourusername". Note the output and save the generated password somewhere.
-
-Run 'heroku run node scripts/setConfigParam.js':
-
-* (empty)
-* robocoin.baseUrl
-* https://www.somefuturerobocoinurl.net/api/0
-
-When everything's installed, run "supervisor app.js" in a developement environment, or "npm start" in production.
+When everything's installed, run "supervisor app.js" in a developement environment, or "forever app.js" in production.
 
 Open the connector dashboard in a browser and go to the Configuration page. Configure each kiosk.
 
@@ -118,8 +107,8 @@ The methods you must implement in this class are:
         getPrices(callback) : callback(err, { buyPrice, sellPrice })
 
         getMinimumOrders(callback) : callback(err, { minimumBuy, minimumSell })
-
-        getWithdrawMinersFee() : returns float
+        
+        getRequiredConfirmations() : return int
 
 In order for the exchange to be configurable from the Configuration page, you'll need to place a JSON file with the
 same name and in the same directory as the exchange class. This file must contain a valid JSON object, with a property

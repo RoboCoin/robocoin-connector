@@ -18,13 +18,32 @@ var passport = require('passport');
 var UserMapper = require('./data_mappers/UserMapper');
 var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
+var compression = require('compression');
+var expressEnforcesSsl = require('express-enforces-ssl');
 
 var app = express();
 
-app.set('trust proxy', true);
+app.use(compression());
+app.enable('trust proxy');
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+var cookie = {
+    httpOnly: true
+};
+// development only
+if ('development' == app.get('env')) {
+    console.log('not forcing SSL');
+    app.use(errorHandler());
+    app.locals.pretty = true;
+    app.use(morgan('dev'));
+    cookie.secure = false;
+} else {
+    console.log('forcing SSL');
+    cookie.secure = true;
+    app.use(expressEnforcesSsl());
+}
 
 // cookies
 app.use(cookieParser('UaZpIsmkENYxnv1IH9BBtCDiyYuoGRS7TOTkIlKpbj5hbcYqqoYJh0r0CXARGuaa'));
@@ -33,7 +52,8 @@ app.use(session({
     secret: 'xFQevBVehGuhYI594nKm0OJNAzZoJGzzsJo32Ey5o9rArr',
     store: new SessionMapper(),
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: cookie
 }));
 
 // csrf protection
@@ -50,7 +70,11 @@ app.use(function (req, res, next) {
 });
 
 // HSTS
-app.use(helmet.hsts({ maxAge: 7776000000 })); // ninety days
+app.use(helmet.hsts({
+    maxAge: 7776000000,
+    includeSubdomains: true,
+    force: true
+})); // ninety days
 
 // logins
 var userMapper = new UserMapper();
@@ -73,13 +97,6 @@ app.use(methodOverride());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-
-// development only
-if ('development' == app.get('env')) {
-    app.use(errorHandler());
-    app.locals.pretty = true;
-    app.use(morgan('dev'));
-}
 
 // add the config to each request
 var ConfigMapper = require('./data_mappers/ConfigMapper');
@@ -137,6 +154,8 @@ var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions);
 app.get('/robocoin/unprocessed-transactions', ensureAuthenticated, robocoin.getUnprocessedTransactions);
 app.get('/robocoin/processed-transactions', ensureAuthenticated, robocoin.getProcessedTransactions);
+app.get('/robocoin/transaction-hash', ensureAuthenticated, robocoin.getTransactionHash);
+app.post('/robocoin/import-transactions', ensureAuthenticated, robocoin.importTransactions);
 
 var dashboard = require('./routes/dashboard');
 app.get('/', ensureAuthenticated, dashboard.index);
@@ -166,7 +185,7 @@ app.use(function (err, req, res, next) {
     }
 });
 
-var server = http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app).listen(app.get('port'), function() {
 
     console.log('Express server listening on port ' + app.get('port'));
     console.log('App environment: ' + app.get('env'));

@@ -16,14 +16,13 @@ CREATE TABLE transactions (
     converted_exchange_fiat DECIMAL(20,5) DEFAULT NULL,
     robocoin_xbt DECIMAL(20,8) NOT NULL,
     exchange_xbt DECIMAL(20,8) DEFAULT NULL,
-    confirmations INT DEFAULT NULL,
     robocoin_tx_fee DECIMAL(20,8) DEFAULT NULL,
     exchange_tx_fee DECIMAL(20,8) DEFAULT NULL,
-    robocoin_miners_fee DECIMAL(20,8) DEFAULT NULL,
     exchange_miners_fee DECIMAL(20,8) DEFAULT NULL,
     robocoin_tx_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     exchange_tx_time TIMESTAMP NULL DEFAULT NULL,
-    exchange_class VARCHAR(32)
+    exchange_class VARCHAR(32),
+    tx_hash TEXT NULL DEFAULT NULL
 );
 
 CREATE TABLE config (

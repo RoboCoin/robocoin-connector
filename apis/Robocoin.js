@@ -7,11 +7,14 @@ var crypto = require('crypto');
 var querystring = require('querystring');
 var url = require('url');
 var MockRobocoin = require('./MockRobocoin');
+var winston = require('winston');
+var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
 
 var Robocoin = function (config) {
 
     // use a reference to the config, so updates propagate here and won't require a server restart
     this._config = config;
+    this._request = request;
 };
 
 Robocoin.prototype._request = request;
@@ -108,9 +111,9 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
     this._request(requestOptions, function (error, response, body) {
 
-        if (error) return callback(error);
+        if (error) return callback('Error calling Robocoin: ' + error);
 
-        if (response.statusCode != 200) return callback(body);
+        if (response.statusCode != 200) return callback('Bad response status from Robocoin: ' + body);
 
         return callback(error, body);
     });
@@ -128,22 +131,65 @@ Robocoin.prototype._get = function (endpoint, options, callback) {
 
 Robocoin.prototype.getAccountInfo = function (callback) {
 
-    this._get('/account/info', {}, function (err, body) {
-        return callback(err, body);
+    this._get('/account', {}, function (err, response, body) {
+        return callback(err, response);
     });
 };
 
 Robocoin.prototype.getMachineInfo = function (callback) {
 
-    this._get('/connector/machine', {}, function (err, body) {
-        return callback(err, body);
+    this._get('/machine', {}, function (err, response, body) {
+
+        // default to empty array for better error handling
+        if (typeof response == 'undefined') {
+            winston.error('Get machine info: response undefined');
+            response = [];
+        }
+
+        return callback(err, response);
     });
 };
 
 Robocoin.prototype.getTransactions = function (since, callback) {
 
-    this._get('/account/activity', { since: since }, function (err, body) {
-        return callback(err, body);
+    this._get('/account/activity', { since: since }, function (err, response) {
+
+        var xbt;
+        var fiat;
+
+        if (typeof response === 'undefined') {
+            winston.warn('account activity response is undefined');
+            response = [];
+        }
+
+        var connectorTransactions = [];
+
+        for (var i = 0; i < response.length; i++) {
+            if (response[i].type == RobocoinTxTypes.SEND
+                || (response[i].type == RobocoinTxTypes.RECV && response[i].forwarded)) {
+
+                xbt = new bigdecimal.BigDecimal(response[i].xbt);
+                xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())
+                    .setScale(8, bigdecimal.RoundingMode.DOWN());
+                response[i].xbt = xbt.toPlainString();
+
+                connectorTransactions.push(response[i]);
+            }
+        }
+
+        return callback(err, connectorTransactions);
+    });
+};
+
+Robocoin.prototype.getHashFor = function (robocoinTxId, callback) {
+
+    this._get('/transaction-hash', { robocoinTxId: robocoinTxId }, function (err, hash) {
+
+        if (err) {
+            return callback('Error getting transaction hash: ' + err);
+        }
+
+        return callback(null, hash);
     });
 };
 

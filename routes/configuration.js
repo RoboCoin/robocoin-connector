@@ -64,13 +64,13 @@ exports.index = function (req, res) {
             return res.send('Error getting confguration.');
         }
 
-        var currentExchange = config.get(req.session.kioskId, 'exchangeClass');
-        var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
         var robocoinTestMode = config.get(req.session.kioskId, 'robocoin.testMode');
         var bitstampTestMode = (config.get(req.session.kioskId, 'exchangeClass') == 'MockBitstamp');
         var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
         var exchangeToKioskConversionRate = config.get(req.session.kioskId, 'exchangeToKioskConversionRate') || '';
+        var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
         var supportedCurrencies = ['CAD', 'USD'];
+        var exchangeCurrencies = config.getAllByParameterName('exchangeCurrency');
 
         kioskMapper.findAll(function (err, kiosks) {
 
@@ -80,19 +80,26 @@ exports.index = function (req, res) {
 
                 if (err) winston.error('Error getting config: ' + err);
 
+                var configuredKiosks = [];
+                for (var i = 0; i < kiosks.length; i++) {
+                    if (Object.keys(config.getAllForKiosk(kiosks[i].id)).length > 0) {
+                        configuredKiosks.push(kiosks[i].id);
+                    }
+                }
+
                 return res.render('configurationIndex', {
-                    currentExchange: currentExchange,
-                    exchangeCurrency: exchangeCurrency,
-                    robocoinTestMode: robocoinTestMode,
-                    bitstampTestMode: bitstampTestMode,
                     csrfToken: req.csrfToken(),
                     securityMessage: message,
                     exchangeDefs: exchangeDefs,
                     kioskCurrency: kioskCurrency,
+                    exchangeCurrency: exchangeCurrency,
+                    exchangeCurrencies: JSON.stringify(exchangeCurrencies),
                     exchangeToKioskConversionRate: exchangeToKioskConversionRate,
                     supportedCurrencies: supportedCurrencies,
                     kiosks: kiosks,
-                    autoconnectorEnabled: config.get(null, 'autoconnectorEnabled')
+                    autoconnectorEnabled: config.get(null, 'autoconnectorEnabled'),
+                    robocoinConfigured: (config.get(null, 'robocoin.key') && config.get(null, 'robocoin.secret')),
+                    configuredKiosks: JSON.stringify(configuredKiosks)
                 });
             });
         });

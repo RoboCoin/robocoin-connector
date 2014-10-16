@@ -7,8 +7,6 @@ block nav
     li.active
         a(href="#") Account info
     li
-        a(href="/buy-and-sell") Buy and Sell
-    li
         a(href="/configuration") Configuration
     li
         a(href="/logout") Logout
@@ -18,9 +16,6 @@ block content
         .alert.alert-danger #{ error }
     h1 Robocoin Account Info
     table.table.table-striped.table-condensed
-        tr
-            td Account Balance
-            td #{ robocoinAccount.xbt_balance } BTC
         tr
             td Deposit Address
             td #{ robocoinAccount.depositAddress }
@@ -77,6 +72,7 @@ block footerJs
                 });
             };
             getExchangeInfo();
+            setInterval(getExchangeInfo, 60000);
 
             $('#kioskSelector').on('change', function () {
                 document.body.style.cursor = 'wait';

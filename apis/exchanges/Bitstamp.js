@@ -239,6 +239,10 @@ Bitstamp.prototype.getMinimumOrders = function (callback) {
     });
 };
 
+Bitstamp.prototype.getRequiredConfirmations = function () {
+    return 6;
+};
+
 var bitstamp = null;
 
 module.exports = {

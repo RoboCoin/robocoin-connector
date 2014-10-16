@@ -1,0 +1,12 @@
+{
+    "label": "Cointrader",
+    "nonConfigurables": {
+        "baseUrl": { "label": "Base URL", "value": "https://www.cointrader.net/api3" }
+    },
+    "configurables": {
+        "publicKey": { "label":"Public Key" },
+        "privateKey": { "label":"Private Key" },
+        "secret": { "label": "Secret (optional)" }
+    },
+    "currencies": ["USD"]
+}

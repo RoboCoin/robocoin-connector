@@ -32,7 +32,7 @@ BatchProcessor.prototype.run = function (callback) {
 
                 if (err) return waterfallCallback(err);
 
-                return waterfallCallback(null, unprocessedTransactions, info.deposit_address);
+                return waterfallCallback(null, unprocessedTransactions, info.depositAddress);
             });
         },
         function (unprocessedTransactions, depositAddress, waterfallCallback) {
@@ -44,8 +44,6 @@ BatchProcessor.prototype.run = function (callback) {
         if (err) return console.log('Error in batch processing: ' + err);
 
         if (callback) return callback();
-
-        return console.log('Done batch processing');
     });
 };
 

@@ -8,7 +8,7 @@ var KioskMapper = function () {
 };
 
 KioskMapper.prototype.save = function (kiosk, callback) {
-    console.log("saving", kiosk);
+
     Connection.getConnection().query(
         'UPDATE kiosks SET name = $1 WHERE id = $2',
         [kiosk.name, kiosk.id],
