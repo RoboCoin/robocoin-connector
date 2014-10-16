@@ -131,6 +131,10 @@ Buttercoin.prototype.getMinimumOrders = function (callback) {
     return callback(null, { minimumBuy: 0.01, minimumSell: 0.01 });
 };
 
+Buttercoin.prototype.getRequiredConfirmations = function () {
+    return 4;
+};
+
 var buttercoin = null;
 
 module.exports = {
