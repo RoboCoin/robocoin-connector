@@ -12,7 +12,7 @@ var Cointrader = function (config) {
 };
 
 Cointrader.prototype._getTonce = function () {
-    return (new Date()).toUTCString();
+    return (new Date()).toISOString();
 };
 
 Cointrader.prototype._post = function (endpoint, params, callback) {
