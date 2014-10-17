@@ -543,20 +543,17 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
 
                     if (tx.robocoin_tx_type == RobocoinTxTypes.SEND) {
 
-                        console.log('adding buy');
                         aggregateBuy = aggregateBuy.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
                         aggregatedBuys.push(tx);
 
                     } else if (tx.robocoin_tx_type == RobocoinTxTypes.RECV) {
 
-                        console.log('adding sell');
                         aggregateSell = aggregateSell.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
                         aggregatedSells.push(tx);
                     }
 
                     if (aggregateBuy.compareTo(minimumBuy) == 1) {
 
-                        console.log('above minimum buy...');
                         aggregateBuyAsNumber = aggregateBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                         self._batchBuy(aggregateBuyAsNumber, aggregatedBuys, depositAddress, exchange, function (err) {
 
@@ -566,7 +563,6 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
                                 return eachSeriesCallback();
                             }
 
-                            console.log('successful batch buy');
                             for (var i = 0; i < aggregatedBuys.length; i++) {
                                 processedTransactions.push(aggregatedBuys[i].robocoin_tx_id);
                             }
@@ -577,7 +573,6 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
 
                     } else if (aggregateSell.compareTo(minimumSell) == 1) {
 
-                        console.log('above minimum sell');
                         aggregateSellAsNumber = aggregateSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                         self._batchSell(aggregateSellAsNumber, aggregatedSells, exchange, function (err) {
 
@@ -587,7 +582,6 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
                                 return eachSeriesCallback();
                             }
 
-                            console.log('successful batch sell');
                             for (var i = 0; i < aggregatedSells.length; i++) {
                                 processedTransactions.push(aggregatedSells[i].robocoin_tx_id);
                             }
@@ -598,7 +592,6 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
 
                     } else {
 
-                        console.log('not above minimum yet');
                         return eachSeriesCallback();
                     }
 
