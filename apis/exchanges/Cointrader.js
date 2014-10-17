@@ -48,7 +48,11 @@ Cointrader.prototype._post = function (endpoint, params, callback) {
         if (err) return callback('Cointrader POST error: ' + err);
 
         if (!body.success) {
-            return callback('Cointrader POST request unsuccessful: ' + body.data.errorCode + ': ' + body.data.message);
+
+            var errorCode = (body.data && body.data.errorCode) ? body.data.errorCode : 'unknown';
+            var message = (body.data && body.data.message) ? body.data.message : 'unknown';
+
+            return callback('Cointrader POST request unsuccessful: ' + errorCode + ': ' + message);
         }
 
         return callback(null, body.data);
