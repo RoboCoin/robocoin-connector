@@ -69,7 +69,7 @@ exports.index = function (req, res) {
         var kioskCurrency = config.get(req.session.kioskId, 'kioskCurrency');
         var exchangeToKioskConversionRate = config.get(req.session.kioskId, 'exchangeToKioskConversionRate') || '';
         var exchangeCurrency = config.get(req.session.kioskId, 'exchangeCurrency');
-        var supportedCurrencies = ['CAD', 'USD'];
+        var supportedCurrencies = ['CAD', 'HKD', 'USD'];
         var exchangeCurrencies = config.getAllByParameterName('exchangeCurrency');
 
         kioskMapper.findAll(function (err, kiosks) {
