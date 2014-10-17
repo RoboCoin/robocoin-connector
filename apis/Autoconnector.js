@@ -63,6 +63,7 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
                 price.multiply(
                     new bigdecimal.BigDecimal(1 + MARKET_PAD))
                     .setScale(2, bigdecimal.RoundingMode.DOWN());
+            winston.info('buying: ' + amountToBuy + ' at ' + price.toPlainString());
             exchange.buy(amountToBuy, price.toPlainString(), asyncCallback);
         },
         function (fetchedBuyOrder, asyncCallback) {

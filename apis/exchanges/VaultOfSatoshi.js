@@ -74,6 +74,7 @@ VaultOfSatoshi.prototype.getBalance = function (callback) {
         },
         fiatBalance: function (asyncCallback) {
 
+            console.log('getting balance in: ' + self._config.exchangeCurrency.toLowerCase());
             self._post('/info/balance', { currency: self._config.exchangeCurrency.toLowerCase() }, function (err, res) {
 
                 if (err) return asyncCallback('Error getting VaultOfSatoshi fiat balance: ' + err);
@@ -115,6 +116,7 @@ VaultOfSatoshi.prototype._doTrade = function (type, amount, price, callback) {
     var self = this;
     var tradeOrder;
 
+    console.log('placing a trade in: ' + this._config.exchangeCurrency);
     self._post(
         '/trade/place',
         {
@@ -249,6 +251,7 @@ VaultOfSatoshi.prototype.getPrices = function (callback) {
 
     var self = this;
 
+    console.log('getting prices in: ' + this._config.exchangeCurrency);
     self._post(
         '/info/orderbook',
         {
