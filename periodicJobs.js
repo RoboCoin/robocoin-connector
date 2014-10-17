@@ -32,7 +32,7 @@ exports.startInterval = function () {
     console.log('starting periodic jobs');
     intervalId = setInterval(function () {
 
-        var randomNumber = (Math.random() * 10);
+        var randomNumber = Math.ceil((Math.random() * 10));
 
         // most of the time, run the autoconnector
         if (randomNumber > 2) {
