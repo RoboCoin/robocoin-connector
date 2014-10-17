@@ -39,6 +39,7 @@ exports.startInterval = function () {
             exports.runAutoconnector();
         } else if (randomNumber == 2) {
             // but sometimes, do the batch rollup
+            console.log('batch processing');
             exports.batchProcess();
         } else {
             // and sometimes fill partials
