@@ -20,16 +20,22 @@ block content
         each log in logs
             if log.level == 'warn'
                 tr.warning
-                    td #{ new Date(log.ts * 1000) }
+                    td
+                        script.
+                            document.write(new Date(#{ log.ts } * 1000).toString());
                     td #{ log.level }
                     td #{ log.message }
             else if log.level == 'error'
                 tr.danger
-                    td #{ new Date(log.ts * 1000) }
+                    td
+                        script.
+                            document.write(new Date(#{ log.ts } * 1000).toString());
                     td #{ log.level }
                     td #{ log.message }
             else
                 tr
-                    td #{ new Date(log.ts * 1000) }
+                    td
+                        script.
+                            document.write(new Date(#{ log.ts } * 1000).toString());
                     td #{ log.level }
                     td #{ log.message }
