@@ -308,7 +308,6 @@ Autoconnector.prototype.run = function (callback) {
 
             robocoin.getTransactions((new Date(lastTime)).getTime() + 1000, function (err, transactions) {
 
-                console.log('# robocoin transactions: ' + transactions.length);
                 if (err) return waterfallCallback('Error getting Robocoin transactions: ' + err);
 
                 if (transactions.length === 0) {

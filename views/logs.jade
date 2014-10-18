@@ -1,0 +1,35 @@
+extends layout
+
+block nav
+    li.active
+        a(href="#") Transactions
+    li
+        a(href="/account-info") Account info
+    li
+        a(href="/configuration") Configuration
+    li
+        a(href="/logout") Logout
+
+block content
+    h1 Recent log entries
+    table.table.table-bordered.table-condensed
+        tr
+            th Timestamp
+            th Level
+            th Message
+        each log in logs
+            if log.level == 'warn'
+                tr.warning
+                    td #{ log.ts }
+                    td #{ log.level }
+                    td #{ log.message }
+            else if log.level == 'error'
+                tr.danger
+                    td #{ log.ts }
+                    td #{ log.level }
+                    td #{ log.message }
+            else
+                tr
+                    td #{ log.ts }
+                    td #{ log.level }
+                    td #{ log.message }

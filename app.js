@@ -171,6 +171,9 @@ app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.save
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
 
+var logs = require('./routes/logs');
+app.get('/logs', ensureAuthenticated, logs.index);
+
 app.use(function (err, req, res, next) {
 
     switch (err.code) {
