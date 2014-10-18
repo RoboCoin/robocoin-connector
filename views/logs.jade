@@ -20,16 +20,16 @@ block content
         each log in logs
             if log.level == 'warn'
                 tr.warning
-                    td #{ log.ts }
+                    td #{ new Date(log.ts * 1000) }
                     td #{ log.level }
                     td #{ log.message }
             else if log.level == 'error'
                 tr.danger
-                    td #{ log.ts }
+                    td #{ new Date(log.ts * 1000) }
                     td #{ log.level }
                     td #{ log.message }
             else
                 tr
-                    td #{ log.ts }
+                    td #{ new Date(log.ts * 1000) }
                     td #{ log.level }
                     td #{ log.message }
