@@ -6,7 +6,7 @@ CREATE TABLE kiosks (
 CREATE TABLE transactions (
     kiosk_id VARCHAR(45) REFERENCES kiosks (id),
     robocoin_tx_id VARCHAR(256) NOT NULL UNIQUE,
-    exchange_tx_id INT DEFAULT NULL,
+    exchange_tx_id VARCHAR(256) DEFAULT NULL,
     robocoin_tx_type VARCHAR(45) NOT NULL,
     robocoin_fiat DECIMAL(20,2) NOT NULL,
     robocoin_currency CHAR(3) NOT NULL,

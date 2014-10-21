@@ -1,7 +1,10 @@
 'use strict';
 
+var bigdecimal = require('bigdecimal');
+
 var Buttercoin = function (config) {
-    this._client = require('buttercoinsdk-node')(config['buttercoin.apiKey'], config['buttercoin.apiSecret'], config['buttercoin.environment']);
+    this._client = require('buttercoinsdk-node')(
+        config['buttercoin.apiKey'], config['buttercoin.apiSecret'], config['buttercoin.environment']);
 }
 
 Buttercoin.prototype.getBalance = function (callback) {
@@ -60,11 +63,17 @@ Buttercoin.prototype._order = function(type, amount, price, callback) {
                     break;
                 }
             }
+
+            var rate = new bigdecimal.BigDecimal(order.price);
+            var fiat = rate.multiply(new bigdecimal.BigDecimal(order.quantity))
+                .setScale(8, bigdecimal.RoundingMode.DOWN())
+                .toPlainString();
+
             return callback(null, {
                 datetime: Date.parse(createdTime),
                 id: order.orderId,
                 type: order.side,
-                fiat: order.price,
+                fiat: fiat,
                 xbt: order.quantity,
                 fee: '0',
                 order_id: order.orderId
@@ -120,17 +129,27 @@ Buttercoin.prototype.withdraw = function (amount, address, callback) {
 };
 
 Buttercoin.prototype.userTransactions = function (callback) {
+
     this._client.getOrders(query, function (err, orders) {
+
         if (err) return callback('Buttercoin get transactions err: ' + err);
+
         var transactions = [];
         var order;
+
         for (var i=0; i < orders.length; i++) {
+
             order = orders[i];
+            var rate = new bigdecimal.BigDecimal(order.price);
+            var fiat = rate.multiply(new bigdecimal.BigDecimal(order.quantity))
+                .setScale(8, bigdecimal.RoundingMode.DOWN())
+                .toPlainString();
+
             transactions.push({
                 id: order.orderId,
                 datetime: Date.parse(order.events[0].eventDate),
                 type: order.side,
-                fiat: order.price,
+                fiat: fiat,
                 xbt: order.quantity,
                 fee: 0,
                 order_id: order.orderId
