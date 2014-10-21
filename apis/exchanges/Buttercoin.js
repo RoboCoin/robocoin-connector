@@ -22,17 +22,34 @@ Buttercoin.prototype.getDepositAddress = function (callback) {
     });
 };
 
+var _commafyErrors = function (errors) {
+
+    var output = [];
+    for (var i = 0; i < errors.length; i++) {
+        output.push(errors[i].message);
+    }
+
+    return output.join(', ');
+};
+
 Buttercoin.prototype._order = function(type, amount, price, callback) {
+
     var self = this;
+    amount = amount.toString();
+    if (amount.indexOf('.') == 0) {
+        amount = '0' + amount;
+    }
+
     var details = {
         instrument: 'BTC_USD',
         side: type,
         orderType: "limit",
-        quantity: amount.toString(),
+        quantity: amount,
         price: price.toString()
     };
     this._client.createOrder(details, function (err, response) {
-        if (err) return callback('Buttercoin ' + type + ' err: ' + err);
+        if (err) return callback('Buttercoin ' + type + ' err: status ' + err.status + ' '
+            + _commafyErrors(err.errors));
         self._client.getOrderByUrl(response.url, function (err, order) {
             if (err) return callback('Buttercoin ' + type + ' get order err: ' + err);
             // loop through events to get order created datetime
@@ -83,23 +100,30 @@ Buttercoin.prototype.sell = function (amount, price, callback) {
  * @param callback callbac(err, res) res contains id
  */
 Buttercoin.prototype.withdraw = function (amount, address, callback) {
+
+    amount = amount.toString();
+    if (amount.indexOf('.') == 0) {
+        amount = '0' + amount;
+    }
+
     var txn = {
         currency: 'BTC',
-        amount: amount.toString(),
+        amount: amount,
         destination: address
     };
-    this._client.sendBitcoin(txn, function (err, msg) {
-        return callback(err);
+    this._client.sendBitcoin(txn, function (err) {
+
+        if (err) return callback('Withdraw error: status ' + err.status + ' ' + _commafyErrors(err.errors));
+
+        return callback();
     });
 };
 
 Buttercoin.prototype.userTransactions = function (callback) {
     this._client.getOrders(query, function (err, orders) {
-        console.log("err", err);
         if (err) return callback('Buttercoin get transactions err: ' + err);
         var transactions = [];
         var order;
-        console.log("orders.length", orders.length);
         for (var i=0; i < orders.length; i++) {
             order = orders[i];
             transactions.push({

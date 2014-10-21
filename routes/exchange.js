@@ -75,7 +75,7 @@ exports.sell = function (req, res) {
         }
     }, function (err, asyncResponse) {
 
-        if (err) return res.send(err, 400);
+        if (err) return res.status(400).send(err);
 
         return res.send('Sold ' + Math.abs(asyncResponse.sell.xbt) + ' for $' + Math.abs(asyncResponse.sell.fiat) +
             ' with a fee of $' + asyncResponse.sell.fee);

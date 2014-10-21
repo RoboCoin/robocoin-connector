@@ -26,7 +26,7 @@ MockRobocoin.prototype._getTimestamp = function () {
 MockRobocoin.prototype.getAccountInfo = function (callback) {
 
     callback(null, {
-        depositAddress: '15ukt9EAsbR1LsmUGNyLT1uAokckKXCi1k'
+        depositAddress: 'msj42CCGruhRsFrGATiUuh25dtxYtnpbTx'
     });
 };
 
