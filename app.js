@@ -202,6 +202,8 @@ var server = http.createServer(app).listen(app.get('port'), function() {
             jobs.startInterval();
         }
     });
+
+    require('./archiveLogs');
 });
 
 process.on('SIGINT', function () {

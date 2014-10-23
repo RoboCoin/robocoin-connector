@@ -1,4 +1,4 @@
-LATEST_VERSION=$(psql robocoin_connector -c "SELECT MAX(version) FROM db_versions;" | sed -n 3P | tr -d ' ')
+LATEST_VERSION=$(node scripts/lastMigrationVersion.js)
 for file in `ls scripts/db_updates | sort -V`
 do
  FILE_NAME=$(basename $file)
@@ -6,8 +6,7 @@ do
  if [ "$WITHOUT_EXTENSION" -gt "$LATEST_VERSION" ]
   then
    echo "Running " $file
-   psql robocoin_connector < scripts/db_updates/$file
-   psql robocoin_connector -c "INSERT INTO db_versions VALUES ($WITHOUT_EXTENSION)"
+   node scripts/runMigration.js $WITHOUT_EXTENSION
  fi
 done
 echo "Done"

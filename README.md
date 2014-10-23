@@ -59,7 +59,7 @@ In production, set the NODE_ENV environment variable to "production".
 
 Set the ENCRYPTION_KEY environment variable to a secret, preferably created with "openssl rand -hex 8"
 
-Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost/robocoin_connector
+Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost:5432/robocoin_connector
 
 In the directory containing package.json, run:
 
