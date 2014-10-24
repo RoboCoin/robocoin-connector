@@ -109,6 +109,8 @@ block footerJs
                     .append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
                     .append(text);
                 $element.after($alert);
+
+                return $alert;
             };
 
             var $loginModal = $('#loginModal');
@@ -156,8 +158,18 @@ block footerJs
 
                 event.preventDefault();
                 var $button = $(this);
-                $loginModal.modal('show');
                 var $reauthButton = $('#reauthButton');
+                var key = $('#robocoinApiKey').val();
+                var secret = $('#robocoinApiSecret').val();
+
+                if (!key || !secret) {
+                    var $alert = appendAlert('You must provide both a key and a secret', $button, 'danger');
+                    // scroll to it, since it's on the bottom of the page
+                    $('html, body').animate({ scrollTop: $alert.offset().top }, 1000);
+                    return;
+                }
+
+                $loginModal.modal('show');
 
                 $reauthButton.off('click').on('click', function () {
 
@@ -165,8 +177,8 @@ block footerJs
                         url: '/configuration/save-robocoin',
                         type: 'POST',
                         data: {
-                            apiKey: $('#robocoinApiKey').val(),
-                            apiSecret: $('#robocoinApiSecret').val(),
+                            apiKey: key,
+                            apiSecret: secret,
                             _csrf: $('#_csrf').val(),
                             username: $('#username').val(),
                             password: $('#password').val()
