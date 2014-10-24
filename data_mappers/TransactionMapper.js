@@ -142,7 +142,9 @@ TransactionMapper.prototype.findProcessed = function (callback) {
 TransactionMapper.prototype.findProcessedForKiosk = function (kioskId, callback) {
 
     Connection.getConnection().query(
-        'SELECT * ' +
+        'SELECT robocoin_tx_id, exchange_tx_id, robocoin_tx_type, robocoin_fiat, ' +
+            'COALESCE(converted_exchange_fiat, exchange_fiat) AS exchange_fiat, robocoin_xbt, exchange_xbt, ' +
+            'robocoin_tx_fee, exchange_tx_fee, exchange_miners_fee, robocoin_tx_time, exchange_tx_time ' +
         'FROM transactions ' +
         'WHERE kiosk_id = $1 ' +
             'AND exchange_tx_time IS NOT NULL ' +
