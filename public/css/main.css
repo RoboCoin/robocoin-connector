@@ -29,3 +29,6 @@ tr.forward {
 .navbar-inverse .navbar-toggle:hover {
     background-color: #284d61;
 }
+fieldset + fieldset {
+    margin: 5em auto auto auto;
+}
