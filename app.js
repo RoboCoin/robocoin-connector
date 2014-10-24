@@ -28,6 +28,8 @@ app.enable('trust proxy');
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(require('express-domain-middleware'));
+app.use(errorHandler());
 
 var cookie = {
     httpOnly: true
@@ -35,12 +37,12 @@ var cookie = {
 // development only
 if ('development' == app.get('env')) {
     console.log('not forcing SSL');
-    app.use(errorHandler());
     app.locals.pretty = true;
     app.use(morgan('dev'));
     cookie.secure = false;
 } else {
     console.log('forcing SSL');
+    app.use(morgan('combined'));
     cookie.secure = true;
     app.use(expressEnforcesSsl());
 }
@@ -180,6 +182,10 @@ app.use(function (err, req, res, next) {
         case 'EBADCSRFTOKEN':
             res.status(403);
             return res.send('Session expired or form tampered with');
+            break;
+
+        case 'EXCHANGE_NOT_CONFIGURED':
+            return res.status(500).send(err.message);
             break;
 
         default:

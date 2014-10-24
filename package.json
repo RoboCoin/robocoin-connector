@@ -17,6 +17,7 @@
     "csurf": "^1.4.0",
     "errorhandler": "^1.1.1",
     "express": "4.9.6",
+    "express-domain-middleware": "^0.1.0",
     "express-enforces-ssl": "^1.1.0",
     "express-session": "^1.7.5",
     "helmet": "^0.3.1",
