@@ -53,7 +53,7 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
         if (kioskCurrency !== null && exchangeCurrency != kioskCurrency) {
 
             convertedExchangeFiat = exchangeFiat
-                .divide(exchangeToKioskConversionRate, bigdecimal.MathContext.DECIMAL128())
+                .multiply(exchangeToKioskConversionRate, bigdecimal.MathContext.DECIMAL128())
                 .setScale(8, bigdecimal.RoundingMode.DOWN())
                 .toPlainString();
 
