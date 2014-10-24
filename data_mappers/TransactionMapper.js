@@ -47,7 +47,7 @@ TransactionMapper.prototype.saveExchangeTransaction = function (exchangeTx, call
         var kioskCurrency = config.get(exchangeTx.kiosk_id, 'kioskCurrency');
         var exchangeToKioskConversionRate =
             new bigdecimal.BigDecimal(config.get(exchangeTx.kiosk_id, 'exchangeToKioskConversionRate') || 1);
-        var exchangeFiat = new bigdecimal.BigDecimal(exchangeTx.exchange_fiat);
+        var exchangeFiat = new bigdecimal.BigDecimal(Math.abs(exchangeTx.exchange_fiat));
 
         var convertedExchangeFiat;
         if (kioskCurrency !== null && exchangeCurrency != kioskCurrency) {
