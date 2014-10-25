@@ -201,6 +201,10 @@ Bitstamp.prototype.getPrices = function (callback) {
 
             if (err) return callback('Get last prices error: ' + err);
 
+            if (!body.asks[0] || !body.asks[0][0] || !body.bids[0] || !body.bids[0][0]) {
+                return callback('Malformed response getting last prices');
+            }
+
             this._nextBuyPrice = body.asks[0][0];
             this._nextSellPrice = body.bids[0][0];
             this._timeGotLastPrices = new Date();
