@@ -36,8 +36,10 @@ exports.startInterval = function () {
 
         // most of the time, run the autoconnector
         if (randomNumber > 2) {
+            console.log('running autoconnector...');
             exports.runAutoconnector();
         } else if (randomNumber == 2) {
+            console.log('running batch process...');
             // but sometimes, do the batch rollup
             exports.batchProcess();
         } else {
