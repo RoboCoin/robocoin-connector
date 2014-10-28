@@ -1,0 +1,59 @@
+extends layout
+include includes/mixins
+
+block content
+    +kioskSelector(kiosks)
+    h1 Exchange Transactions
+    table.table.table-striped.table-condensed.table-bordered#exchangeTransactions
+        tr
+            th ID
+            th Time
+            th Type
+            th Fiat
+            th XBT
+            th Order Fee
+            th Order ID
+
+block footerJs
+    script.
+        $(document).ready(function () {
+            $('#kioskSelector').on('change', function () {
+
+                var $kioskSelector = $(this);
+
+                $.ajax({
+                    url: '/exchange/latest-transactions',
+                    type: 'GET',
+                    data: {
+                        kioskId: $kioskSelector.val()
+                    },
+                    success: function (data) {
+
+                        var rows = [];
+                        var transaction;
+                        var $row;
+                        for (var i = 0; i < data.length; i++) {
+
+                            $row = $('<tr class="transactionRow"></tr>');
+                            transaction = data[i];
+                            $row.append('<td>' + transaction.id + '</td>');
+                            $row.append('<td>' + transaction.datetime + '</td>');
+                            $row.append('<td>' + transaction.type + '</td>');
+                            $row.append('<td>' + transaction.fiat + '</td>');
+                            $row.append('<td>' + transaction.xbt + '</td>');
+                            $row.append('<td>' + transaction.fee + '</td>');
+                            $row.append('<td>' + transaction.order_id + '</td>');
+                            rows.push($row);
+                        }
+
+                        var $exchangeTransactions = $('#exchangeTransactions');
+                        $exchangeTransactions.find('.transactionRow').remove();
+                        $exchangeTransactions.append(rows);
+                    },
+                    error: function (data) {
+                        $('.alert').remove();
+                        $kioskSelector.after('<div class="alert alert-danger">' + (data.err || 'Error!') + '</div>');
+                    }
+                });
+            });
+        });

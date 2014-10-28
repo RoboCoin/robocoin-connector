@@ -151,6 +151,7 @@ app.post('/exchange/buy', ensureAuthenticated, exchange.buy);
 app.post('/exchange/sell', ensureAuthenticated, exchange.sell);
 app.get('/exchange/latest-transactions', ensureAuthenticated, exchange.latestTransactions);
 app.get('/exchange/account-info', ensureAuthenticated, exchange.accountInfo);
+app.get('/exchange/user-transactions', ensureAuthenticated, exchange.userTransactions);
 
 var robocoin = require('./routes/robocoin');
 app.post('/robocoin/transactions', ensureAuthenticated, robocoin.getTransactions);

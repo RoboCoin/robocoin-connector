@@ -9,6 +9,8 @@ var userMapper = new UserMapper();
 var winston = require('winston');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
+var KioskMapper = require('../data_mappers/KioskMapper');
+var kioskMapper = new KioskMapper();
 
 exports.lastPrices = function (req, res) {
 
@@ -117,6 +119,19 @@ exports.accountInfo = function (req, res) {
                     exchangeClass: params.exchangeClass
                 });
             });
+        });
+    });
+};
+
+exports.userTransactions = function (req, res) {
+
+    kioskMapper.findAll(function (err, kiosks) {
+
+        if (err) winston.error(err);
+
+        return res.render('exchangeTransactions', {
+            csrfToken: req.csrfToken(),
+            kiosks: kiosks
         });
     });
 };
