@@ -61,6 +61,8 @@ Set the ENCRYPTION_KEY environment variable to a secret, preferably created with
 
 Set the DATABASE_URL environment variable to something like postgres://yourusername:somepassword@localhost:5432/robocoin_connector
 
+Set the PING_URL environment variable to the public http(s) address of your connector.
+
 In the directory containing package.json, run:
 
         npm install

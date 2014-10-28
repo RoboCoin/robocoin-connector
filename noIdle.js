@@ -13,4 +13,4 @@ var _ping = function () {
     });
 };
 
-setInterval(function () { _ping(); }, 3600000);
+setInterval(function () { _ping(); }, 2700000); // 45 minutes
