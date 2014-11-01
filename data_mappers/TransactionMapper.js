@@ -162,7 +162,7 @@ TransactionMapper.prototype.findProcessedForKiosk = function (kioskId, callback)
 TransactionMapper.prototype.findPartialFilled = function (callback) {
 
     Connection.getConnection().query(
-        'SELECT * FROM transactions WHERE robocoin_xbt > exchange_xbt AND exchange_xbt IS NOT NULL',
+        'SELECT * FROM transactions WHERE ((robocoin_xbt - exchange_xbt) > 0.001) AND exchange_xbt IS NOT NULL',
         function (err, res) {
 
             if (err) return callback('Error finding partials: ' + err);
