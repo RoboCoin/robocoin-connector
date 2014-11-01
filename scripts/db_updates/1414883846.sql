@@ -1,0 +1,1 @@
+update transactions set exchange_xbt = abs(exchange_xbt);
