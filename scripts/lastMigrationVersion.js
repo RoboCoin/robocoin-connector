@@ -5,7 +5,7 @@ var Connection = require('../data_mappers/PgConnection');
 Connection.getConnection().query('SELECT MAX(version) FROM db_versions', function (err, result) {
 
     if (err) {
-        console.err('Error getting latest DB version: ' + err);
+        console.error('Error getting latest DB version: ' + err);
         return process.exit(1);
     }
 
