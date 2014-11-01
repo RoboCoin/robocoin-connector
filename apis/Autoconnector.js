@@ -214,6 +214,8 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
             transaction.exchangeClass = kioskConfig.exchangeClass;
             exchange = Exchange.get(kioskConfig);
 
+            console.log('processing a ' + transaction.robocoin_tx_type);
+
             exchange.getMinimumOrders(function (err, minimums) {
 
                 if (err) {
@@ -221,10 +223,13 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
                 }
 
                 // in case there are partially filled orders
+                console.log('robocoin xbt: ' + transaction.robocoin_xbt);
                 var robocoinXbtAsBigDecimal = new bigdecimal.BigDecimal(transaction.robocoin_xbt);
+                console.log('exchange xbt: ' + transaction.exchange_xbt);
                 var exchangeXbtAsBigDecimal = new bigdecimal.BigDecimal(transaction.exchange_xbt || 0);
+                console.log('calculating amount to process...');
                 var xbtAmountToProcess = robocoinXbtAsBigDecimal.subtract(exchangeXbtAsBigDecimal);
-                // TODO handle the case when it's a partial, but the remainder is below minimum tx
+                console.log('processing: ' + xbtAmountToProcess.toPlainString());
 
                 switch (transaction.robocoin_tx_type) {
                     case RobocoinTxTypes.SEND:
