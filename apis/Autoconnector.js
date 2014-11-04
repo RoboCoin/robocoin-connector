@@ -75,9 +75,9 @@ Autoconnector.prototype._replenishAccountBtc = function (unprocessedTx, robocoin
         function (accountInfo, asyncCallback) {
 
             // do the withdrawal
-            winston.info('withdrawing ' + amountToBuy + ' XBT to ' + accountInfo.depositAddress);
+            winston.info('withdrawing ' + buyOrder.xbt + ' XBT to ' + accountInfo.depositAddress);
             exchange.withdraw(
-                amountToBuy,
+                buyOrder.xbt,
                 accountInfo.depositAddress,
                 asyncCallback
             );
