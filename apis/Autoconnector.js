@@ -510,16 +510,10 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
         return callback();
     }
 
-    if (Flag.isSet(Flag.PROCESSING)) {
-        winston.info('Already processing, skipping batch processing...');
-        return callback();
-    }
-
     var self = this;
 
     async.waterfall([
         function (waterfallCallback) {
-            Flag.set(Flag.PROCESSING).on();
             return waterfallCallback();
         },
         function (waterfallCallback) {
@@ -609,7 +603,6 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
         }
     ], function (err, processedTransactions) {
 
-        Flag.set(Flag.PROCESSING).off();
         return callback(err, processedTransactions);
     });
 };
