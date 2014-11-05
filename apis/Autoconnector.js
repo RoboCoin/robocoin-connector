@@ -10,6 +10,7 @@ var winston = require('winston');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var Blockchain = require('./Blockchain');
 var RobocoinTxTypes = require('../lib/RobocoinTxTypes');
+var Flag = require('../lib/Flag');
 
 var MARKET_PAD = 0.1;
 
@@ -273,8 +274,6 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
     });
 };
 
-Autoconnector.prototype._isProcessing = false;
-
 /**
  *
  * @param callback callback(err)
@@ -283,14 +282,14 @@ Autoconnector.prototype.run = function (callback) {
 
     var self = this;
 
-    if (this._isProcessing) {
+    if (Flag.isSet(Flag.PROCESSING)) {
         winston.info('Already processing, skipping this round...');
         return callback();
     }
 
     async.waterfall([
         function (waterfallCallback) {
-            self._isProcessing = true;
+            Flag.set(Flag.PROCESSING).on();
             return waterfallCallback();
         },
         function (waterfallCallback) {
@@ -335,7 +334,7 @@ Autoconnector.prototype.run = function (callback) {
         }
     ], function (err) {
 
-        self._isProcessing = false;
+        Flag.set(Flag.PROCESSING).off();
         return callback(err);
     });
 };
@@ -511,7 +510,7 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
         return callback();
     }
 
-    if (this._isProcessing) {
+    if (Flag.isSet(Flag.PROCESSING)) {
         winston.info('Already processing, skipping batch processing...');
         return callback();
     }
@@ -520,7 +519,7 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
 
     async.waterfall([
         function (waterfallCallback) {
-            self._isProcessing = true;
+            Flag.set(Flag.PROCESSING).on();
             return waterfallCallback();
         },
         function (waterfallCallback) {
@@ -610,7 +609,7 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
         }
     ], function (err, processedTransactions) {
 
-        self._isProcessing = false;
+        Flag.set(Flag.PROCESSING).off();
         return callback(err, processedTransactions);
     });
 };

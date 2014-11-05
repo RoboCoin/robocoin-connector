@@ -9,12 +9,21 @@ var Robocoin = require('./Robocoin');
 var Exchange = require('./Exchange');
 var Autoconnector = require('./Autoconnector');
 var autoconnector = new Autoconnector();
+var Flag = require('../lib/Flag');
+var winston = require('winston');
 
 var BatchProcessor = function () {
 
 };
 
 BatchProcessor.prototype.run = function (callback) {
+
+    if (Flag.isSet(Flag.PROCESSING)) {
+        winston.info('Already processing, skipping...');
+        return callback();
+    }
+
+    Flag.set(Flag.PROCESSING).on();
 
     async.waterfall([
         function (waterfallCallback) {
@@ -40,6 +49,8 @@ BatchProcessor.prototype.run = function (callback) {
             autoconnector.batchProcess(unprocessedTransactions, depositAddress, waterfallCallback);
         }
     ], function (err) {
+
+        Flag.set(Flag.PROCESSING).off();
 
         if (err) return console.log('Error in batch processing: ' + err);
 

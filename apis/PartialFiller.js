@@ -5,13 +5,13 @@ var Autoconnector = require('./Autoconnector');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
 var Robocoin = require('./Robocoin');
 var winston = require('winston');
+var Flag = require('../lib/Flag');
 
 var PartialFiller = function () {
 
     this._transactionMapper = null;
     this._autoconnector = null;
     this._configMapper = null;
-    this._isProcessing = false;
 };
 
 PartialFiller.prototype._getTransactionMapper = function () {
@@ -43,25 +43,25 @@ PartialFiller.prototype._getConfigMapper = function () {
 
 PartialFiller.prototype.run = function (callback) {
 
-    if (this._isProcessing) {
-        winston.info('Already partial filling, skipping...');
+    if (Flag.isSet(Flag.PROCESSING)) {
+        winston.info('Already processing, skipping...');
         return callback();
     }
 
     var self = this;
-    this._isProcessing = true;
+    Flag.set(Flag.PROCESSING).on();
 
     this._getTransactionMapper().findPartialFilled(function (err, partials) {
 
         if (err) {
-            this._isProcessing = false;
+            Flag.set(Flag.PROCESSING).off();
             return callback('Error finding partials: ' + err);
         }
 
         self._getConfigMapper().findAll(function (configErr, config) {
 
             if (configErr) {
-                this._isProcessing = false;
+                Flag.set(Flag.PROCESSING).off();
                 return callback('Error getting config: ' + configErr);
             }
 
@@ -73,7 +73,7 @@ PartialFiller.prototype.run = function (callback) {
                     winston.error('Error processing partials: ' + err);
                 }
 
-                self._isProcessing = false;
+                Flag.set(Flag.PROCESSING).off();
                 return callback(err);
             });
         });
