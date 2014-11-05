@@ -20,7 +20,6 @@ Buttercoin.prototype.getBalance = function (callback) {
 
 Buttercoin.prototype.getDepositAddress = function (callback) {
     this._client.getDepositAddress(function (err, address) {
-        console.log(err);
         if (err) return callback('Buttercoin get address err: ' + err);
         return callback(null, { address: address });
     });
