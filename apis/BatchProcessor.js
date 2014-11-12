@@ -20,7 +20,10 @@ BatchProcessor.prototype.run = function (callback) {
 
     if (Flag.isSet(Flag.PROCESSING)) {
         winston.info('Already processing, skipping...');
-        return callback();
+        if (typeof callback != 'undefined') {
+            callback();
+        }
+        return;
     }
 
     Flag.set(Flag.PROCESSING).on();
