@@ -71,10 +71,12 @@ block content
 
     fieldset
         legend Autoconnector
+        p
+            i Note: Enabling the Autoconnector will query the Robocoin API for all of your transactions since the time of the latest transaction shown on the Transactions page, and then process them on the exchange. If there are no transactions on the Transactions page, it will query for and process all transactions associated with your account.
         if autoconnectorEnabled == 1
-            span.label.label-success Autoconnector is enabled
+            .label.label-success Autoconnector is enabled
         else
-            span.label.label-warning Autoconnector is disabled
+            .label.label-warning Autoconnector is disabled
         form(role="form")
             - buttonText = autoconnectorEnabled == 1 ? 'Disable' : 'Enable'
             - nextState = autoconnectorEnabled == 1 ? 0 : 1
