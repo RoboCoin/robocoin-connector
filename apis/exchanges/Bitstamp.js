@@ -113,11 +113,11 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
                                 if (res[i].order_id == order.id) {
                                     tradeOrder = res[i];
                                     console.log('adding xbt: ', res[i].xbt);
-                                    orderXbt.add(new bigdecimal.BigDecimal(res[i].xbt).abs());
+                                    orderXbt = orderXbt.add(new bigdecimal.BigDecimal(res[i].xbt).abs());
                                     console.log('adding fee: ', res[i].fee);
-                                    orderFee.add(new bigdecimal.BigDecimal(res[i].fee).abs());
+                                    orderFee = orderFee.add(new bigdecimal.BigDecimal(res[i].fee).abs());
                                     console.log('adding fiat: ', res[i].fiat);
-                                    orderFiat.add(new bigdecimal.BigDecimal(res[i].fiat).abs());
+                                    orderFiat = orderFiat.add(new bigdecimal.BigDecimal(res[i].fiat).abs());
                                 }
                             }
 
