@@ -17,10 +17,10 @@ block content
 block footerJs
     script.
         $(document).ready(function () {
-            $('#kioskSelector').on('change', function () {
 
-                var $kioskSelector = $(this);
+            var $kioskSelector = $('#kioskSelector');
 
+            var _getTransactionsForKiosk = function () {
                 $.ajax({
                     url: '/exchange/latest-transactions',
                     type: 'GET',
@@ -55,5 +55,8 @@ block footerJs
                         $kioskSelector.after('<div class="alert alert-danger">' + (data.err || 'Error!') + '</div>');
                     }
                 });
-            });
+            };
+
+            $kioskSelector.on('change', _getTransactionsForKiosk);
+            _getTransactionsForKiosk();
         });
