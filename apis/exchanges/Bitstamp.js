@@ -104,13 +104,23 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
                             if (err) return doWhileCallback(err);
 
+                            var orderXbt = new bigdecimal.BigDecimal.ZERO();
+                            var orderFee = new bigdecimal.BigDecimal.ZERO();
+                            var orderFiat = new bigdecimal.BigDecimal.ZERO();
+
                             for (var i = 0; i < res.length; i++) {
 
                                 if (res[i].order_id == order.id) {
                                     tradeOrder = res[i];
-                                    return doWhileCallback(null);
+                                    orderXbt.add(new bigdecimal.BigDecimal(res[i].xbt).abs());
+                                    orderFee.add(new bigdecimal.BigDecimal(res[i].fee).abs());
+                                    orderFiat.add(new bigdecimal.BigDecimal(res[i].fiat).abs());
                                 }
                             }
+
+                            tradeOrder.xbt = orderXbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                            tradeOrder.fee = orderFee.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                            tradeOrder.fiat = orderFiat.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
 
                             return doWhileCallback();
                         });
