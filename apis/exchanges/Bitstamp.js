@@ -112,22 +112,16 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
 
                                 if (res[i].order_id == order.id) {
                                     tradeOrder = res[i];
-                                    console.log('adding xbt: ', res[i].xbt);
                                     orderXbt = orderXbt.add(new bigdecimal.BigDecimal(res[i].xbt).abs());
-                                    console.log('adding fee: ', res[i].fee);
                                     orderFee = orderFee.add(new bigdecimal.BigDecimal(res[i].fee).abs());
-                                    console.log('adding fiat: ', res[i].fiat);
                                     orderFiat = orderFiat.add(new bigdecimal.BigDecimal(res[i].fiat).abs());
                                 }
                             }
 
-                            console.log('did we find an order?');
                             if (typeof tradeOrder !== 'undefined') {
-                                console.log('yes, totalling up');
                                 tradeOrder.xbt = orderXbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                                 tradeOrder.fee = orderFee.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
                                 tradeOrder.fiat = orderFiat.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
-                                console.log(tradeOrder);
                             }
 
                             return doWhileCallback();
