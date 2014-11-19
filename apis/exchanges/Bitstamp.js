@@ -127,6 +127,7 @@ Bitstamp.prototype._doTrade = function (action, amount, price, callback) {
                                 tradeOrder.xbt = orderXbt.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
                                 tradeOrder.fee = orderFee.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
                                 tradeOrder.fiat = orderFiat.setScale(5, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                                console.log(tradeOrder);
                             }
 
                             return doWhileCallback();
