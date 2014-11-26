@@ -107,7 +107,7 @@ exports.index = function (req, res) {
 };
 
 exports.saveExchange = function (req, res) {
-
+console.log(req.body);
     var username = req.body.username;
     var password = req.body.password;
     var kioskId = req.body.kioskId;
