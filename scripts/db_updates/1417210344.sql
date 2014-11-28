@@ -1,0 +1,1 @@
+alter table sessions add column last_updated timestamp default current_timestamp;

@@ -90,8 +90,8 @@ SessionMapper.prototype._doSet = function (sid, session, callback) {
             if (res.rowCount == 0) {
 
                 connection.query(
-                    'INSERT INTO sessions (sid, session_data) VALUES ($1, $2)',
-                    [sid, session],
+                    'INSERT INTO sessions (sid, session_data, last_updated) VALUES ($1, $2, $3)',
+                    [sid, session, new Date()],
                     function (err, res) {
 
                         delete self._locks[sid];
@@ -104,8 +104,8 @@ SessionMapper.prototype._doSet = function (sid, session, callback) {
             } else {
 
                 connection.query(
-                    'UPDATE sessions SET session_data = $1 WHERE sid = $2',
-                    [session, sid],
+                    'UPDATE sessions SET session_data = $1, last_updated = $2 WHERE sid = $3',
+                    [session, new Date(), sid],
                     function (err, res) {
 
                         delete self._locks[sid];
@@ -136,6 +136,14 @@ SessionMapper.prototype._doDestroy = function (sid, callback) {
             return callback();
         }
     );
+};
+
+SessionMapper.prototype.deleteAllOlderThan = function (expirationDate, callback) {
+
+    Connection.getConnection().query('DELETE FROM sessions WHERE last_updated < $1', [expirationDate], function (err) {
+        if (err) return callback('Error deleting expired sessions: ' + err);
+        return callback();
+    });
 };
 
 module.exports = SessionMapper;

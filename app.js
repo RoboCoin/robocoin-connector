@@ -212,6 +212,7 @@ var server = http.createServer(app).listen(app.get('port'), function() {
 
     require('./archiveLogs');
     require('./noIdle');
+    require('./deleteOldSessions');
 });
 
 process.on('SIGINT', function () {
