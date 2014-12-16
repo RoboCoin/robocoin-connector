@@ -235,9 +235,11 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
                 switch (transaction.robocoin_tx_type) {
                     case RobocoinTxTypes.SEND:
 
+                        console.log('buying');
                         if (xbtAmountToProcess.compareTo(new bigdecimal.BigDecimal(minimums.minimumBuy)) == 1) {
                             self._replenishAccountBtc(transaction, robocoin, exchange, asyncCallback);
                         } else {
+                            console.log('below minimum');
                             return asyncCallback();
                         }
 
@@ -245,9 +247,11 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
 
                     case RobocoinTxTypes.RECV:
 
+                        console.log('selling');
                         if (xbtAmountToProcess.compareTo(new bigdecimal.BigDecimal(minimums.minimumSell)) == 1) {
                             self._sellBtcForFiat(transaction, exchange, robocoin, asyncCallback);
                         } else {
+                            console.log('below minimum');
                             return asyncCallback();
                         }
 
