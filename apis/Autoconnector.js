@@ -216,6 +216,7 @@ Autoconnector.prototype.processTransactions = function (transactions, robocoin, 
             exchange = Exchange.get(kioskConfig);
 
             console.log('processing a ' + transaction.robocoin_tx_type);
+            console.log('ID: ' + transaction.robocoin_tx_id);
 
             exchange.getMinimumOrders(function (err, minimums) {
 
