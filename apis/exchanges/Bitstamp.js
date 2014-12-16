@@ -43,6 +43,7 @@ Bitstamp.prototype._post = function (url, options, callback) {
     requestOptions.form = options;
     requestOptions.method = 'POST';
     requestOptions.json = true;
+    console.log('POSTing to Bitstamp:', requestOptions);
 
     this._request(requestOptions, function (error, response, body) {
 
