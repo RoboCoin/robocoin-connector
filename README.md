@@ -49,7 +49,9 @@ Requirements:
 
         npm install forever -g
 
-In your development environment, add your username to the postgres group.
+In your development environment, add your username to the postgres group. This might look something like
+
+        sudo usermod -a -G postgres myusername
 
 Run as user postgres scripts/database.sql:
 
