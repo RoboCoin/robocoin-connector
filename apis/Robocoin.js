@@ -45,11 +45,12 @@ Robocoin.prototype._getCanonicalHeaders = function (baseUrl, timestamp) {
     var urlObject = url.parse(baseUrl);
 
     return "host:" + urlObject.host +"\n" +
+        "x-locale:en-US"+ "\n" +
         "x-request-date:" + timestamp + "\n";
 };
 
 Robocoin.prototype._getSignedHeaders = function () {
-    return "host;x-request-date";
+    return "host;x-locale;x-request-date";
 };
 
 Robocoin.prototype._getCanonicalRequest = function (requestMethod, endpoint, querystringObject,
@@ -91,7 +92,8 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
     var headers = {
         'X-API-signature': signature,
         'X-Request-Date': timestamp,
-        'Authorization' : authorization
+        'Authorization' : authorization,
+        'X-Locale': 'en-US'
     };
 
     var requestOptions = {
@@ -113,9 +115,9 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
         if (error) return callback('Error calling Robocoin: ' + error);
 
-        if (response.statusCode != 200) return callback('Bad response status from Robocoin: ' + body);
+        if (!response.success || response.error) return callback('Bad response status from Robocoin: ' + body);
 
-        return callback(error, body);
+        return callback(null, body.response);
     });
 };
 
