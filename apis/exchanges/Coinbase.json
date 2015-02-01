@@ -1,0 +1,13 @@
+{
+    "label": "Coinbase",
+    "nonConfigurables": {
+        "baseUrl": { "label": "Base URL", "value": "https://api.exchange.coinbase.com" }
+    },
+    "configurables": {
+        "publicKey": { "label":"Public Key" },
+        "privateKey": { "label":"Private Key" },
+        "secret": { "label": "Secret (optional)" },
+        "passphrase": { "label":"Passphrase" }
+    },
+    "currencies": ["USD"]
+}
