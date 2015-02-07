@@ -1,13 +1,17 @@
 {
     "label": "Coinbase",
     "nonConfigurables": {
-        "baseUrl": { "label": "Base URL", "value": "https://api.exchange.coinbase.com" }
+        "baseUrl": { "label": "Base URL", "value": "https://api.exchange.coinbase.com" },
+        "coinbaseBaseUrl": { "label": "Base URL", "value": "https://coinbase.com/api/v1" }
     },
     "configurables": {
-        "publicKey": { "label":"Public Key" },
-        "privateKey": { "label":"Private Key" },
+        "exchangePublicKey": { "label":"Coinbase Exchange Public Key" },
+        "exchangePrivateKey": { "label":"Coinbase Exchange Private Key" },
         "secret": { "label": "Secret (optional)" },
-        "passphrase": { "label":"Passphrase" }
+        "passphrase": { "label":"Passphrase" },
+        "coinbaseAPIKey": { "label":"Coinbase API Key" },
+        "coinbaseAPISecret": { "label":"Coinbase Secret" },
+        "coinbaseAccountID": { "label":"Account Id" }
     },
     "currencies": ["USD"]
 }
