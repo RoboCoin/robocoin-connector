@@ -24,8 +24,13 @@ Coinbase.prototype._call = function (reqtype, endpoint, params, callback) {
     
     var timestamp = Date.now();
     var url = this._config['coinbase.coinbaseBaseUrl'] + endpoint;
-    var what = timestamp + url + params;
-    var hmac = crypto.createHmac('sha256', this._config['coinbase.coinbaseAPISecret']);
+    var what;
+    if(Object.keys(params).length === 0) {
+      what = timestamp + url;
+    } else {
+      what = timestamp + url + JSON.stringify(params);
+    }
+    var hmac = crypto.createHmac('sha256', this._config['coinbase.coinbaseAPISecret']).update(what).digest('hex');
 
     var requestOptions = {};
     requestOptions.url = url;
@@ -37,7 +42,7 @@ Coinbase.prototype._call = function (reqtype, endpoint, params, callback) {
     requestOptions.headers = {
         'Accept': 'application/json',
         'ACCESS-KEY': this._config['coinbase.coinbaseApiKey'],
-        'ACCESS-SIGNATURE': hmac.update(what).digest('hex'),
+        'ACCESS-SIGNATURE': hmac,
         'ACCESS-NONCE': timestamp
     };
 
@@ -85,8 +90,10 @@ Coinbase.prototype.getPrices = function (callback) {
 // done
 Coinbase.prototype.getBalance = function (callback) {
 
-    this._call('GET', '/account/balance', function(err, balance) {
+    this._call('GET', '/accounts/' + this._config['coinbase.coinbaseAccountID'] + '/balance', function(err, balance) {
         if(err) callback("Coinbase get balance error: " + err);
+
+        balance = JSON.parse(balance);
 
         var url = this._config['coinbase.coinbaseBaseUrl'] + '/prices/sell';
         this._request(url, function(err, res, body) {
@@ -110,6 +117,23 @@ Coinbase.prototype.getDepositAddress = function (callback) {
         callback(null, {
             'address': addr.address
         });
+    });
+};
+// done
+Coinbase.prototype.withdraw = function (amount, address, callback) {
+    var url = '/transactions/send_money';
+    var txn = {
+        "to": address,
+        "amount": amount,
+        "notes": ""
+    };
+    this._call('POST', url, txn, function(err, res) {
+        if(err) callback(err);
+
+        res = JSON.parse(res);
+        if(res.success == true) {
+            callback(null);
+        }
     });
 };
 
@@ -157,23 +181,6 @@ Coinbase.prototype.userTransactions = function (callback) {
                 return callback(null, userTransactions);
             });
         });
-    });
-};
-// done
-Coinbase.prototype.withdraw = function (amount, address, callback) {
-    var url = '/transactions/send_money';
-    var txn = {
-        "to": address,
-        "amount": amount,
-        "notes": ""
-    };
-    this._call('POST', url, txn, function(err, res) {
-        if(err) callback(err);
-
-        res = JSON.parse(res);
-        if(res.success == true) {
-            callback(null);
-        }
     });
 };
 
