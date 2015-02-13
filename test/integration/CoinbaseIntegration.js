@@ -77,7 +77,7 @@ describe('Coinbase', function () {
             done(err);
         });
     });
-    /*
+    
     it('withdraws BTC', function (done) {
 
         coinbase.withdraw(0.01, '1Q9V8Pz8Ae4MDf957cQuUq9AVLVbJv6JCV', function (err) {
@@ -85,7 +85,7 @@ describe('Coinbase', function () {
             done(err);
         });
     });
-    */
+    
     it('gets user transactions', function (done) {
 
         coinbase.userTransactions(function (err, transactions) {

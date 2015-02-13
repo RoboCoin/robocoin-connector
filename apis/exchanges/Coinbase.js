@@ -60,7 +60,22 @@ Coinbase.prototype.buy = function (amount, price, callback) {
         'size' : amount,
         'product_id' : 'BTC-USD'
     };
-    authedClient.buy(buyParams, callback);
+    authedClient.buy(buyParams, function(err, result) {
+        if(err) return callback('Coinbase buy error: ' + err);
+
+        authedClient.getOrder(result.id, function(err, order) {
+            var fiat = parseFloat(order.size) * parseFloat(order.price);
+            callback(null, {
+                'datetime': order.created_at,
+                'id': order.id,
+                'type': order.side,
+                'fiat': fiat,
+                'xbt': order.size,
+                'fee': order.fill_fees,
+                'order_id': result.id
+            })
+        });
+    });
 };
 // done
 Coinbase.prototype.sell = function (amount, price, callback) {
@@ -69,7 +84,22 @@ Coinbase.prototype.sell = function (amount, price, callback) {
         'size' : amount,
         'product_id' : 'BTC-USD'
     };
-    authedClient.sell(sellParams, callback);
+    authedClient.sell(sellParams, function(err, result) {
+        if(err) return callback('Coinbase sell error: ' + err);
+
+        authedClient.getOrder(result.id, function(err, order) {
+            var fiat = parseFloat(order.size) * parseFloat(order.price);
+            callback(null, {
+                'datetime': order.created_at,
+                'id': order.id,
+                'type': order.side,
+                'fiat': fiat,
+                'xbt': order.size,
+                'fee': order.fill_fees,
+                'order_id': result.id
+            })
+        });
+    });
 };
 // done
 Coinbase.prototype.getPrices = function (callback) {
@@ -78,10 +108,8 @@ Coinbase.prototype.getPrices = function (callback) {
         if(err) return callback('Coinbase get prices err: ' + err);
         
         callback(null, {
-            return {
-                buyPrice : result[0].price,
-                sellPrice : result[1].price
-            };
+            buyPrice : result[0].price,
+            sellPrice : result[1].price
         });
     });
 };
@@ -128,7 +156,7 @@ Coinbase.prototype.withdraw = function (amount, address, callback) {
         "notes": ""
     };
     this._call('POST', url, txn, function(err, res) {
-        if(err) callback(err);
+        if(err) callback('Coinbase withdraw error: ' + err);
 
         res = JSON.parse(res);
         if(res.success == true) {
@@ -144,6 +172,7 @@ Coinbase.prototype.userTransactions = function (callback) {
     var price;
 
     this.getPrices(function(err, prices) {
+        if(err) callback('Coinbase user transactions error: ' + err);
         price = prices.sellPrice;
 
         this._call('GET', url, function(err, txns) {
@@ -170,7 +199,7 @@ Coinbase.prototype.userTransactions = function (callback) {
                 var userTransactions = [];
                 for (var i = 0; i < txnIds.length; i++) {
                     userTransactions.push({
-                        id: txnIds[i],
+                        order_id: txnIds[i],
                         datetime: new Date(txn.transaction.created_at),
                         type: 'withdraw',
                         fiat: txnIds[i].fiat,
