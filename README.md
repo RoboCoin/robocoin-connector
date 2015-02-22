@@ -51,7 +51,18 @@ Requirements:
 
 In your development environment, add your username to the postgres group. This might look something like
 
-        sudo usermod -a -G postgres myusername
+        sudo usermod -a -G postgres yourusername
+
+You'll need to add your user to postgres and allow it to log in:
+
+        sudo su postgres
+        psql
+        CREATE USER yourusername WITH PASSWORD 'somepassword';
+        CREATE DATABASE robocoin_connector;
+        GRANT ALL PRIVILEGES ON DATABASE robocoin_connector to yourusername;
+        \q
+        psql robocoin_connector
+        ALTER ROLE "yourusername" WITH LOGIN;
 
 Run as user postgres scripts/database.sql:
 
