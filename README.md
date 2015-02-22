@@ -55,16 +55,15 @@ In your development environment, add your username to the postgres group. This m
 
 You'll need to add your user to postgres and allow it to log in:
 
-        sudo su postgres
-        psql
-        CREATE USER yourusername WITH PASSWORD 'somepassword';
-        CREATE DATABASE robocoin_connector;
-        GRANT ALL PRIVILEGES ON DATABASE robocoin_connector to yourusername;
-        \q
-        psql robocoin_connector
-        ALTER ROLE "yourusername" WITH LOGIN;
+        createuser -l -P -s youruser (from OS CLI)
+        create database robocoin_connector;
+        grant all on database robocoin_connector to youruser;
 
-Run as user postgres scripts/database.sql:
+Modify the line in pg_hba.conf to be:
+
+        local   all             all                                     password
+
+Run scripts/database.sql:
 
         psql robocoin_connector < database.sql
 
