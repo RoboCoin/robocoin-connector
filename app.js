@@ -8,7 +8,6 @@ var bodyParser = require('body-parser');
 var errorHandler = require('errorhandler');
 require('./logConfig');
 var winston = require('winston');
-var toobusy = require('toobusy');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var SessionMapper = require('./data_mappers/SessionMapper');
@@ -60,16 +59,6 @@ app.use(session({
 
 // csrf protection
 app.use(csrf());
-
-// DoS mitigation
-toobusy.maxLag(500);
-app.use(function (req, res, next) {
-    if (toobusy()) {
-        res.status(503).body('The server is under heavy load and rejecting some requests.');
-    } else {
-        next();
-    }
-});
 
 // HSTS
 app.use(helmet.hsts({
@@ -218,13 +207,11 @@ var server = http.createServer(app).listen(app.get('port'), function() {
 process.on('SIGINT', function () {
     winston.log('Got SIGINT, exiting...');
     server.close();
-    toobusy.shutdown();
     process.exit();
 });
 process.on('SIGTERM', function () {
     winston.log('Got SIGTERM, exiting...');
     server.close();
-    toobusy.shutdown();
     process.exit();
 });
 
