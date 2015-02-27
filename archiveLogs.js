@@ -53,3 +53,5 @@ var archiveLogs = function () {
 };
 
 setInterval(function () { archiveLogs(); }, 86400000); // run once a day
+// call immediately. otherwise, an instance that crashes once a day will never archive
+archiveLogs();
