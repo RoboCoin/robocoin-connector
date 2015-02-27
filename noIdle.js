@@ -14,3 +14,5 @@ var _ping = function () {
 };
 
 setInterval(function () { _ping(); }, 2700000); // 45 minutes
+// ping immediately to prevent sleeping after a crash
+_ping();
