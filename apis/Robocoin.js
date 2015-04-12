@@ -111,8 +111,12 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
         }
     }
 
+    console.log(requestOptions);
     this._request(requestOptions, function (error, response, body) {
 
+        console.log('error ' + error);
+        console.log('response ' + response);
+        console.log('body ' + body);
         if (error) return callback('Error calling Robocoin: ' + error);
 
         return callback(null, body.response);
@@ -140,9 +144,6 @@ Robocoin.prototype.getMachineInfo = function (callback) {
 
     this._get('/machine', {}, function (err, response, body) {
 
-        console.log('err ' + err);
-        console.log('response ' + response);
-        console.log('body ' + body);
         // default to empty array for better error handling
         if (typeof response == 'undefined') {
             winston.error('Get machine info: response undefined');
