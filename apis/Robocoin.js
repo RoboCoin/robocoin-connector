@@ -111,12 +111,8 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
         }
     }
 
-    console.log(requestOptions);
     this._request(requestOptions, function (error, response, body) {
 
-        console.log('error ' + error);
-        console.log('response ' + response);
-        console.log('body ' + JSON.stringify(body));
         if (error) return callback('Error calling Robocoin: ' + error);
 
         return callback(null, body.response);
