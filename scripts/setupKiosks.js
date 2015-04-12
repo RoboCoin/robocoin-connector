@@ -16,6 +16,7 @@ configMapper.findAll(function (err, config) {
 
     Robocoin.getInstance(config).getMachineInfo(function (err, machines) {
 
+        console.log('err ' + err);console.log('machines ' + machines);
         if (err) {
             console.log('Error getting machine info: ' + err);
             process.exit(1);
