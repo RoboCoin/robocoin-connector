@@ -1,9 +1,7 @@
 # robocoin-connector
 
-This connector is an example of the code you'll need to write to connect the Robocoin API to an exchange's API.
-Robocoin will not run this code on its platform. We suggest operators use a platform such as Heroku to run this code.
-As the development of the connector progresses, leading up to release, we'll make owning this code as simple as
-possible for operators.
+This connector is an example of the code you'll need to write to connect the Romit API to a third party exchange's API.
+Romit will not run this code on its platform. We suggest operators use a platform such as Heroku to run this code.
 
 Two common, expected scenarios for running the connector are:
 
@@ -18,7 +16,7 @@ executes a buy on the exchange for the amount sent, then withdraws that amount t
 the sold BTC.
 
 On a sell, the user sends an amount of BTC from their account to the operator's account. The kiosk dispenses fiat.
-Robocoin automatically sends this BTC amount from the operator's account to their exchange. We also monitor how many
+Romit automatically sends this BTC amount from the operator's account to their exchange. We also monitor how many
 confirmations are on that transaction. When the connector sees enough confirmations,
 it executes a sell for that amount on the exchange.
 
@@ -83,11 +81,11 @@ In your developement environment, add a user. Note the automatically-generated p
 
         node scripts/addUser.js yourusername
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Robocoin key.
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.key and the value is your Romit key.
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Robocoin secret.
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.secret and the value is your Romit secret.
 
-Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://api.robocoin.com/v0/connector".
+Run "node scripts/setConfigParam.js". When prompted, leave the Kiosk ID blank, parameter name is robocoin.baseUrl and the value is "https://api.romit.io/v0/connector".
 
 When everything's installed, run "supervisor app.js" in a developement environment, or "forever app.js" in production.
 
