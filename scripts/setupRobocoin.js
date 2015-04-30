@@ -7,7 +7,7 @@ var ConfigMapper = require('../data_mappers/ConfigMapper');
 var configMapper = new ConfigMapper();
 var prompt = require('prompt');
 
-config.set(null, 'robocoin.baseUrl', 'https://api.robocoin.com/v0/connector');
+config.set(null, 'robocoin.baseUrl', 'https://api.romit.io/v0/connector');
 config.set(null, 'robocoin.testMode', 0);
 
 prompt.get({
