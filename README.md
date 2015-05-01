@@ -39,12 +39,13 @@ Deploy for Free. Click it.
 Enter your email address and Romit API keys, click Save and you're ready to go. Note the generated password and URL 
 along with the email address you used. This email and password is how you'll log into this URL.
 7. Click the logo in the header and you'll be prompted to log in. You can now configure your exchange API keys.
-8a. When your exchange account is funded, you can enable the Autoconnect feature. Unless you have existing transactions 
+8. If you have no existing transactions on the Romit platform, skip to step 9. If you have existing transactions on the 
+Romit platform that you don't want the connector to process, you must select a date from which to start processing 
+transactions. Navigate to the Transactions page and, under Import Romit Transactions, select a date in UTC to begin 
+processing transactions through the connector and click Import. If the list of Unprocessed Transactions looks correct, 
+you can navigate to the Configuration tab to Enable the Autoconnector.
+9. When your exchange account is funded, you can enable the Autoconnect feature. Unless you have existing transactions 
 on the Romit platform that you don't want your connector to process. In which case, see 8b.
-8b. If you have existing transactions on the Romit platform that you don't want the connector to process, you must 
-select a date from which to start processing transactions. Navigate to the Transactions page and, under Import Romit 
-Transactions, select a date in UTC to begin processing transactions through the connector and click Import. If the list 
-of Unprocessed Transactions looks correct, you can navigate to the Configuration tab to Enable the Autoconnector.
 
 ## Test mode
 
