@@ -123,10 +123,9 @@ app.use(function (req, res, next) {
 
 // send to setup page if not already set up
 app.use(function (req, res, next) {
-    console.log(req.method + ' ' + req.path);
-    if (req.config.get(null, 'PING_URL') !== '' ||
-        (req.method == 'GET' && req.path == '/setup') ||
-        (req.method == 'POST' && req.path == '/setup')) {
+    var pingUrl = req.config.get(null, 'PING_URL');
+    var path = req.path;
+    if ((!pingUrl && path == '/setup') || (pingUrl && path != '/setup')) {
 
         return next();
 
