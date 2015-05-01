@@ -34,7 +34,7 @@ address a label and click Add Address.
 4. Since your operator wallet will be sending funds to your exchange account, navigate to your kiosk. Under the 
 Connector tab, set your exchange account's deposit address as the Forwarding Address and Save it. 
 5. Click this button to deploy this code to Heroku. At the bottom of the resulting page is a button that allows you to 
-Deploy for Free. Click it. 
+Deploy for Free. Click it. [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 6. Within minutes, your app will be successfully deployed and clicking the View button will bring up the setup page. 
 Enter your email address and Romit API keys, click Save and you're ready to go. Note the generated password and URL 
 along with the email address you used. This email and password is how you'll log into this URL.
@@ -173,4 +173,4 @@ There's also a watcher task that runs the tests and JsHint whenever a file chang
 There's a running demo at <https://still-sierra-5744.herokuapp.com>. The username is "bobo" and the password is
 "hu3SGRxU3UnWAMtXTFw".
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
