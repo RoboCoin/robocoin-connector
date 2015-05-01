@@ -9,6 +9,6 @@
         },
         "NODE_ENV": "production"
     },
-    "addons": ["postgresql"],
+    "addons": ["heroku-postgresql:hobby-dev"],
     "success_url": "/setup"
 }
