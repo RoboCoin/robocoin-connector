@@ -10,5 +10,8 @@
         "NODE_ENV": "production"
     },
     "addons": ["heroku-postgresql:hobby-dev"],
-    "success_url": "/setup"
+    "success_url": "/setup",
+    "logo": "https://daks2k3a4ib2z.cloudfront.net/5525d4844c351eaa4028804d/552f27630f9117dc20819080_r_romit.png",
+    "name": "Romit Connector",
+    "description": "The connector connects your Romit Operator Wallet to your exchange. So outgoing BTC gets replenished and incoming  BTC gets sold quickly."
 }
