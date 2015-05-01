@@ -1,0 +1,15 @@
+extends layout
+
+block content
+    form(method="POST" action="/setup")
+        .form-group
+            label(for="romitEmailAddress") Romit Email Address:
+            input(type="email" name="romitEmailAddress").form-control#romitEmailAddress
+        .form-group
+            label(for="romitApiKey") Romit API Key:
+            input(type="text" name="romitApiKey").form-control#romitApiKey
+        .form-group
+            label(for="romitApiSecret") Romit API Secret:
+            input(type="text" name="romitApiSecret").form-control#romitApiSecret
+        input(type="hidden" value="#{ csrfToken }" name="_csrf")
+        button(type="submit").btn.btn-default Save

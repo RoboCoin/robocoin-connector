@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "postdeploy": ""
+        "postdeploy": "node scripts/dbInitialize.js && ./scripts/db_update.sh"
     },
     "env": {
         "ENCRYPTION_KEY": {
@@ -9,5 +9,6 @@
         },
         "NODE_ENV": "production"
     },
-    "addons": ["postgresql"]
+    "addons": ["postgresql"],
+    "success_url": "/setup"
 }

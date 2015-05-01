@@ -145,3 +145,5 @@ There's also a watcher task that runs the tests and JsHint whenever a file chang
 
 There's a running demo at <https://still-sierra-5744.herokuapp.com>. The username is "bobo" and the password is
 "hu3SGRxU3UnWAMtXTFw".
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)

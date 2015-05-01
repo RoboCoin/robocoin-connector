@@ -121,6 +121,25 @@ app.use(function (req, res, next) {
     }
 });
 
+// send to setup page if not already set up
+app.use(function (req, res, next) {
+    console.log(req.method + ' ' + req.path);
+    if (req.config.get(null, 'PING_URL') !== '' ||
+        (req.method == 'GET' && req.path == '/setup') ||
+        (req.method == 'POST' && req.path == '/setup')) {
+
+        return next();
+
+    } else {
+
+        return res.send('Invalid URL');
+    }
+});
+
+var setup = require('./routes/setup');
+app.get('/setup', setup.get);
+app.post('/setup', setup.set);
+
 var auth = require('./routes/auth');
 app.get('/login', auth.loginIndex);
 app.post('/login',
@@ -200,7 +219,7 @@ var server = http.createServer(app).listen(app.get('port'), function() {
     });
 
     require('./archiveLogs');
-    require('./noIdle');
+    //require('./noIdle');
     require('./deleteOldSessions');
 });
 
