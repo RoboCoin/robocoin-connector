@@ -5,6 +5,7 @@ var ConfigMapper = require('../data_mappers/ConfigMapper');
 var Config = require('../lib/Config');
 var setupRobocoin = require('../services/setupRobocoin');
 var async = require('async');
+var setupKiosks = require('../services/setupKiosks');
 
 var configMapper = new ConfigMapper();
 var config = Config.getInstance();
@@ -32,6 +33,11 @@ exports.set = function (req, res) {
         },
         function (asyncCallback) {
             setupRobocoin.initialize(req.body.romitApiKey, req.body.romitApiSecret, function (err) {
+                return asyncCallback(err);
+            });
+        },
+        function (asyncCallback) {
+            setupKiosks.initialize(function (err) {
                 return asyncCallback(err);
             });
         }
