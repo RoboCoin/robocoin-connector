@@ -72,7 +72,7 @@ block content
     fieldset
         legend Autoconnector
         p
-            i Note: Enabling the Autoconnector will query the Robocoin API for all of your transactions since the time of the latest transaction shown on the Transactions page, and then process them on the exchange. If there are no transactions on the Transactions page, it will query for and process all transactions associated with your account.
+            i Note: Enabling the Autoconnector will query the Romit API for all of your transactions since the time of the latest transaction shown on the Transactions page, and then process them on the exchange. If there are no transactions on the Transactions page, it will query for and process all transactions associated with your account.
         if autoconnectorEnabled == 1
             .label.label-success Autoconnector is enabled
         else
@@ -83,11 +83,11 @@ block content
             button(data-next-state="#{ nextState }").btn.btn-default#autoconnectorEnable #{ buttonText }
 
     fieldset
-        legend Robocoin
+        legend Romit
         if robocoinConfigured
-            span.label.label-success Robocoin is configured
+            span.label.label-success Romit is configured
         else
-            span.label.label-warning Robocoin is not configured
+            span.label.label-warning Romit is not configured
         form(role="form")
             .form-group
                 label(for="robocoinApiKey") API Key
