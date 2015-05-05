@@ -3,12 +3,10 @@
 This connector is an example of the code you'll need to write to connect the Romit API to a third party exchange's API.
 Romit will not run this code on its platform. We suggest operators use a platform such as Heroku to run this code.
 
-Two common, expected scenarios for running the connector are:
-
-1. Operators fork the code and host it on their own servers. Then they can modify it freely.
-2. We spin up a Heroku instance and hand ownership to the operator. In this case, we base it on the mainline code.
-
 ## How it works
+
+From the perspective of the connector, sending money is similar to buying Bitcoin and receiving money is similar to 
+selling Bitcoin. 
 
 On a buy, the user puts fiat into the kiosk. Then the bank transfers BTC from the operator's account to the user's
 account. We publish this transaction in an API endpoint. The connector sees that the operator account sent BTC, then
@@ -43,9 +41,8 @@ along with the email address you used. This email and password is how you'll log
 Romit platform that you don't want the connector to process, you must select a date from which to start processing 
 transactions. Navigate to the Transactions page and, under Import Romit Transactions, select a date in UTC to begin 
 processing transactions through the connector and click Import. If the list of Unprocessed Transactions looks correct, 
-you can navigate to the Configuration tab to Enable the Autoconnector.
-9. When your exchange account is funded, you can enable the Autoconnect feature. Unless you have existing transactions 
-on the Romit platform that you don't want your connector to process. In which case, see 8b.
+you can proceed.
+9. When your exchange account is funded, you can enable the Autoconnect feature. 
 
 ## Test mode
 
