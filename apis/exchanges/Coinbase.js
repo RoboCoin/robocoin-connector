@@ -6,14 +6,14 @@ var crypto = require('crypto');
 var Coinbase = function (config) {
     this._request = request;
     this._config = config;
-};
 
-var publicClient = new CoinbaseExchange.PublicClient();
-var authedClient = new CoinbaseExchange.AuthenticatedClient(
-    this._config['coinbase.exchangePublicKey'],
-    this._config['coinbase.secret'],
-    this._config['coinbase.passphrase']
-);
+    this.publicClient = new CoinbaseExchange.PublicClient();
+    this.authedClient = new CoinbaseExchange.AuthenticatedClient(
+        this._config['coinbase.exchangePublicKey'],
+        this._config['coinbase.secret'],
+        this._config['coinbase.passphrase']
+    );
+};
 
 Coinbase.prototype._call = function (reqtype, endpoint, params, callback) {
 
@@ -40,10 +40,10 @@ Coinbase.prototype._call = function (reqtype, endpoint, params, callback) {
         requestOptions.body = JSON.stringify(params);
     }
     requestOptions.headers = {
-        'Accept': 'application/json',
-        'ACCESS-KEY': this._config['coinbase.coinbaseApiKey'],
-        'ACCESS-SIGNATURE': hmac,
-        'ACCESS-NONCE': timestamp
+        'Content-Type': 'application/json',
+        'ACCESS_KEY': this._config['coinbase.coinbaseAPIKey'],
+        'ACCESS_SIGNATURE': hmac,
+        'ACCESS_NONCE': timestamp
     };
 
     this._request(requestOptions, function (err, response, body) {
@@ -60,10 +60,13 @@ Coinbase.prototype.buy = function (amount, price, callback) {
         'size' : amount,
         'product_id' : 'BTC-USD'
     };
-    authedClient.buy(buyParams, function(err, result) {
+
+    var self = this;
+
+    self.authedClient.buy(buyParams, function(err, response, result) {
         if(err) return callback('Coinbase buy error: ' + err);
 
-        authedClient.getOrder(result.id, function(err, order) {
+        self.authedClient.getOrder(result.id, function(err, response, order) {
             var fiat = parseFloat(order.size) * parseFloat(order.price);
             callback(null, {
                 'datetime': order.created_at,
@@ -84,10 +87,13 @@ Coinbase.prototype.sell = function (amount, price, callback) {
         'size' : amount,
         'product_id' : 'BTC-USD'
     };
-    authedClient.sell(sellParams, function(err, result) {
+
+    var self = this;
+
+    self.authedClient.sell(sellParams, function(err, response, result) {
         if(err) return callback('Coinbase sell error: ' + err);
 
-        authedClient.getOrder(result.id, function(err, order) {
+        self.authedClient.getOrder(result.id, function(err, response, order) {
             var fiat = parseFloat(order.size) * parseFloat(order.price);
             callback(null, {
                 'datetime': order.created_at,
@@ -104,12 +110,12 @@ Coinbase.prototype.sell = function (amount, price, callback) {
 // done
 Coinbase.prototype.getPrices = function (callback) {
 
-    publicClient.getProductTrades('BTC-USD', function(err, result) {
+    this.publicClient.getProductOrderBook({ level: 1 }, function(err, response, result) {
         if(err) return callback('Coinbase get prices err: ' + err);
         
         callback(null, {
-            buyPrice : result[0].price,
-            sellPrice : result[1].price
+            buyPrice : result.asks[0][0],
+            sellPrice : result.bids[0][0]
         });
     });
 };
@@ -118,13 +124,15 @@ Coinbase.prototype.getPrices = function (callback) {
 // done
 Coinbase.prototype.getBalance = function (callback) {
 
-    this._call('GET', '/accounts/' + this._config['coinbase.coinbaseAccountID'] + '/balance', function(err, balance) {
+    var self = this;
+
+    self._call('GET', '/accounts/' + self._config['coinbase.coinbaseAccountID'] + '/balance', function(err, balance) {
         if(err) callback("Coinbase get balance error: " + err);
 
         balance = JSON.parse(balance);
 
-        var url = this._config['coinbase.coinbaseBaseUrl'] + '/prices/sell';
-        this._request(url, function(err, res, body) {
+        var url = self._config['coinbase.coinbaseBaseUrl'] + '/prices/sell';
+        self._request(url, function(err, res, body) {
             if(err) callback("Coinbase get balance error: " + err);
 
             body = JSON.parse(body);
@@ -171,20 +179,22 @@ Coinbase.prototype.userTransactions = function (callback) {
     var url = '/transactions';
     var price;
 
-    this.getPrices(function(err, prices) {
+    var self = this;
+
+    self.getPrices(function(err, prices) {
         if(err) callback('Coinbase user transactions error: ' + err);
         price = prices.sellPrice;
 
-        this._call('GET', url, function(err, txns) {
+        self._call('GET', url, function(err, txns) {
             if(err) callback('Coinbase error in user transactions: ' + err);
             
-            var userTransactionsByOrderId = [];
+            var userTransactionsById = {};
             txns = JSON.parse(txns);
 
             async.each(txns.transactions, function (txn, eachCallback) {
                 var amount = parseFloat(txn.transaction.amount.amount);
                 var fiat = amount * price;
-                userTransactionsByOrderId[order.id] = {
+                userTransactionsById[txn.transaction.id] = {
                     datetime: new Date(txn.transaction.created_at),
                     type: 'withdraw',
                     fiat: fiat,
@@ -195,16 +205,20 @@ Coinbase.prototype.userTransactions = function (callback) {
             }, function (err) {
                 if (err) return callback('Error processing trade history: ' + err);
 
-                var txnIds = Object.keys(userTransactionsByOrderId);
+                var txnIds = Object.keys(userTransactionsById);
                 var userTransactions = [];
                 for (var i = 0; i < txnIds.length; i++) {
+                    var id = txnIds[i];
+                    var txn = userTransactionsById[id];
+
                     userTransactions.push({
-                        order_id: txnIds[i],
-                        datetime: new Date(txn.transaction.created_at),
+                        id: id,
+                        order_id: id, 
+                        datetime: txn.datetime,
                         type: 'withdraw',
-                        fiat: txnIds[i].fiat,
-                        xbt: txnIds[i].xbt,
-                        fee: txnIds[i].fee
+                        fiat: txn.fiat,
+                        xbt: txn.xbt,
+                        fee: txn.fee
                     });
                 }
                 return callback(null, userTransactions);
