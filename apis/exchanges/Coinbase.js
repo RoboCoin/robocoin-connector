@@ -110,12 +110,12 @@ Coinbase.prototype.sell = function (amount, price, callback) {
 // done
 Coinbase.prototype.getPrices = function (callback) {
 
-    this.publicClient.getProductTrades(function(err, response, result) {
+    this.publicClient.getProductOrderBook({ level: 1 }, function(err, response, result) {
         if(err) return callback('Coinbase get prices err: ' + err);
         
         callback(null, {
-            buyPrice : result[0].price,
-            sellPrice : result[1].price
+            buyPrice : result.asks[0][0],
+            sellPrice : result.bids[0][0]
         });
     });
 };
