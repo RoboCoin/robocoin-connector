@@ -110,7 +110,7 @@ Coinbase.prototype.sell = function (amount, price, callback) {
 // done
 Coinbase.prototype.getPrices = function (callback) {
 
-    this.publicClient.getProductTrades('BTC-USD', function(err, response, result) {
+    this.publicClient.getProductTrades(function(err, response, result) {
         if(err) return callback('Coinbase get prices err: ' + err);
         
         callback(null, {
