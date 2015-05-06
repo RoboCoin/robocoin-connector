@@ -188,13 +188,13 @@ Coinbase.prototype.userTransactions = function (callback) {
         self._call('GET', url, function(err, txns) {
             if(err) callback('Coinbase error in user transactions: ' + err);
             
-            var userTransactionsByOrderId = [];
+            var userTransactionsById = {};
             txns = JSON.parse(txns);
 
             async.each(txns.transactions, function (txn, eachCallback) {
                 var amount = parseFloat(txn.transaction.amount.amount);
                 var fiat = amount * price;
-                userTransactionsByOrderId[order.id] = {
+                userTransactionsById[txn.transaction.id] = {
                     datetime: new Date(txn.transaction.created_at),
                     type: 'withdraw',
                     fiat: fiat,
@@ -205,16 +205,20 @@ Coinbase.prototype.userTransactions = function (callback) {
             }, function (err) {
                 if (err) return callback('Error processing trade history: ' + err);
 
-                var txnIds = Object.keys(userTransactionsByOrderId);
+                var txnIds = Object.keys(userTransactionsById);
                 var userTransactions = [];
                 for (var i = 0; i < txnIds.length; i++) {
+                    var id = txnIds[i];
+                    var txn = userTransactionsById[id];
+
                     userTransactions.push({
-                        order_id: txnIds[i],
-                        datetime: new Date(txn.transaction.created_at),
+                        id: id,
+                        order_id: id, 
+                        datetime: txn.datetime,
                         type: 'withdraw',
-                        fiat: txnIds[i].fiat,
-                        xbt: txnIds[i].xbt,
-                        fee: txnIds[i].fee
+                        fiat: txn.fiat,
+                        xbt: txn.xbt,
+                        fee: txn.fee
                     });
                 }
                 return callback(null, userTransactions);
