@@ -124,13 +124,15 @@ Coinbase.prototype.getPrices = function (callback) {
 // done
 Coinbase.prototype.getBalance = function (callback) {
 
-    this._call('GET', '/accounts/' + this._config['coinbase.coinbaseAccountID'] + '/balance', function(err, balance) {
+    var self = this;
+
+    self._call('GET', '/accounts/' + self._config['coinbase.coinbaseAccountID'] + '/balance', function(err, balance) {
         if(err) callback("Coinbase get balance error: " + err);
 
         balance = JSON.parse(balance);
 
-        var url = this._config['coinbase.coinbaseBaseUrl'] + '/prices/sell';
-        this._request(url, function(err, res, body) {
+        var url = self._config['coinbase.coinbaseBaseUrl'] + '/prices/sell';
+        self._request(url, function(err, res, body) {
             if(err) callback("Coinbase get balance error: " + err);
 
             body = JSON.parse(body);
@@ -177,11 +179,13 @@ Coinbase.prototype.userTransactions = function (callback) {
     var url = '/transactions';
     var price;
 
-    this.getPrices(function(err, prices) {
+    var self = this;
+
+    self.getPrices(function(err, prices) {
         if(err) callback('Coinbase user transactions error: ' + err);
         price = prices.sellPrice;
 
-        this._call('GET', url, function(err, txns) {
+        self._call('GET', url, function(err, txns) {
             if(err) callback('Coinbase error in user transactions: ' + err);
             
             var userTransactionsByOrderId = [];
