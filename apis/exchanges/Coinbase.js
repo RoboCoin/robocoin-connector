@@ -63,10 +63,10 @@ Coinbase.prototype.buy = function (amount, price, callback) {
 
     var self = this;
 
-    self.authedClient.buy(buyParams, function(err, result) {
+    self.authedClient.buy(buyParams, function(err, response, result) {
         if(err) return callback('Coinbase buy error: ' + err);
 
-        self.authedClient.getOrder(result.id, function(err, order) {
+        self.authedClient.getOrder(result.id, function(err, response, order) {
             var fiat = parseFloat(order.size) * parseFloat(order.price);
             callback(null, {
                 'datetime': order.created_at,
@@ -90,10 +90,10 @@ Coinbase.prototype.sell = function (amount, price, callback) {
 
     var self = this;
 
-    self.authedClient.sell(sellParams, function(err, result) {
+    self.authedClient.sell(sellParams, function(err, response, result) {
         if(err) return callback('Coinbase sell error: ' + err);
 
-        self.authedClient.getOrder(result.id, function(err, order) {
+        self.authedClient.getOrder(result.id, function(err, response, order) {
             var fiat = parseFloat(order.size) * parseFloat(order.price);
             callback(null, {
                 'datetime': order.created_at,
@@ -110,7 +110,7 @@ Coinbase.prototype.sell = function (amount, price, callback) {
 // done
 Coinbase.prototype.getPrices = function (callback) {
 
-    this.publicClient.getProductTrades('BTC-USD', function(err, result) {
+    this.publicClient.getProductTrades('BTC-USD', function(err, response, result) {
         if(err) return callback('Coinbase get prices err: ' + err);
         
         callback(null, {
