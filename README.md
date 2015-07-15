@@ -1,7 +1,6 @@
 # robocoin-connector
 
-This connector is an example of the code you'll need to write to connect the Romit API to a third party exchange's API.
-Romit will not run this code on its platform. We suggest operators use a platform such as Heroku to run this code.
+The connector gives operators the ability to programatically manage their account's float with a supporte liquidity engine via the Romit Connector API.
 
 ## How it works
 
