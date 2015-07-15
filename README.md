@@ -1,6 +1,6 @@
 # robocoin-connector
 
-The connector gives operators the ability to programatically manage their account's float with a supporte liquidity engine via the Romit Connector API.
+The connector gives operators the ability to programatically manage their account's float with a supported liquidity engine via the Romit Connector API.  The connector also provides a simple interface for integrators looking to add their own liquidity engine.
 
 ## How it works
 
