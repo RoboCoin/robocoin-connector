@@ -125,7 +125,6 @@ app.use(function (req, res, next) {
 app.use(function (req, res, next) {
     var pingUrl = req.config.get(null, 'PING_URL');
     var path = req.path;
-    winston.warn('pingUrl: ' + pingUrl + ' and path: ' + path);
     if ((!pingUrl && path == '/setup') || (pingUrl && path != '/setup')) {
 
         return next();
