@@ -30,6 +30,9 @@ BatchProcessor.prototype.run = function (callback) {
 
     async.waterfall([
         function (waterfallCallback) {
+            autoconnector.fetchLatestTransactions(waterfallCallback);
+        },
+        function (waterfallCallback) {
             transactionMapper.findUnprocessed(waterfallCallback);
         },
         function (unprocessedTransactions, waterfallCallback) {

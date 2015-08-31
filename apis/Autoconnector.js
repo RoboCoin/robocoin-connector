@@ -279,30 +279,16 @@ Autoconnector.prototype._processUnprocessedTransactions = function (robocoin, ca
     });
 };
 
-/**
- *
- * @param callback callback(err)
- */
-Autoconnector.prototype.run = function (callback) {
+Autoconnector.prototype.fetchLatestTransactions = function (callback) {
 
     var self = this;
 
-    if (Flag.isSet(Flag.PROCESSING)) {
-        winston.info('Already processing, skipping this round...');
-        return callback();
-    }
-
     async.waterfall([
-        function (waterfallCallback) {
-            Flag.set(Flag.PROCESSING).on();
-            return waterfallCallback();
-        },
         function (waterfallCallback) {
 
             self._getTransactionMapper().findLastTransactionTime(waterfallCallback);
         },
         function (lastTime, waterfallCallback) {
-
 
             self._getConfigMapper().findAll(function (configErr, config) {
 
@@ -332,15 +318,25 @@ Autoconnector.prototype.run = function (callback) {
                     return waterfallCallback(err, robocoin);
                 });
             });
-        },
-        function (robocoin, waterfallCallback) {
-
-            self._processUnprocessedTransactions(robocoin, waterfallCallback);
         }
     ], function (err) {
+            callback(err);
+        }
+    );
+};
 
-        Flag.set(Flag.PROCESSING).off();
-        return callback(err);
+/**
+ *
+ * @param callback callback(err)
+ */
+Autoconnector.prototype.run = function (callback) {
+
+    // Maybe don't need this if it's all batch from now on
+
+    var self = this;
+
+    this.fetchLatestTransactions(function (err, robocoin, doneCallback) {
+        self._processUnprocessedTransactions(robocoin, doneCallback);
     });
 };
 
@@ -510,11 +506,6 @@ Autoconnector.prototype.batchProcess = function (unprocessedTransactions, deposi
 
 Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, depositAddress, exchange, callback) {
 
-    if (unprocessedTransactions.length <= 1) {
-        winston.info('Only one unprocessed transaction, no need to process...');
-        return callback();
-    }
-
     var self = this;
 
     async.waterfall([
@@ -535,9 +526,8 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
                 self._lastBuyPrice = price.buyPrice;
                 self._lastSellPrice = price.sellPrice;
                 var aggregateBuy = new bigdecimal.BigDecimal.ZERO();
-                var aggregatedBuys = [];
                 var aggregateSell = new bigdecimal.BigDecimal.ZERO();
-                var aggregatedSells = [];
+                var aggregatedTransactions = [];
                 var processedTransactions = [];
                 var minimumBuy = new bigdecimal.BigDecimal(minimumOrder.minimumBuy);
                 var minimumSell = new bigdecimal.BigDecimal(minimumOrder.minimumSell);
@@ -549,60 +539,69 @@ Autoconnector.prototype._doBatchProcess = function (unprocessedTransactions, dep
                     if (tx.robocoin_tx_type == RobocoinTxTypes.SEND) {
 
                         aggregateBuy = aggregateBuy.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
-                        aggregatedBuys.push(tx);
+                        aggregatedTransactions.push(tx);
 
                     } else if (tx.robocoin_tx_type == RobocoinTxTypes.RECV) {
 
                         aggregateSell = aggregateSell.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
-                        aggregatedSells.push(tx);
+                        aggregatedTransactions.push(tx);
+
+                    } else if (tx.robocoin_tx_type == RobocoinTxTypes.ROBOCOIN_FEE) {
+
+                        aggregateBuy = aggregateBuy.add(new bigdecimal.BigDecimal(tx.robocoin_xbt));
+                        aggregatedTransactions.push(tx);
                     }
 
-                    if (aggregateBuy.compareTo(minimumBuy) == 1) {
+                    return eachSeriesCallback();
 
-                        aggregateBuyAsNumber = aggregateBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
-                        self._batchBuy(aggregateBuyAsNumber, aggregatedBuys, depositAddress, exchange, function (err) {
+                }, function (err) {
+
+                    if (err) return waterfallCallback(err);
+
+                    if (aggregateBuy.compareTo(aggregateSell) == 1) {
+
+                        var amountToBuy = aggregateBuy.subtract(aggregateSell);
+                        var amountToBuyAsNumber = amountToBuy.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                        self._batchBuy(amountToBuyAsNumber, aggregatedTransactions, depositAddress, exchange, function (err) {
 
                             if (err) {
                                 // on error, just skip to the next
                                 winston.error('Batch buy error: ' + err);
-                                return eachSeriesCallback();
+                                return waterfallCallback();
                             }
 
-                            for (var i = 0; i < aggregatedBuys.length; i++) {
-                                processedTransactions.push(aggregatedBuys[i].robocoin_tx_id);
+                            for (var i = 0; i < aggregatedTransactions.length; i++) {
+                                processedTransactions.push(aggregatedTransactions[i].robocoin_tx_id);
                             }
                             aggregateBuy = new bigdecimal.BigDecimal(0);
-                            aggregatedBuys = [];
-                            return eachSeriesCallback();
+                            aggregatedTransactions = [];
+                            return waterfallCallback(null, processedTransactions);
                         });
 
-                    } else if (aggregateSell.compareTo(minimumSell) == 1) {
+                    } else if (aggregateSell.compareTo(aggregateBuy) == 1) {
 
-                        aggregateSellAsNumber = aggregateSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
-                        self._batchSell(aggregateSellAsNumber, aggregatedSells, exchange, function (err) {
+                        var amountToSell = aggregateSell.subtract(aggregateBuy);
+                        var amountToSellAsNumber = amountToSell.setScale(8, bigdecimal.RoundingMode.DOWN()).toPlainString();
+                        self._batchSell(amountToSellAsNumber, aggregatedTransactions, exchange, function (err) {
 
                             if (err) {
                                 // on error, just skip to the next
                                 winston.error('Batch sell error: ' + err);
-                                return eachSeriesCallback();
+                                return waterfallCallback();
                             }
 
-                            for (var i = 0; i < aggregatedSells.length; i++) {
-                                processedTransactions.push(aggregatedSells[i].robocoin_tx_id);
+                            for (var i = 0; i < aggregatedTransactions.length; i++) {
+                                processedTransactions.push(aggregatedTransactions[i].robocoin_tx_id);
                             }
                             aggregateSell = new bigdecimal.BigDecimal(0);
-                            aggregatedSells = [];
-                            return eachSeriesCallback();
+                            aggregatedTransactions = [];
+                            return waterfallCallback(null, processedTransactions);
                         });
 
                     } else {
-
-                        return eachSeriesCallback();
+                        // amounts are equal, do nothing
+                        return waterfallCallback();
                     }
-
-                }, function (err) {
-
-                    return waterfallCallback(err, processedTransactions);
                 });
             });
         }

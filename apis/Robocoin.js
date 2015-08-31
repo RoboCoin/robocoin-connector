@@ -113,9 +113,6 @@ Robocoin.prototype._doRequest = function (endpoint, options, method, callback) {
 
     this._request(requestOptions, function (error, response, body) {
 
-        console.log('URL: ' + requestOptions.url);
-        console.log(JSON.stringify(headers));
-        console.log('error: ' + error + ' body: ' + body);
         if (error) return callback('Error calling Robocoin: ' + error);
 
         return callback(null, body.response);
@@ -168,8 +165,11 @@ Robocoin.prototype.getTransactions = function (since, callback) {
         var connectorTransactions = [];
 
         for (var i = 0; i < response.length; i++) {
+
+            // we can process fees when we have a way to associate them with a kiosk or order
             if (response[i].type == RobocoinTxTypes.SEND
-                || (response[i].type == RobocoinTxTypes.RECV && response[i].forwarded)) {
+                || (response[i].type == RobocoinTxTypes.RECV && response[i].forwarded)
+                /*|| response[i].type == RobocoinTxTypes.ROBOCOIN_FEE*/) {
 
                 xbt = new bigdecimal.BigDecimal(response[i].xbt);
                 xbt = xbt.divide(new bigdecimal.BigDecimal(Math.pow(10, 8)), bigdecimal.MathContext.DECIMAL128())

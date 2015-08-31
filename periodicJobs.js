@@ -34,16 +34,12 @@ exports.startInterval = function () {
 
         var randomNumber = Math.ceil((Math.random() * 10));
 
-        // most of the time, run the autoconnector
-        if (randomNumber > 2) {
-            console.log('running autoconnector...');
-            exports.runAutoconnector();
-        } else if (randomNumber == 2) {
+        // most of the time, run the batch processor
+        if (randomNumber > 1) {
             console.log('running batch process...');
-            // but sometimes, do the batch rollup
             exports.batchProcess();
         } else {
-            // and sometimes fill partials
+            // but sometimes fill partials
             console.log('filling partials...');
             partialFiller.run(function (err) {
                 if (err) console.error('Partial filling error: ' + err);

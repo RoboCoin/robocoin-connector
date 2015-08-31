@@ -96,14 +96,14 @@ MockBitstamp.prototype.userTransactions = function (callback) {
 };
 
 MockBitstamp.prototype.getMinimumOrders = function (callback) {
-    return callback(null, { minimumBuy: 0.00769231, minimumSell: 0.00769231 });
+    return callback(null, { minimumBuy: 0.00269231, minimumSell: 0.00269231 });
 };
 
 MockBitstamp.prototype.getPrices = function (callback) {
     console.log('MockBitstamp::getPrice');
     callback(null, {
-        buyPrice: (Math.floor((Math.random() * (621 - 619 + 1)) + 619)),
-        sellPrice: (Math.floor((Math.random() * (621 - 619 + 1)) + 619))
+        buyPrice: (Math.floor((Math.random() * (235 - 225 + 1)) + 225)),
+        sellPrice: (Math.floor((Math.random() * (235 - 225 + 1)) + 225))
     });
 };
 
