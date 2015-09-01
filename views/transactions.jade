@@ -21,25 +21,18 @@ block content
                 th Action
                 th Fiat
                 th XBT
-                th Romit Fee
-                th Romit Miner's Fee
                 th Time
 
     h1 Processed Transactions
     div.table-responsive
         table.table.table-striped.table-condensed.table-bordered#processedTransactions
             tr
-                th RC TX ID
+                th Romit TX ID
                 th Exchange TX ID
-                th RC TX Type
-                th RC Fiat
-                th Exchange Fiat
-                th RC XBT
-                th Exchange XBT
-                th RC TX Fee
-                th Exchange TX Fee
-                th Exchange Miner's Fee
-                th RC TX Time
+                th Romit TX Type
+                th Romit Fiat
+                th Romit XBT
+                th Romit TX Time
                 th Exchange TX Time
 
     h4 Import Romit Transactions
@@ -115,8 +108,6 @@ block footerJs
                         .append('<td>' + transaction.action + '</td>')
                         .append('<td>' + (transaction.fiat ? transaction.fiat : '') + '</td>')
                         .append('<td>' + transaction.xbt + '</td>')
-                        .append('<td>' + (transaction.fee ? transaction.fee : '') + '</td>')
-                        .append('<td>' + (transaction.miners_fee ? transaction.miners_fee : '') + '</td>')
                         .append('<td>' + (new Date(transaction.time)).toString() + '</td>');
                     rows.push($row);
                 }
@@ -165,12 +156,7 @@ block footerJs
                                 .append('<td>' + transaction.exchange_tx_id + '</td>')
                                 .append('<td>' + transaction.robocoin_tx_type + '</td>')
                                 .append('<td>' + transaction.robocoin_fiat + '</td>')
-                                .append('<td>' + transaction.exchange_fiat + '</td>')
                                 .append('<td>' + transaction.robocoin_xbt + '</td>')
-                                .append('<td>' + transaction.exchange_xbt + '</td>')
-                                .append('<td>' + transaction.robocoin_tx_fee + '</td>')
-                                .append('<td>' + transaction.exchange_tx_fee + '</td>')
-                                .append('<td>' + (transaction.exchange_miners_fee || 0) + '</td>')
                                 .append('<td>' + (new Date(transaction.robocoin_tx_time)).toString() + '</td>')
                                 .append('<td>' + (new Date(transaction.exchange_tx_time)).toString() + '</td>');
                             rows.push($row);

@@ -13,8 +13,6 @@ block nav
 
 block content
     +kioskSelector(kiosks)
-    div(style="width: 100%; height: 500px")#buyProfit
-    div(style="width: 100%; height: 500px")#sellProfit
     div(style="width: 100%, height: 500px")#hourlyCash
     div(style="width: 100%, height: 500px")#dailyCash
     div(style="width: 100%, height: 500px")#monthlyCash
@@ -26,8 +24,6 @@ block footerJs
         google.setOnLoadCallback(drawCharts);
         function drawCharts () {
 
-            var buyProfitChart = new google.visualization.LineChart(document.getElementById('buyProfit'));
-            var sellProfitChart = new google.visualization.LineChart(document.getElementById('sellProfit'));
             var dailyCashChart = new google.visualization.LineChart(document.getElementById('dailyCash'));
             var hourlyCashChart = new google.visualization.LineChart(document.getElementById('hourlyCash'));
             var monthlyCashChart = new google.visualization.LineChart(document.getElementById('monthlyCash'));
@@ -42,32 +38,6 @@ block footerJs
                     dataType: 'json',
                     async: false,
                     success: function (data) {
-
-                        var buyProfit = data.profit.buys;
-                        buyProfit.unshift(['Date', 'Fee Revenue', 'Romit Fee', 'Exchange Fee']);
-                        var buyProfitData = google.visualization.arrayToDataTable(buyProfit);
-                        buyProfitChart.draw(buyProfitData, {
-                            title: 'Buy Profit',
-                            curveType: 'function',
-                            vAxis: { title: '#{ kioskCurrency }' },
-                            hAxis: { title: 'Month' },
-                            animation: {
-                                duration: 1000
-                            }
-                        });
-
-                        var sellProfit = data.profit.sells;
-                        sellProfit.unshift(['Date', 'Fee Revenue', 'Romit Fee', 'Exchange Fee']);
-                        var sellProfitData = google.visualization.arrayToDataTable(sellProfit);
-                        sellProfitChart.draw(sellProfitData, {
-                            title: 'Sell Profit',
-                            curveType: 'function',
-                            vAxis: { title: '#{ kioskCurrency }' },
-                            hAxis: { title: 'Month' },
-                            animation: {
-                                duration: 1000
-                            }
-                        });
 
                         var dailyCash = data.cashFlow.daily;
                         dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
