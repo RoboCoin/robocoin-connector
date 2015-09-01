@@ -56,7 +56,3 @@ CREATE TABLE logs (
     meta TEXT NOT NULL
 );
 
-CREATE TABLE db_versions (
-    version INTEGER NOT NULL UNIQUE
-);
-INSERT INTO db_versions VALUES (1413855050), (1414087825);
