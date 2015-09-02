@@ -26,12 +26,6 @@ exports.set = function (req, res) {
             });
         },
         function (asyncCallback) {
-            config.set(null, 'PING_URL', req.protocol + '://' + req.host);
-            configMapper.save(null, config, function (err) {
-                return asyncCallback(err);
-            });
-        },
-        function (asyncCallback) {
             setupRobocoin.initialize(req.body.romitApiKey, req.body.romitApiSecret, function (err) {
                 return asyncCallback(err);
             });

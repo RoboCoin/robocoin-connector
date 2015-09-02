@@ -123,7 +123,7 @@ app.use(function (req, res, next) {
 
 // send to setup page if not already set up
 app.use(function (req, res, next) {
-    var pingUrl = req.config.get(null, 'PING_URL');
+    var pingUrl = req.config.get(null, 'robocoin.baseUrl');
     var path = req.path;
     if ((!pingUrl && path == '/setup') || (pingUrl && path != '/setup')) {
 
@@ -218,7 +218,6 @@ var server = http.createServer(app).listen(app.get('port'), function() {
     });
 
     require('./archiveLogs');
-    //require('./noIdle');
     require('./deleteOldSessions');
 });
 
