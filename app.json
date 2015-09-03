@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "postdeploy": "node scripts/dbInitialize.js && ./scripts/db_update.sh"
+        "postdeploy": "node scripts/dbInitialize.js"
     },
     "env": {
         "ENCRYPTION_KEY": {
@@ -9,7 +9,7 @@
         },
         "NODE_ENV": "production"
     },
-    "addons": ["heroku-postgresql:hobby-dev"],
+    "addons": ["heroku-postgresql"],
     "success_url": "/setup",
     "logo": "https://daks2k3a4ib2z.cloudfront.net/5525d4844c351eaa4028804d/552f27630f9117dc20819080_r_romit.png",
     "name": "Romit Connector",
