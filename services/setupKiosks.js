@@ -18,6 +18,8 @@ module.exports = {
 
                 if (err) return callback('Error getting machine info: ' + err);
 
+                if (!machines) return callback('No machines found');
+
                 async.each(machines, function (machine, asyncCallback) {
 
                     kioskMapper.save({

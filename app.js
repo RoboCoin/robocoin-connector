@@ -123,9 +123,9 @@ app.use(function (req, res, next) {
 
 // send to setup page if not already set up
 app.use(function (req, res, next) {
-    var pingUrl = req.config.get(null, 'robocoin.baseUrl');
+    var robocoinBaseUrl = req.config.get(null, 'robocoin.baseUrl');
     var path = req.path;
-    if ((!pingUrl && path == '/setup') || (pingUrl && path != '/setup')) {
+    if ((!robocoinBaseUrl && path == '/setup') || (robocoinBaseUrl && path != '/setup')) {
 
         return next();
 
