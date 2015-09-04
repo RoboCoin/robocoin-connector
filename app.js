@@ -181,6 +181,10 @@ app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.save
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
 
+//var update = require('./routes/update');
+//app.get('/update', ensureAuthenticated, update.updateIndex);
+//app.post('/update', ensureAuthenticated, update.startUpdate);
+
 var logs = require('./routes/logs');
 app.get('/logs', ensureAuthenticated, logs.index);
 
@@ -202,34 +206,47 @@ app.use(function (err, req, res, next) {
     }
 });
 
-var server = http.createServer(app).listen(app.get('port'), function() {
+var dbMigrations = require('./services/dbMigrations');
+dbMigrations.run(function (err) {
 
-    console.log('Express server listening on port ' + app.get('port'));
-    console.log('App environment: ' + app.get('env'));
+    if (err) {
 
-    var jobs = require('./periodicJobs');
-    configMapper.findAll(function (err, config) {
+        console.error('Error running DB migrations: ' + err);
+        return process.exit(1);
 
-        if (err) winston.error('Error getting config: ' + err);
+    } else {
 
-        if (config && config.get(null, 'autoconnectorEnabled') == 1) {
-            jobs.startInterval();
-        }
-    });
+        console.log('Done running DB migrations. Starting server...');
+        var server = http.createServer(app).listen(app.get('port'), function() {
 
-    require('./archiveLogs');
-    require('./deleteOldSessions');
-});
+            console.log('Express server listening on port ' + app.get('port'));
+            console.log('App environment: ' + app.get('env'));
 
-process.on('SIGINT', function () {
-    winston.log('Got SIGINT, exiting...');
-    server.close();
-    process.exit();
-});
-process.on('SIGTERM', function () {
-    winston.log('Got SIGTERM, exiting...');
-    server.close();
-    process.exit();
+            var jobs = require('./periodicJobs');
+            configMapper.findAll(function (err, config) {
+
+                if (err) winston.error('Error getting config: ' + err);
+
+                if (config && config.get(null, 'autoconnectorEnabled') == 1) {
+                    jobs.startInterval();
+                }
+            });
+
+            require('./archiveLogs');
+            require('./deleteOldSessions');
+        });
+
+        process.on('SIGINT', function () {
+            winston.log('Got SIGINT, exiting...');
+            server.close();
+            process.exit();
+        });
+        process.on('SIGTERM', function () {
+            winston.log('Got SIGTERM, exiting...');
+            server.close();
+            process.exit();
+        });
+    }
 });
 
 function ensureAuthenticated (req, res, next) {
