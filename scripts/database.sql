@@ -56,3 +56,6 @@ CREATE TABLE logs (
     meta TEXT NOT NULL
 );
 
+create table db_versions (
+    version integer not null unique
+);
