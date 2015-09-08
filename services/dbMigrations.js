@@ -10,11 +10,31 @@ exports.run = function (callback) {
     async.waterfall([
         function (waterfallCallback) {
 
+            var sql = 'SELECT EXISTS(' +
+                'SELECT 1 ' +
+                'FROM information_schema.tables ' +
+                'WHERE table_catalog = \'robocoin_connector\' ' +
+                'AND table_name = \'db_versions\')';
+
+            Connection.getConnection().query(sql, function (err, result) {
+
+                if (err) return waterfallCallback('Error checking for DB versions: ' + err);
+
+                if (result.rows[0]['exists']) {
+                    return waterfallCallback();
+                } else {
+                    console.log('DB versions table doesn\'t exist yet, so not running migrations.');
+                    return callback();
+                }
+            });
+        },
+        function (waterfallCallback) {
+
             Connection.getConnection().query('SELECT MAX(version) FROM db_versions', function (err, result) {
 
                 if (err) return waterfallCallback('Error getting latest DB version: ' + err);
 
-                return waterfallCallback(null, result.rows[0].max.toString());
+                return waterfallCallback(null, (result.rows[0].max) ? result.rows[0].max.toString() : '0');
             });
         },
         function (maxVersion, waterfallCallback) {
