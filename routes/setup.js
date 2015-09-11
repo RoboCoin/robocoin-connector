@@ -2,6 +2,7 @@
 
 var addUser = require('../services/addUser');
 var ConfigMapper = require('../data_mappers/ConfigMapper');
+var KioskMapper = require('../data_mappers/KioskMapper');
 var Config = require('../lib/Config');
 var setupRobocoin = require('../services/setupRobocoin');
 var async = require('async');
@@ -43,3 +44,11 @@ exports.set = function (req, res) {
         });
     });
 };
+
+exports._isSetup = function (callback) {
+    var kioskMapper = new KioskMapper();
+    kioskMapper.findAll(function (err, rows) {
+        var isSetup = (!err && rows && rows.length > 0);
+        return callback(isSetup);
+    });
+}

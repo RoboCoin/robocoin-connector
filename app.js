@@ -121,21 +121,20 @@ app.use(function (req, res, next) {
     }
 });
 
+var setup = require('./routes/setup');
 // send to setup page if not already set up
 app.use(function (req, res, next) {
-    var robocoinBaseUrl = req.config.get(null, 'robocoin.baseUrl');
-    var path = req.path;
-    if ((!robocoinBaseUrl && path == '/setup') || (robocoinBaseUrl && path != '/setup')) {
+    setup._isSetup(function (isSetup) {
+        if ((!isSetup && req.path == '/setup') || (isSetup && req.path != '/setup')) {
 
-        return next();
+            return next();
 
-    } else {
+        } else {
 
-        return res.send('Invalid URL');
-    }
+            return res.send('Invalid URL');
+        }
+    });
 });
-
-var setup = require('./routes/setup');
 app.get('/setup', setup.get);
 app.post('/setup', setup.set);
 
@@ -180,10 +179,6 @@ app.post('/configuration/save-exchange', ensureAuthenticated, configuration.save
 app.post('/configuration/save-robocoin', ensureAuthenticated, configuration.saveRobocoin);
 app.post('/configuration/save-currency-conversion', ensureAuthenticated, configuration.saveCurrencyConversion);
 app.post('/configuration/toggle-autoconnector', ensureAuthenticated, configuration.toggleAutoconnector);
-
-//var update = require('./routes/update');
-//app.get('/update', ensureAuthenticated, update.updateIndex);
-//app.post('/update', ensureAuthenticated, update.startUpdate);
 
 var logs = require('./routes/logs');
 app.get('/logs', ensureAuthenticated, logs.index);
