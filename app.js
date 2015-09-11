@@ -131,7 +131,8 @@ app.use(function (req, res, next) {
 
         } else {
 
-            return res.send('Invalid URL');
+            var redirectUrl = (isSetup) ? '/' : '/setup';
+            return res.redirect(redirectUrl);
         }
     });
 });
