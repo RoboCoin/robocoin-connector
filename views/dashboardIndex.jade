@@ -14,8 +14,11 @@ block nav
 block content
     +kioskSelector(kiosks)
     div(style="width: 100%, height: 500px")#hourlyCash
+    div(style="width: 100%, height: 500px")#hourlyCashError
     div(style="width: 100%, height: 500px")#dailyCash
+    div(style="width: 100%, height: 500px")#dailyCashError
     div(style="width: 100%, height: 500px")#monthlyCash
+    div(style="width: 100%, height: 500px")#monthlyCashError
 
 block footerJs
     script(src="https://www.google.com/jsapi")
@@ -40,40 +43,52 @@ block footerJs
                     success: function (data) {
 
                         var dailyCash = data.cashFlow.daily;
-                        dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
-                        var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
-                        dailyCashChart.draw(dailyCashData, {
-                            title: 'Daily Cash In/Out',
-                            vAxis: { title: '#{ kioskCurrency }' },
-                            hAxis: { title: 'Day' },
-                            animation: {
-                                duration: 1000
-                            }
-                        });
+                        if (dailyCash.length > 0) {
+                            dailyCash.unshift(['Day', 'Cash In', 'Cash Out']);
+                            var dailyCashData = google.visualization.arrayToDataTable(dailyCash);
+                            dailyCashChart.draw(dailyCashData, {
+                                title: 'Daily Cash In/Out',
+                                vAxis: { title: '#{ kioskCurrency }' },
+                                hAxis: { title: 'Day' },
+                                animation: {
+                                    duration: 1000
+                                }
+                            });
+                        } else {
+                            $('#dailyCashError').text('You have no daily cash transaction summary');
+                        }
 
                         var hourlyCash = data.cashFlow.hourly;
-                        hourlyCash.unshift(['Hour', 'Cash In', 'Cash Out']);
-                        var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
-                        hourlyCashChart.draw(hourlyCashData, {
-                            title: 'Hourly Cash In/Out',
-                            vAxis: { title: '#{ kioskCurrency }' },
-                            hAxis: { title: 'Hour' },
-                            animation: {
-                                duration: 1000
-                            }
-                        });
+                        if (hourlyCash.length > 0) {
+                            hourlyCash.unshift(['Hour', 'Cash In', 'Cash Out']);
+                            var hourlyCashData = google.visualization.arrayToDataTable(hourlyCash);
+                            hourlyCashChart.draw(hourlyCashData, {
+                                title: 'Hourly Cash In/Out',
+                                vAxis: { title: '#{ kioskCurrency }' },
+                                hAxis: { title: 'Hour' },
+                                animation: {
+                                    duration: 1000
+                                }
+                            });
+                        } else {
+                            $('#hourlyCashError').text('You have no hourly cash transaction summary');
+                        }
 
                         var monthlyCash = data.cashFlow.monthly;
-                        monthlyCash.unshift(['Month', 'Cash In', 'Cash Out']);
-                        var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
-                        monthlyCashChart.draw(monthlyCashData, {
-                            title: 'Monthly Cash In/Out',
-                            vAxis: { title: '#{ kioskCurrency }' },
-                            hAxis: { title: 'Month' },
-                            animation: {
-                                duration: 1000
-                            }
-                        });
+                        if (monthlyCash.length > 0) {
+                            monthlyCash.unshift(['Month', 'Cash In', 'Cash Out']);
+                            var monthlyCashData = google.visualization.arrayToDataTable(monthlyCash);
+                            monthlyCashChart.draw(monthlyCashData, {
+                                title: 'Monthly Cash In/Out',
+                                vAxis: { title: '#{ kioskCurrency }' },
+                                hAxis: { title: 'Month' },
+                                animation: {
+                                    duration: 1000
+                                }
+                            });
+                        } else {
+                            $('#monthlyCashError').text('You have no monthly cash transaction summary');
+                        }
                     }
                 });
             };
