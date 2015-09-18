@@ -1,6 +1,8 @@
 # robocoin-connector
 
-The connector gives operators the ability to programatically manage their account's float with a supported liquidity engine via the Romit Connector API.  The connector also provides a simple interface for integrators looking to add their own liquidity engine.
+The connector gives operators the ability to programatically manage their account's float with a supported liquidity 
+engine via the Romit Connector API.  The connector also provides a simple interface for integrators looking to add 
+their own liquidity engine.
 
 ## How it works
 
@@ -14,34 +16,34 @@ the sold BTC.
 
 On a sell, the user sends an amount of BTC from their account to the operator's account. The kiosk dispenses fiat.
 Romit automatically sends this BTC amount from the operator's account to their exchange. We also monitor how many
-confirmations are on that transaction. When the connector sees enough confirmations,
-it executes a sell for that amount on the exchange.
+confirmations are on that transaction. When the connector sees enough confirmations, it executes a sell for that amount 
+on the exchange.
 
 ## Get started
 
-1. Sign up for Heroku for free at https://www.heroku.com/ and sign into your new account.
-2. Create your Romit API keys by signing in at https://wallet.romit.io/login. If you don't already have an operator 
-wallet, create one by clicking Add Wallet, give it a name, select Operator Wallet and click Create Wallet. Then click 
-the Pencil icon in the top right of your operator wallet. Under API, click New Key, give the key a name, select 
-Connector and click Generate Key. Temporarily note the key and secret, since we'll need these to set up your connector. 
-3. Since your operator wallet will be receiving funds withdrawn from your exchange account, you'll need a deposit 
+1. If you don't already have an operator wallet, create one by clicking Add Wallet, give it a name, select Operator 
+Wallet and click Create Wallet. Then click the Pencil icon in the top right of your operator wallet. Under API, click 
+New Key, give the key a name, select Connector and click Generate Key. Temporarily note the key and secret, since we'll 
+need these to set up your connector. 
+2. Your operator wallet will be receiving funds withdrawn from your exchange account, so you'll need a deposit 
 address attached to your operator wallet. At wallet.romit.io, navigate to Receive. If you don't already have an address 
 with your operator wallet's name listed under Wallet, click Add New Address. Select your operator wallet, give the new 
 address a label and click Add Address. 
-4. Since your operator wallet will be sending funds to your exchange account, navigate to your kiosk. Under the 
+3. Your operator wallet will be sending funds to your exchange account. Navigate to your kiosk. Under the 
 Connector tab, set your exchange account's deposit address as the Forwarding Address and Save it. 
-5. Click this button to deploy this code to Heroku. At the bottom of the resulting page is a button that allows you to 
-Deploy for Free. Click it. [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-6. Within minutes, your app will be successfully deployed and clicking the View button will bring up the setup page. 
-Enter your email address and Romit API keys, click Save and you're ready to go. Note the generated password and URL 
+4. Click on your wallet and, from the Connector tab, click Set Up a Connector. This will direct you to Heroku. 
+5. If you have a Heroku account, sign in. If not, sign up. 
+6. When you're redirected back to Romit, you'll see "Creating your connector..." When that's complete, you'll be 
+directed to your new Connector instance.
+7. Enter your email address and Romit API keys, click Save and you're ready to go. Note the generated password and URL 
 along with the email address you used. This email and password is how you'll log into this URL.
-7. Click the logo in the header and you'll be prompted to log in. You can now configure your exchange API keys.
-8. If you have no existing transactions on the Romit platform, skip to step 9. If you have existing transactions on the 
+8. Click the logo in the header and you'll be prompted to log in. You can now configure your exchange API keys.
+9. If you have no existing transactions on the Romit platform, skip to step 10. If you have existing transactions on the 
 Romit platform that you don't want the connector to process, you must select a date from which to start processing 
 transactions. Navigate to the Transactions page and, under Import Romit Transactions, select a date in UTC to begin 
 processing transactions through the connector and click Import. If the list of Unprocessed Transactions looks correct, 
 you can proceed.
-9. When your exchange account is funded, you can enable the Autoconnect feature. 
+10. When your exchange account is funded, you can enable the Autoconnect feature. 
 
 ## Test mode
 
